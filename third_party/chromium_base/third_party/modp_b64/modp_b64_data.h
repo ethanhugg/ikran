@@ -7,7 +7,7 @@
 // typedefs below can cause conflicts.
 #include "base/basictypes.h"
 typedef uint8 uint8_t;
-typedef uint32 uint32_t;
+typedef i32Bit::uint32 uint32_t;
 #endif
 
 #define CHAR62 '+'

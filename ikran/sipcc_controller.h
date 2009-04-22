@@ -45,11 +45,14 @@
 #include <set>
 #include <list>
 
+#ifndef WIN32
 #include <sys/socket.h>
 #include <errno.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
-
+#else
+#include <winsock2.h>
+#endif
 
 #include "CallControlManager.h"
 #include "CSFLog.h"
@@ -59,9 +62,11 @@
 #include "CC_DeviceInfo.h"
 #include "CC_DeviceInfo.h"
 
+#ifndef WIN32
 typedef int SOCKET;
 const int INVALID_SOCKET = -1;
 const int SOCKET_ERROR = -1;
+#endif
 
 using namespace CSF;
 
@@ -130,7 +135,9 @@ private:
 	CC_CallPtr GetFirstCallWithCapability(CallControlManagerPtr ccmPtr, CC_CallCapabilityEnum::CC_CallCapability cap);
 	void InitInternal();
 	bool RegisterInternal();
+#ifndef WIN32
 	std::string NetAddressToString(const struct sockaddr*, socklen_t); 
+#endif
 	bool GetLocalActiveInterfaceAddress();
 
     //Session Information, passed in from the webkit

@@ -39,8 +39,9 @@
 
 #include "sipcc_controller.h"
 #include <vector>
+#ifndef WIN32
 #include <sys/socket.h>
-#include <netdb.h>
+#endif
 #include "Logger.h"
 
 using namespace CSF;
@@ -356,6 +357,7 @@ CC_CallPtr SipccController::GetFirstCallWithCapability (CallControlManagerPtr cc
 bool SipccController::GetLocalActiveInterfaceAddress() 
 {
 	std::string local_ip_address = "0.0.0.0";
+#ifndef WIN32
 	SOCKET sock_desc_ = INVALID_SOCKET;
 	sock_desc_ = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	struct sockaddr_in proxy_server_client;
@@ -384,11 +386,19 @@ bool SipccController::GetLocalActiveInterfaceAddress()
 	Logger::Instance()->logIt(" Ip Address Is ");
 	Logger::Instance()->logIt(local_ip_v4_address_);
 	close(sock_desc_);
-	return true;
+#else
+	hostent* localHost;
+	localHost = gethostbyname("");
+	local_ip_v4_address_ = inet_ntoa (*(struct in_addr *)*localHost->h_addr_list);
+	Logger::Instance()->logIt(" SipccController:GetLocalActiveInterfaceAddress inet address : ");;
+	Logger::Instance()->logIt(local_ip_v4_address_);
 
+#endif
+	return true;
 }
 
 //Only POSIX Complaint as of 7/6/11
+#ifndef WIN32
 std::string SipccController::NetAddressToString(const struct sockaddr* net_address,
                                socklen_t address_len) {
 
@@ -402,4 +412,5 @@ std::string SipccController::NetAddressToString(const struct sockaddr* net_addre
   }
   return std::string(buffer);
 }
+#endif
 

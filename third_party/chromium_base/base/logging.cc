@@ -113,7 +113,7 @@ LogMessageHandlerFunction log_message_handler = NULL;
 
 // Helper functions to wrap platform differences.
 
-int32 CurrentProcessId() {
+i32Bit::int32 CurrentProcessId() {
 #if defined(OS_WIN)
   return GetCurrentProcessId();
 #elif defined(OS_POSIX)
@@ -121,7 +121,7 @@ int32 CurrentProcessId() {
 #endif
 }
 
-int32 CurrentThreadId() {
+i32Bit::int32 CurrentThreadId() {
 #if defined(OS_WIN)
   return GetCurrentThreadId();
 #elif defined(OS_MACOSX)

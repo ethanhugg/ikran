@@ -222,7 +222,7 @@ class DeathData {
   // Metrics accessors.
   int count() const { return count_; }
   base::TimeDelta life_duration() const { return life_duration_; }
-  int64 square_duration() const { return square_duration_; }
+  i64Bit::int64 square_duration() const { return square_duration_; }
   int AverageMsDuration() const;
   double StandardDeviation() const;
 
@@ -238,7 +238,7 @@ class DeathData {
  private:
   int count_;                // Number of destructions.
   base::TimeDelta life_duration_;    // Sum of all lifetime durations.
-  int64 square_duration_;  // Sum of squares in milliseconds.
+  i64Bit::int64 square_duration_;  // Sum of squares in milliseconds.
 };
 
 //------------------------------------------------------------------------------
@@ -267,7 +267,7 @@ class Snapshot {
 
   int count() const { return death_data_.count(); }
   base::TimeDelta life_duration() const { return death_data_.life_duration(); }
-  int64 square_duration() const { return death_data_.square_duration(); }
+  i64Bit::int64 square_duration() const { return death_data_.square_duration(); }
   int AverageMsDuration() const { return death_data_.AverageMsDuration(); }
 
   void Write(std::string* output) const;
@@ -510,7 +510,7 @@ class ThreadData {
 
   // Hack: asynchronously clear all birth counts and death tallies data values
   // in all ThreadData instances.  The numerical (zeroing) part is done without
-  // use of a locks or atomics exchanges, and may (for int64 values) produce
+  // use of a locks or atomics exchanges, and may (for i64Bit::i64Bit::int64 values) produce
   // bogus counts VERY rarely.
   static void ResetAllThreadData();
 

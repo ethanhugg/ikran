@@ -19,6 +19,8 @@
 
 #include "base/third_party/icu/icu_utf.h"
 
+using namespace base;
+
 namespace base_icu {
 
 /**
@@ -134,8 +136,8 @@ utf8_errorValue[6]={
  * Note that a UBool is the same as an int8_t.
  */
 UChar32
-utf8_nextCharSafeBody(const uint8 *s, int32 *pi, int32 length, UChar32 c, UBool strict) {
-    int32 i=*pi;
+utf8_nextCharSafeBody(const uint8 *s, i32Bit::int32 *pi, i32Bit::int32 length, UChar32 c, UBool strict) {
+    i32Bit::int32 i=*pi;
     uint8 count=CBU8_COUNT_TRAIL_BYTES(c);
     if((i)+count<=(length)) {
         uint8 trail, illegal=0;
@@ -210,7 +212,7 @@ utf8_nextCharSafeBody(const uint8 *s, int32 *pi, int32 length, UChar32 c, UBool 
         }
     } else /* too few bytes left */ {
         /* error handling */
-        int32 i0=i;
+        i32Bit::int32 i0=i;
         /* don't just set (i)=(length) in case there is an illegal sequence */
         while((i)<(length) && CBU8_IS_TRAIL(s[i])) {
             ++(i);

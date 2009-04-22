@@ -601,7 +601,7 @@ bool CreateTemporaryDirInDir(const FilePath& base_dir,
   base::ThreadRestrictions::AssertIOAllowed();
 
   FilePath path_to_create;
-  srand(static_cast<uint32>(time(NULL)));
+  srand(static_cast<i32Bit::uint32>(time(NULL)));
 
   for (int count = 0; count < 50; ++count) {
     // Try create a new temporary directory with random generated name. If

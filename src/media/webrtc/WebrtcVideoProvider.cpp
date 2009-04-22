@@ -150,10 +150,6 @@ WebrtcVideoProvider::WebrtcVideoProvider( WebrtcMediaProvider* provider )
 	}
 
 	 vieRtpRtcp = webrtc::ViERTP_RTCP::GetInterface(vieVideo);
-
-#ifdef WIN32
-    ((GipsVideoEngineWindows *)gipsVideo)->GIPSVideo_EnableDirectDraw( true );
-#endif
 	
 	
 	memset(&videoCodec, 0 , sizeof(webrtc::VideoCodec));
@@ -332,9 +328,10 @@ void WebrtcVideoProvider::setPreviewWindow( void* window, int top, int left, int
 	if(window != NULL)
 	{
 		// Set new window.
+		LOG_WEBRTC_DEBUG(logTag, " Preview window: Adding Renderer ");
 #ifdef WIN32
 		//setRenderWindow( 0, (GipsPlatformWindow)window, top, left, bottom, right, style );
-		vieRender->AddRenderer(localRenderId, (HWND)window, 1, 0.0f, 0.0f, 1.0f, 1.0f );
+		vieRender->AddRenderer(webCaptureId, (HWND)window, 1, 0.0f, 0.0f, 1.0f, 1.0f );
 #elif LINUX
 		vieRender->AddRenderer(webCaptureId, (Window*)window,1, 0.0f, 0.0f, 1.0f, 1.0f );
 #elif __APPLE__
@@ -753,7 +750,7 @@ void WebrtcVideoProvider::setRenderWindowForStreamIdFromMap(int streamId)
     {
 #ifdef WIN32    // temporary
         // TODO: implement render scaling
-        if ( ( vieRender->AddRenderer( channel, remote->window, 1, 0.0f, 0.0f, 1.0f, 1.0f ) != 0 )
+        if (  vieRender->AddRenderer( channel, (HWND) remote->window, 1, 0.0f, 0.0f, 1.0f, 1.0f ) != 0 )
         {
             LOG_WEBRTC_ERROR( logTag, "setRenderWindowForStreamIdFromMap: Addenderer on channel %d failed, error %d", 
 								channel, vieBase->LastError() );
@@ -974,9 +971,9 @@ bool WebrtcVideoProvider::setFullScreen(int streamId, bool fullScreen)
 {
 	base::AutoLock lock(m_lock);
 	int returnVal = -1;
-
+	LOG_WEBRTC_INFO(logTag," setFullScreen: Operation not supported ");
 #ifdef WIN32
-	const RenderWindow* renderWindow = getRenderWindow( streamId );
+	/*const RenderWindow* renderWindow = getRenderWindow( streamId );
 	if ( renderWindow != NULL )
 	{
 		if (fullScreen)
@@ -987,7 +984,7 @@ bool WebrtcVideoProvider::setFullScreen(int streamId, bool fullScreen)
 		{
 			returnVal = ((GipsVideoEnginePlatform *)gipsVideo)->GIPSVideo_AddFullScreenRender(NULL);  // turn full screen off
 		}
-	}
+	}*/
 #endif
 	return (returnVal == 0) ? true : false;
 }
