@@ -6,7 +6,7 @@ import sys
 runscons    = ARGUMENTS.get('runscons', 'xxx')
 debug       = ARGUMENTS.get('debug', 1)
 x64         = ARGUMENTS.get('x64', 'no')
-noaddon       = ARGUMENTS.get('noaddon', 'no')
+noaddon     = ARGUMENTS.get('noaddon', 'no')
 
 if runscons == 'xxx':
   print 'Do not call scons directly. Use runSconsBuild.py'
