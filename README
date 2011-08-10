@@ -1,0 +1,151 @@
+---------------
+0. Introduction
+---------------
+  Ikran is an experimental addon for Firefox that turns your browser into a SIP endpoint 
+  for both audio and video.  It currently uses GIPS for audio/video support.
+
+  The ikran is a bird from the mythical world of Pandora (Avatar).  It is well known for
+  its birdcall which travels long distances using widely accepted standards for audio and video.
+  
+Source tree strcture:
+<SOURCE> 
+tests - [Standalone test application and add-on]
+	testapp_softphone
+	ikran
+third_party - [Third party dependencies ]
+	chromium_base
+lib [GIPS libraries go here].
+src/sipcc - [SIP stack]
+src - [ECC - call control wrapper for SIP stack]
+
+--------------------
+1. Platform Support 
+--------------------
+Required for all platforms:
+  Python (www.python.org) -  known to work with 2.6 & 2.7 
+  SCons (www.scons.org)
+  MOZSDKPATH environment variable pointing to the Gecko2 SDK.
+
+Linux:
+  Built regularly on Ubuntu 10.4 32bit and 64bit
+  Third-Party Libraries
+  +libxml2 - sudo apt-get install libxml2-dev
+  +libcurl - sudo apt-get install libcurl4-openssl-dev
+  +Glib    - sudo apt-get install libdbus-glib-1-dev
+  +asound  - sudo apt-get install libasound2-dev
+     
+
+Mac OSX:
+  Built regularly on OSX 10.6 with XCode 3.2.6
+  Links to Framework 10.5
+
+Windows:
+  Built regularly on Windows XP & Windows 7 32bit.
+  Python path is in runSconsBuild.py and set to c:\python27
+  Requires setting environment variables MS_VC_PATH and MS_WINDOWS_SDK_PATH and SCONS_LOCATION
+  e.g  SCONS_LOCATION=c:\Python26\Scripts
+
+-------------
+2. Building 
+-------------
+  - Get Gecko2 SDK (32bit) for your platform from 
+	 https://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/5.0/sdk
+  - Extract the package & Set the MOZSDKPATH env variable to point to it
+  - Instead of using scons directly, use runSconsBuild.py like this
+    'python runSconsBuild.py debug' or
+    'python runSconsBuild.py clean'
+    Current command line options are 'debug', 'release', 'clean', 'noaddon' and 'x64'.
+    
+----------
+4. Output
+----------
+  Build will create a standalone test app and an addon for Firefox 4 or 5.
+  Test App Exe: TestApp_Softphone
+  Addon: ikran-0.2-dev.xpi
+
+-----------------------
+5. Testing the addon
+-----------------------
+  To build  & test 32bit addon , follow below steps
+
+  - Addon executable shall be generated under the <SOURCE>/ikran
+ 	 called ikran-0.2-dev.xpi
+  - OSX
+	Start Firefox in 32 bit as 
+		arch -i386 /Applications/Firefox.app/Contents/MacOS/firefox-bin 
+  - Linux
+	Start Firefox normally  
+  - Install the addon
+  - Test add-on with sample page at
+		<SOURCE>/ikran/content/ikran.html		
+
+--------------------------------
+6. Using the Test Application
+--------------------------------
+There are two ways to use the Test Application
+
+ Run the Test Application from the command line with no parameters
+  ./tests/testapp_softphone/TestApp_SoftPhone
+  
+  Enter SIP Server IP address
+  Enter SIP Server Username
+  Enter SIP Server Password
+ 
+ 
+ Run the Test Application from the command line with a config file as a parameter
+  ./tests/testapp_softphone/TestApp_SoftPhone cfg.txt
+    - Sample cfg.txt  (create file named e.g. cfg.txt)
+
+       IP_ADDRESS=10.53.40.5
+       DEVICENAME=CSFemannion
+       LOGFILE=local.log
+       LOCALIP=10.53.50.187
+
+Notes
+ IP_ADDRESS = SIP server IP address
+ DEVICENAME = name of device config file on SIP server
+ LOCALIP = IP address of local network adapter
+
+TestApp Commands
+ - ?           -- view commands available
+ - d <digits>  -- make call
+ - e           -- end call
+ - h           -- place a call on hold
+ - r           -- resume a held call
+ - m           -- mute audio while on a call
+ - n           -- unmute audio
+ - k           -- video mute
+ - j           -- video unmute
+ - z           -- enable\disable video
+ - v           -- Setup video send direction, send only, sendrecv, revc only, inactive
+ - q           -- quit
+ 
+-------------
+7. Addon API
+-------------
+The JS API offers support for 
+	SIP Registration, Place Call, HangUp Call & Answer Call
+
+window.navigator.service.call obtains handle to session-control 
+object. 
+
+<session-control>.registerUser(user,passwd,sip-proxy,sessObserver);
+registers user to the sip-proxy. 
+'sessObserver' is a JS function that will be called whenever there is 
+a change in the session state such as "no-registrar","registering",
+"registered", "incoming-call" & "registration-failed".
+
+On successful registration, one can place call with the below API
+<session-control>.placeCall(dial-number, mediaObserver);
+where dial-number is number to dial and mediaObserver reports 
+significant media state changes suhc as "call-connected",
+"call-terminated" as of today.
+
+JS APIs unRegisterUser() and hangupCall() allows de-registration
+& end-call functionalities.
+
+Few Points to Note
+1. Only Audio is supported on OSX
+2. One user is suported
+ 
+Please see content/ikran.html for sample usage of the API.
