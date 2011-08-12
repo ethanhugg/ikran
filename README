@@ -33,7 +33,6 @@ Linux:
   +libcurl - sudo apt-get install libcurl4-openssl-dev
   +Glib    - sudo apt-get install libdbus-glib-1-dev
   +asound  - sudo apt-get install libasound2-dev
-     
 
 Mac OSX:
   Built regularly on OSX 10.6 with XCode 3.2.6
