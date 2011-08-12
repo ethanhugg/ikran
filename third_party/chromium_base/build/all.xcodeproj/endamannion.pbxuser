@@ -1,0 +1,65 @@
+// !$*UTF8*$!
+{
+	07F667ABBAC8347BCE0D653A /* Project object */ = {
+		activeBuildConfigurationName = Debug;
+		activeTarget = D95ADB02FE982347C7965145 /* All */;
+		codeSenseManager = BF5C6289133AB4DA006C3801 /* Code sense */;
+		perUserDictionary = {
+			PBXPerProjectTemplateStateSaveDate = 322614851;
+			PBXWorkspaceStateSaveDate = 322614851;
+		};
+		sourceControlManager = BF5C6288133AB4DA006C3801 /* Source Control */;
+		userBuildSettings = {
+		};
+	};
+	0A949C8BF3897B94A66F8CB0 /* chromium_builder_rel */ = {
+		activeExec = 0;
+	};
+	424297B51617459332DE3B5B /* chromium_builder_dbg_tsan_mac */ = {
+		activeExec = 0;
+	};
+	4B14716274BC929727BC9AAF /* chromium_gpu_builder */ = {
+		activeExec = 0;
+	};
+	6B0F531DDE86C8F3488195ED /* Run All Tests */ = {
+		activeExec = 0;
+	};
+	771753980521A6EB5E5AB095 /* chromium_builder_qa */ = {
+		activeExec = 0;
+	};
+	A42F57522F0302340216B1E6 /* Run All */ = {
+		activeExec = 0;
+	};
+	B09B8C6008CB6D0FBF7A8679 /* chromium_builder_tests */ = {
+		activeExec = 0;
+	};
+	BF5C6288133AB4DA006C3801 /* Source Control */ = {
+		isa = PBXSourceControlManager;
+		fallbackIsa = XCSourceControlManager;
+		isSCMEnabled = 0;
+		scmConfiguration = {
+			repositoryNamesForRoots = {
+				"" = "";
+			};
+		};
+	};
+	BF5C6289133AB4DA006C3801 /* Code sense */ = {
+		isa = PBXCodeSenseManager;
+		indexTemplatePath = "";
+	};
+	D242A99E65158BF694A253FB /* chromium_builder_dbg */ = {
+		activeExec = 0;
+	};
+	D3585904CE597B6AA3A1D514 /* chromium_builder_perf */ = {
+		activeExec = 0;
+	};
+	D95ADB02FE982347C7965145 /* All */ = {
+		activeExec = 0;
+	};
+	E3519CFBB2637674B5B1B4BE /* all_and_dmg */ = {
+		activeExec = 0;
+	};
+	ED2A6165B760D5ABFE6150BB /* chromium_builder_dbg_valgrind_mac */ = {
+		activeExec = 0;
+	};
+}

@@ -1,0 +1,395 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXAggregateTarget section */
+		3EF37D4BC9F37801DCC0B478 /* pdfsqueeze Support */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = C70B1201EE806A80B003CDFE /* Build configuration list for PBXAggregateTarget "pdfsqueeze Support" */;
+			buildPhases = (
+				0619F98D46BD52E76F821952 /* Action "Generate inline filter data" */,
+			);
+			dependencies = (
+			);
+			name = "pdfsqueeze Support";
+			productName = "pdfsqueeze Support";
+		};
+/* End PBXAggregateTarget section */
+
+/* Begin PBXBuildFile section */
+		67051CDD7511C6EB01EB5C63 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2F088A20EFA426217C6D0E91 /* Foundation.framework */; };
+		6F771811206EDB9A9510D168 /* pdfsqueeze.m in Sources */ = {isa = PBXBuildFile; fileRef = 3366D83D2CF041DED5F0C99B /* pdfsqueeze.m */; };
+		AE86465320C82177D3E65726 /* Quartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 915EEEFBA5ADA350BF8888CC /* Quartz.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		A791A9602E679BFEF3633106 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 02FFF3BAB5F79F51A625C446 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3EF37D4BC9F37801DCC0B478;
+			remoteInfo = "pdfsqueeze Support";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		2C37906FC4E066BD2B605FB6 /* release_impl_official.gypi */ = {isa = PBXFileReference; lastKnownFileType = text; name = release_impl_official.gypi; path = ../internal/release_impl_official.gypi; sourceTree = "<group>"; };
+		2F088A20EFA426217C6D0E91 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		3366D83D2CF041DED5F0C99B /* pdfsqueeze.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = pdfsqueeze.m; sourceTree = "<group>"; };
+		44E617586984207491CF9439 /* common.gypi */ = {isa = PBXFileReference; lastKnownFileType = text; name = common.gypi; path = ../common.gypi; sourceTree = "<group>"; };
+		5629FA8F8DA000EB52B37258 /* pdfsqueeze.gyp */ = {isa = PBXFileReference; lastKnownFileType = text; path = pdfsqueeze.gyp; sourceTree = "<group>"; };
+		5EF269A67784A04D3E38347A /* features_override.gypi */ = {isa = PBXFileReference; lastKnownFileType = text; name = features_override.gypi; path = ../features_override.gypi; sourceTree = "<group>"; };
+		65D940086B357693418E5FBB /* release_defaults.gypi */ = {isa = PBXFileReference; lastKnownFileType = text; name = release_defaults.gypi; path = ../internal/release_defaults.gypi; sourceTree = "<group>"; };
+		915EEEFBA5ADA350BF8888CC /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = System/Library/Frameworks/Quartz.framework; sourceTree = SDKROOT; };
+		AF12AA4675931409D26C82CC /* ApplyGenericRGB.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ApplyGenericRGB.h; sourceTree = "<group>"; };
+		BB93687CE10FC9847AA45C5D /* pdfsqueeze */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = pdfsqueeze; sourceTree = BUILT_PRODUCTS_DIR; };
+		C6F5BE2960E7B7E51836498D /* release.gypi */ = {isa = PBXFileReference; lastKnownFileType = text; name = release.gypi; path = ../release.gypi; sourceTree = "<group>"; };
+		E9088CB15AAB7EFE9ACC4C3C /* ApplyGenericRGB.qfilter */ = {isa = PBXFileReference; lastKnownFileType = text; path = ApplyGenericRGB.qfilter; sourceTree = "<group>"; };
+		FA878F711F13A1696135DF54 /* release_impl.gypi */ = {isa = PBXFileReference; lastKnownFileType = text; name = release_impl.gypi; path = ../internal/release_impl.gypi; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C323C3F398C6A36CF07F6807 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				67051CDD7511C6EB01EB5C63 /* Foundation.framework in Frameworks */,
+				AE86465320C82177D3E65726 /* Quartz.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		388F86E5249ADE38699B8412 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				2F088A20EFA426217C6D0E91 /* Foundation.framework */,
+				915EEEFBA5ADA350BF8888CC /* Quartz.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		5459A6CBDCEAA9B85B9215DD /* Build */ = {
+			isa = PBXGroup;
+			children = (
+				44E617586984207491CF9439 /* common.gypi */,
+				5EF269A67784A04D3E38347A /* features_override.gypi */,
+				5629FA8F8DA000EB52B37258 /* pdfsqueeze.gyp */,
+				C6F5BE2960E7B7E51836498D /* release.gypi */,
+				65D940086B357693418E5FBB /* release_defaults.gypi */,
+				FA878F711F13A1696135DF54 /* release_impl.gypi */,
+				2C37906FC4E066BD2B605FB6 /* release_impl_official.gypi */,
+			);
+			name = Build;
+			sourceTree = "<group>";
+		};
+		6FFB61466DBAA1F207CDCC03 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BB93687CE10FC9847AA45C5D /* pdfsqueeze */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		82683166DFEF26CB5C2EA3D8 /* Intermediates */ = {
+			isa = PBXGroup;
+			children = (
+				AF12AA4675931409D26C82CC /* ApplyGenericRGB.h */,
+			);
+			name = Intermediates;
+			sourceTree = INTERMEDIATE_DIR;
+		};
+		B774A0651DE32AD71AC53591 = {
+			isa = PBXGroup;
+			children = (
+				E7EFB19435C3AFA15301373C /* Source */,
+				82683166DFEF26CB5C2EA3D8 /* Intermediates */,
+				388F86E5249ADE38699B8412 /* Frameworks */,
+				6FFB61466DBAA1F207CDCC03 /* Products */,
+				5459A6CBDCEAA9B85B9215DD /* Build */,
+			);
+			sourceTree = "<group>";
+		};
+		E7EFB19435C3AFA15301373C /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				E9088CB15AAB7EFE9ACC4C3C /* ApplyGenericRGB.qfilter */,
+				3366D83D2CF041DED5F0C99B /* pdfsqueeze.m */,
+			);
+			name = Source;
+			path = ../../third_party/pdfsqueeze;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		C0149B6E3CB58FCE90580342 /* pdfsqueeze */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7588835C24B0B23FE727176B /* Build configuration list for PBXNativeTarget "pdfsqueeze" */;
+			buildPhases = (
+				E10A48DCAF59EFBB470EC2D5 /* Sources */,
+				C323C3F398C6A36CF07F6807 /* Frameworks */,
+				8EDA91585F835C502846F60B /* Postbuild "Strip If Needed" */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4F5A7CA30C20CB8932C2EB07 /* PBXTargetDependency */,
+			);
+			name = pdfsqueeze;
+			productName = pdfsqueeze;
+			productReference = BB93687CE10FC9847AA45C5D /* pdfsqueeze */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		02FFF3BAB5F79F51A625C446 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+			};
+			buildConfigurationList = E38D630E9B84F1E7637DAC19 /* Build configuration list for PBXProject "pdfsqueeze" */;
+			compatibilityVersion = "Xcode 3.1";
+			hasScannedForEncodings = 1;
+			mainGroup = B774A0651DE32AD71AC53591;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				C0149B6E3CB58FCE90580342 /* pdfsqueeze */,
+				3EF37D4BC9F37801DCC0B478 /* pdfsqueeze Support */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		0619F98D46BD52E76F821952 /* Action "Generate inline filter data" */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				../../third_party/pdfsqueeze/ApplyGenericRGB.qfilter,
+			);
+			name = "Action \"Generate inline filter data\"";
+			outputPaths = (
+				"$(INTERMEDIATE_DIR)/ApplyGenericRGB.h",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "exec xxd -i ../../third_party/pdfsqueeze/ApplyGenericRGB.qfilter \"${INTERMEDIATE_DIR}/ApplyGenericRGB.h\"\nexit 1\n";
+			showEnvVarsInLog = 0;
+		};
+		8EDA91585F835C502846F60B /* Postbuild "Strip If Needed" */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/$(EXECUTABLE_PATH)",
+			);
+			name = "Postbuild \"Strip If Needed\"";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "exec ../mac/strip_from_xcode\nexit 1\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		E10A48DCAF59EFBB470EC2D5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6F771811206EDB9A9510D168 /* pdfsqueeze.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		4F5A7CA30C20CB8932C2EB07 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3EF37D4BC9F37801DCC0B478 /* pdfsqueeze Support */;
+			targetProxy = A791A9602E679BFEF3633106 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		0771F8E289F59242D0A33EF0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INTERMEDIATE_DIR = "$(PROJECT_DERIVED_FILE_DIR)/$(CONFIGURATION)";
+				SDKROOT = macosx10.5;
+				SHARED_INTERMEDIATE_DIR = "$(SYMROOT)/DerivedSources/$(CONFIGURATION)";
+				SYMROOT = ../../xcodebuild;
+			};
+			name = Release;
+		};
+		8F090780005F1F01E97810C6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEAD_CODE_STRIPPING = YES;
+				EXECUTABLE_PREFIX = "";
+				GCC_CW_ASM_SYNTAX = NO;
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_ENABLE_PASCAL_STRINGS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
+				GCC_OBJC_CALL_CXX_CDTORS = YES;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"\"CHROMIUM_BUILD\"",
+					"\"ENABLE_REMOTING=1\"",
+					"\"ENABLE_GPU=1\"",
+					"\"ENABLE_EGLIMAGE=1\"",
+					"\"______third_party_pdfsqueeze_ApplyGenericRGB_qfilter=ApplyGenericRGB_qfilter\"",
+					"\"______third_party_pdfsqueeze_ApplyGenericRGB_qfilter_len=ApplyGenericRGB_qfilter_len\"",
+					"\"NDEBUG\"",
+					"\"NVALGRIND\"",
+					"\"DYNAMIC_ANNOTATIONS_ENABLED=0\"",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				GCC_THREADSAFE_STATICS = NO;
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
+				GCC_VERSION = 4.2;
+				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
+				HEADER_SEARCH_PATHS = "$(INTERMEDIATE_DIR)";
+				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/System/Library/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "-Wl,-search_paths_first";
+				PREBINDING = NO;
+				PRODUCT_NAME = pdfsqueeze;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = (
+					"-Wendif-labels",
+					"-Wno-unused-parameter",
+					"-Wno-missing-field-initializers",
+				);
+				WARNING_CFLAGS_excluded = (
+					"-Wall",
+					"-Wextra",
+				);
+			};
+			name = Release;
+		};
+		9613CD81ED3C0C4CED41BD50 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INTERMEDIATE_DIR = "$(PROJECT_DERIVED_FILE_DIR)/$(CONFIGURATION)";
+				SDKROOT = macosx10.5;
+				SHARED_INTERMEDIATE_DIR = "$(SYMROOT)/DerivedSources/$(CONFIGURATION)";
+				SYMROOT = ../../xcodebuild;
+			};
+			name = Debug;
+		};
+		9E593065C813E7946A44470F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "pdfsqueeze Support";
+			};
+			name = Release;
+		};
+		CAF0FFA8A9E8251C5F77BE52 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				EXECUTABLE_PREFIX = "";
+				GCC_CW_ASM_SYNTAX = NO;
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_ENABLE_PASCAL_STRINGS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
+				GCC_OBJC_CALL_CXX_CDTORS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"\"CHROMIUM_BUILD\"",
+					"\"ENABLE_REMOTING=1\"",
+					"\"ENABLE_GPU=1\"",
+					"\"ENABLE_EGLIMAGE=1\"",
+					"\"______third_party_pdfsqueeze_ApplyGenericRGB_qfilter=ApplyGenericRGB_qfilter\"",
+					"\"______third_party_pdfsqueeze_ApplyGenericRGB_qfilter_len=ApplyGenericRGB_qfilter_len\"",
+					"\"DYNAMIC_ANNOTATIONS_ENABLED=1\"",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				GCC_THREADSAFE_STATICS = NO;
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
+				GCC_VERSION = 4.2;
+				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
+				HEADER_SEARCH_PATHS = "$(INTERMEDIATE_DIR)";
+				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/System/Library/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "-Wl,-search_paths_first";
+				PREBINDING = NO;
+				PRODUCT_NAME = pdfsqueeze;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = (
+					"-Wendif-labels",
+					"-Wno-unused-parameter",
+					"-Wno-missing-field-initializers",
+				);
+				WARNING_CFLAGS_excluded = (
+					"-Wall",
+					"-Wextra",
+				);
+			};
+			name = Debug;
+		};
+		DF2EBE8659BC944B830D3C6C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "pdfsqueeze Support";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		7588835C24B0B23FE727176B /* Build configuration list for PBXNativeTarget "pdfsqueeze" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CAF0FFA8A9E8251C5F77BE52 /* Debug */,
+				8F090780005F1F01E97810C6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 1;
+			defaultConfigurationName = Debug;
+		};
+		C70B1201EE806A80B003CDFE /* Build configuration list for PBXAggregateTarget "pdfsqueeze Support" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DF2EBE8659BC944B830D3C6C /* Debug */,
+				9E593065C813E7946A44470F /* Release */,
+			);
+			defaultConfigurationIsVisible = 1;
+			defaultConfigurationName = Debug;
+		};
+		E38D630E9B84F1E7637DAC19 /* Build configuration list for PBXProject "pdfsqueeze" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9613CD81ED3C0C4CED41BD50 /* Debug */,
+				0771F8E289F59242D0A33EF0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 1;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 02FFF3BAB5F79F51A625C446 /* Project object */;
+}

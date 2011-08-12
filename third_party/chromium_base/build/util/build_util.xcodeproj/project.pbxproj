@@ -1,0 +1,257 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXAggregateTarget section */
+		69FAFB9EADDF680393C44534 /* lastchange */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = C62A4A89368B630BB01B4213 /* Build configuration list for PBXAggregateTarget "lastchange" */;
+			buildPhases = (
+				3B1B7EAFC8013AD516D5A62D /* Action "lastchange" */,
+			);
+			dependencies = (
+			);
+			name = lastchange;
+			productName = lastchange;
+		};
+/* End PBXAggregateTarget section */
+
+/* Begin PBXFileReference section */
+		07E9E08F12B3C4848F8A8F08 /* common.gypi */ = {isa = PBXFileReference; lastKnownFileType = text; name = common.gypi; path = ../common.gypi; sourceTree = "<group>"; };
+		0ED56AF5539D4B050E68D186 /* lastchange.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = lastchange.py; sourceTree = "<group>"; };
+		1A6F86DC204998649A8DC669 /* release_impl.gypi */ = {isa = PBXFileReference; lastKnownFileType = text; name = release_impl.gypi; path = ../internal/release_impl.gypi; sourceTree = "<group>"; };
+		60131E2FD31267873D883C08 /* release_defaults.gypi */ = {isa = PBXFileReference; lastKnownFileType = text; name = release_defaults.gypi; path = ../internal/release_defaults.gypi; sourceTree = "<group>"; };
+		68C9D15DD2DB8740F252E18D /* features_override.gypi */ = {isa = PBXFileReference; lastKnownFileType = text; name = features_override.gypi; path = ../features_override.gypi; sourceTree = "<group>"; };
+		738BDE45379EFE64E9BDBF18 /* LASTCHANGE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LASTCHANGE; sourceTree = "<group>"; };
+		A0ABB923667E88757DA4C523 /* build_util.gyp */ = {isa = PBXFileReference; lastKnownFileType = text; path = build_util.gyp; sourceTree = "<group>"; };
+		A31AD3229EA3255E85ED4D55 /* release.gypi */ = {isa = PBXFileReference; lastKnownFileType = text; name = release.gypi; path = ../release.gypi; sourceTree = "<group>"; };
+		BC38288D731E3E6086CA967B /* release_impl_official.gypi */ = {isa = PBXFileReference; lastKnownFileType = text; name = release_impl_official.gypi; path = ../internal/release_impl_official.gypi; sourceTree = "<group>"; };
+		E99457E9B600CD61F265BE87 /* LASTCHANGE.always */ = {isa = PBXFileReference; lastKnownFileType = text; path = LASTCHANGE.always; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		51799422C3BB23F7E72672B6 /* Build */ = {
+			isa = PBXGroup;
+			children = (
+				A0ABB923667E88757DA4C523 /* build_util.gyp */,
+				07E9E08F12B3C4848F8A8F08 /* common.gypi */,
+				68C9D15DD2DB8740F252E18D /* features_override.gypi */,
+				A31AD3229EA3255E85ED4D55 /* release.gypi */,
+				60131E2FD31267873D883C08 /* release_defaults.gypi */,
+				1A6F86DC204998649A8DC669 /* release_impl.gypi */,
+				BC38288D731E3E6086CA967B /* release_impl_official.gypi */,
+			);
+			name = Build;
+			sourceTree = "<group>";
+		};
+		B8F295C071C4546B0A207B4C = {
+			isa = PBXGroup;
+			children = (
+				F2586AC8E76E79EFF331242F /* Source */,
+				C70BB541637EFFD5F307AED8 /* Intermediates */,
+				51799422C3BB23F7E72672B6 /* Build */,
+			);
+			sourceTree = "<group>";
+		};
+		C70BB541637EFFD5F307AED8 /* Intermediates */ = {
+			isa = PBXGroup;
+			children = (
+				738BDE45379EFE64E9BDBF18 /* LASTCHANGE */,
+				E99457E9B600CD61F265BE87 /* LASTCHANGE.always */,
+			);
+			name = Intermediates;
+			path = build;
+			sourceTree = SHARED_INTERMEDIATE_DIR;
+		};
+		F2586AC8E76E79EFF331242F /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				0ED56AF5539D4B050E68D186 /* lastchange.py */,
+			);
+			name = Source;
+			path = .;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXProject section */
+		B79FDAB95BECBD1B4C597057 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+			};
+			buildConfigurationList = 145FEF738D324C3AA48A7D00 /* Build configuration list for PBXProject "build_util" */;
+			compatibilityVersion = "Xcode 3.1";
+			hasScannedForEncodings = 1;
+			mainGroup = B8F295C071C4546B0A207B4C;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				69FAFB9EADDF680393C44534 /* lastchange */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		3B1B7EAFC8013AD516D5A62D /* Action "lastchange" */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				./lastchange.py,
+			);
+			name = "Action \"lastchange\"";
+			outputPaths = (
+				"$(SHARED_INTERMEDIATE_DIR)/build/LASTCHANGE.always",
+				"$(SHARED_INTERMEDIATE_DIR)/build/LASTCHANGE",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "echo note: \"Extracting last change to ${SHARED_INTERMEDIATE_DIR}/build/LASTCHANGE\"\nexec python ./lastchange.py -o \"${SHARED_INTERMEDIATE_DIR}/build/LASTCHANGE\" -d ../LASTCHANGE.in\nexit 1\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		5840B23041F5B98F21B209CB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEAD_CODE_STRIPPING = YES;
+				GCC_CW_ASM_SYNTAX = NO;
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_ENABLE_PASCAL_STRINGS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
+				GCC_OBJC_CALL_CXX_CDTORS = YES;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"\"CHROMIUM_BUILD\"",
+					"\"ENABLE_REMOTING=1\"",
+					"\"ENABLE_GPU=1\"",
+					"\"ENABLE_EGLIMAGE=1\"",
+					"\"NDEBUG\"",
+					"\"NVALGRIND\"",
+					"\"DYNAMIC_ANNOTATIONS_ENABLED=0\"",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				GCC_THREADSAFE_STATICS = NO;
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
+				GCC_VERSION = 4.2;
+				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "-Wl,-search_paths_first";
+				PREBINDING = NO;
+				PRODUCT_NAME = lastchange;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = (
+					"-Wendif-labels",
+					"-Wno-unused-parameter",
+					"-Wno-missing-field-initializers",
+				);
+				WARNING_CFLAGS_excluded = (
+					"-Wall",
+					"-Wextra",
+				);
+			};
+			name = Release;
+		};
+		730A0E24CED808425AA2C1B5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INTERMEDIATE_DIR = "$(PROJECT_DERIVED_FILE_DIR)/$(CONFIGURATION)";
+				SDKROOT = macosx10.5;
+				SHARED_INTERMEDIATE_DIR = "$(SYMROOT)/DerivedSources/$(CONFIGURATION)";
+				SYMROOT = ../../xcodebuild;
+			};
+			name = Debug;
+		};
+		9C62027DCB1390B59285F695 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				GCC_CW_ASM_SYNTAX = NO;
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_ENABLE_PASCAL_STRINGS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
+				GCC_OBJC_CALL_CXX_CDTORS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"\"CHROMIUM_BUILD\"",
+					"\"ENABLE_REMOTING=1\"",
+					"\"ENABLE_GPU=1\"",
+					"\"ENABLE_EGLIMAGE=1\"",
+					"\"DYNAMIC_ANNOTATIONS_ENABLED=1\"",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				GCC_THREADSAFE_STATICS = NO;
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
+				GCC_VERSION = 4.2;
+				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "-Wl,-search_paths_first";
+				PREBINDING = NO;
+				PRODUCT_NAME = lastchange;
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = (
+					"-Wendif-labels",
+					"-Wno-unused-parameter",
+					"-Wno-missing-field-initializers",
+				);
+				WARNING_CFLAGS_excluded = (
+					"-Wall",
+					"-Wextra",
+				);
+			};
+			name = Debug;
+		};
+		D7D7A53455CA9AC6F89CC3D5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INTERMEDIATE_DIR = "$(PROJECT_DERIVED_FILE_DIR)/$(CONFIGURATION)";
+				SDKROOT = macosx10.5;
+				SHARED_INTERMEDIATE_DIR = "$(SYMROOT)/DerivedSources/$(CONFIGURATION)";
+				SYMROOT = ../../xcodebuild;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		145FEF738D324C3AA48A7D00 /* Build configuration list for PBXProject "build_util" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				730A0E24CED808425AA2C1B5 /* Debug */,
+				D7D7A53455CA9AC6F89CC3D5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 1;
+			defaultConfigurationName = Debug;
+		};
+		C62A4A89368B630BB01B4213 /* Build configuration list for PBXAggregateTarget "lastchange" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9C62027DCB1390B59285F695 /* Debug */,
+				5840B23041F5B98F21B209CB /* Release */,
+			);
+			defaultConfigurationIsVisible = 1;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = B79FDAB95BECBD1B4C597057 /* Project object */;
+}
