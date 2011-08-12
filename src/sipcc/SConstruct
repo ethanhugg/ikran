@@ -1,0 +1,355 @@
+import os
+import sys
+
+Import('build_env')
+Import('debug')
+Import('x64')
+
+
+use_msvc_dll = ARGUMENTS.get('use_msvc_dll', 1)     ##1 = MSVC C RT as a DLL rather than a static lib (libc)
+unicode = ARGUMENTS.get('unicode', 1)         ##0 = Multi-byte (includes support for UTF-8) - on  Windows that gives "char" type rather than "wchar_t"
+use_msvc_dll=0
+targetPlatform = ARGUMENTS.get('platform', sys.platform)
+
+
+include_dirs = Split("""
+            .
+            ../../third_party/chromium_base
+            ../common/browser_logging
+            cpr/include
+            core/includes
+            core/common 
+            core/sdp
+            core/sipstack/h
+            core/ccapp 
+            core/gsm/h
+            ../../third_party/libxml2/include
+            plat/common
+            include
+            """)
+
+src_files = Glob('core/ccapp/*.c') + \
+    Glob('core/common/*.c') 
+
+src_files += Split("""
+        core/gsm/ccapi.c
+        core/gsm/ccapi_strings.c
+        core/gsm/dcsm.c
+        core/gsm/fim.c
+        core/gsm/fsmb2bcnf.c
+        core/gsm/fsm.c
+        core/gsm/fsmcac.c
+        core/gsm/fsmcnf.c
+        core/gsm/fsmdef.c
+        core/gsm/fsmxfr.c
+        core/gsm/gsm.c
+        core/gsm/gsm_sdp.c
+        core/gsm/gsm_sdp_crypto.c
+        core/gsm/lsm.c
+        core/gsm/media_cap_tbl.c
+        core/gsm/sm.c
+        core/gsm/subapi.c
+    """)
+    
+src_files += Split("""
+        core/sdp/ccsdp.c 
+        core/sdp/sdp_access.c
+        core/sdp/sdp_attr_access.c
+        core/sdp/sdp_attr.c
+        core/sdp/sdp_base64.c
+        core/sdp/sdp_config.c
+        core/sdp/sdp_main.c
+        core/sdp/sdp_token.c
+        core/sdp/sdp_utils.c
+    """)
+
+if targetPlatform in [ 'linux2', 'darwin' ]:
+    src_files += [ 'core/sdp/sdp_services_unix.c' ]
+elif targetPlatform in [ 'win32' ]:
+    src_files += [ 'core/sdp/sdp_services_win32.c' ]
+    
+src_files += Split("""
+        core/sipstack/ccsip_callinfo.c
+        core/sipstack/ccsip_cc.c
+        core/sipstack/ccsip_common_util.c
+        core/sipstack/ccsip_core.c
+        core/sipstack/ccsip_debug.c
+        core/sipstack/ccsip_info.c
+        core/sipstack/ccsip_messaging.c
+        core/sipstack/ccsip_platform.c
+        core/sipstack/ccsip_platform_tcp.c
+        core/sipstack/ccsip_platform_timers.c
+        core/sipstack/ccsip_platform_tls.c
+        core/sipstack/ccsip_platform_udp.c
+        core/sipstack/ccsip_pmh.c
+        core/sipstack/ccsip_publish.c
+        core/sipstack/ccsip_register.c
+        core/sipstack/ccsip_reldev.c
+        core/sipstack/ccsip_sdp.c
+        core/sipstack/ccsip_spi_utils.c
+        core/sipstack/ccsip_subsmanager.c
+        core/sipstack/ccsip_task.c
+        core/sipstack/httpish.c
+        core/sipstack/pmhutils.c
+        core/sipstack/sip_common_regmgr.c
+        core/sipstack/sip_common_transport.c
+        core/sipstack/sip_csps_transport.c
+        core/sipstack/sip_interface_regmgr.c
+    """)
+
+if targetPlatform in [ 'win32' ]:  
+    src_files += ['core/sipstack/sip_platform_win32_task.c']
+else:
+    src_files += ['core/sipstack/sip_platform_task.c']
+    
+src_files += Split("""
+        core/src-common/configapp.c
+        core/src-common/dialplan.c
+        core/src-common/dialplanint.c
+        core/src-common/digcalc.c
+        core/src-common/kpml_common_util.c
+        core/src-common/kpmlmap.c
+        core/src-common/md5.c
+        core/src-common/misc_apps_task.c
+        core/src-common/pres_sub_not_handler.c
+        core/src-common/publish_int.c
+        core/src-common/singly_link_list.c
+        core/src-common/sll_lite.c
+        core/src-common/string_lib.c
+        core/src-common/util_ios_queue.c
+        core/src-common/util_parse.c
+        core/src-common/util_string.c
+    """)
+         
+if targetPlatform in [ 'linux2' ]:        
+    src_files += Split("""
+        cpr/linux/cpr_linux_chunk.c
+        cpr/linux/cpr_linux_errno.c
+        cpr/linux/cpr_linux_init.c
+        cpr/linux/cpr_linux_ipc.c
+        cpr/linux/cpr_linux_locks.c
+        cpr/linux/cpr_linux_memory.c
+        cpr/linux/cpr_linux_socket.c
+        cpr/linux/cpr_linux_stdio.c
+        cpr/linux/cpr_linux_stdlib.c
+        cpr/linux/cpr_linux_string.c
+        cpr/linux/cpr_linux_threads.c
+        cpr/linux/cpr_linux_timers_using_select.c 
+        """)
+ 
+elif targetPlatform in [ 'darwin' ]: 
+    src_files += Split("""
+        cpr/darwin/cpr_darwin_chunk.c
+        cpr/darwin/cpr_darwin_errno.c
+        cpr/darwin/cpr_darwin_init.c
+        cpr/darwin/cpr_darwin_ipc.c
+        cpr/darwin/cpr_darwin_locks.c
+        cpr/darwin/cpr_darwin_memory.c
+        cpr/darwin/cpr_darwin_socket.c
+        cpr/darwin/cpr_darwin_stdio.c
+        cpr/darwin/cpr_darwin_stdlib.c
+        cpr/darwin/cpr_darwin_string.c
+        cpr/darwin/cpr_darwin_threads.c
+        cpr/darwin/cpr_darwin_timers_using_select.c 
+        """)
+        
+elif targetPlatform in [ 'win32' ]: 
+  src_files += Glob('cpr/win32/*.c')
+          
+src_files += Split("""
+    plat/common/plat_sec_api.c
+    plat/common/libxml_parser.c
+    plat/csf2g/model.c
+    plat/csf2g/reset_api.c
+    """)
+
+if targetPlatform in [ 'darwin' ]:
+    src_files += Glob('plat/darwin/*.c')
+elif targetPlatform in [ 'win32' ]:        
+    src_files += Glob('plat/win32/*.c')
+
+if targetPlatform in [ 'linux2', 'darwin' ]:
+    src_files += ['plat/common/dns_utils.c']
+    src_files += Glob('plat/unix-common/*.c')
+
+if targetPlatform in [ 'linux2' ]:
+  src_files += ['plat/linux/plat_api_stub.c']
+
+
+src_files_stub = Split("""
+    stub/cc_blf_stub.c
+    stub/vcm_stub.c
+    """)
+
+env = build_env.Clone(CPPPATH=include_dirs)
+ 
+
+CPP_DEFINES = ['SIPCC_BUILD']
+CPP_FLAGS = []
+ldflags = []
+
+# Common CPP flags for the 'Unix' based platforms
+if targetPlatform in [ 'linux2', 'darwin' ]:
+  CPP_DEFINES += [
+    '_POSIX_SOURCE',
+    'CPR_MEMORY_LITTLE_ENDIAN',
+    'NO_SOCKET_POLLING',
+    'USE_TIMER_SELECT_BASED',
+    'USE_PRINTF'
+  ]
+
+  CPP_FLAGS += ['-O']
+  if int(debug) != 0:
+    CPP_FLAGS += ['-g']
+
+if targetPlatform in [ 'win32' ]:
+
+  if int(unicode) == 1:
+    print "Unicode build"
+    CPP_DEFINES += ['_UNICODE', 'UNICODE']
+  else:
+    print "Multi-byte build"
+    CPP_DEFINES += ['_MBCS']  
+
+  CPP_DEFINES += [
+    'SIP_OS_WINDOWS',
+    'WIN32',
+    'LIBXML_STATIC',
+    'CPR_MEMORY_LITTLE_ENDIAN',
+    'USE_TIMER_SELECT_BASED',
+    'CISCO_SIP_CC_ADAPTER_WIN32',
+    '_WIN32_WCE',
+    'EXTERNAL_TICK_REQUIRED',
+    'NEED_TO_CALL_FOR_WIN32',
+  ]
+
+if targetPlatform == 'linux2':
+  CPP_DEFINES += [
+    '_GNU_SOURCE',
+    'SIP_OS_LINUX',
+    'LINUX',
+  ]
+
+  CPP_FLAGS += [
+    '-Werror'
+  ] 
+  if x64 == 'yes':
+    CPP_FLAGS += [
+      '-m64',
+    ]
+    ldflags += [
+      '-m64',
+    ]
+  else:
+    CPP_FLAGS += [
+      '-m32', 
+      '-march=i486'
+    ]
+    ldflags += [
+      '-m32', 
+      '-march=i486'
+    ]
+
+if targetPlatform == 'darwin':
+  CPP_DEFINES += [
+    'SIP_OS_OSX',
+    '_DARWIN_C_SOURCE'
+  ]
+
+  CPP_FLAGS += [
+    '-Werror',
+    '-fexceptions',
+    '-fno-common',
+    '-isysroot', '/Developer/SDKs/MacOSX10.5.sdk',
+    '-mmacosx-version-min=10.5',
+    '-fast'
+  ]
+
+  if x64 == 'yes':
+    CPP_FLAGS += [
+      '-arch',
+      'x86_64'  
+    ]
+    ldflags += [
+      '-arch', 
+      'x86_64'
+    ]
+  else:
+    CPP_FLAGS += [
+      '-arch',
+      'i386'  
+    ]    
+    ldflags += [
+      '-arch', 
+      'i386'
+    ]
+
+
+env = build_env.Clone(CPPPATH=include_dirs)
+psipccEnv = Environment()
+
+name_suffix = ""
+
+# Set platform specific flags
+if targetPlatform == 'win32':
+  if ARGUMENTS.get('compiler', 'msvc') == 'mingw':
+    print 'Using MinGW toolset'
+    psipccEnv = Environment(tools=['mingw'])
+    psipccEnv['OBJSUFFIX'] = ['.obj']
+    CPP_FLAGS += ['-O']
+  else:
+    print 'Using MSVC toolset'
+    if 'MS_VC_PATH' in os.environ:
+      ms_vc_path=os.environ['MS_VC_PATH']
+      ms_windows_sdk_path=os.environ['MS_WINDOWS_SDK_PATH']
+      psipccEnv.PrependENVPath('PATH', ms_vc_path + os.sep + 'VC' + os.sep + 'bin')
+      psipccEnv.PrependENVPath('PATH', ms_vc_path + os.sep + 'Common7' + os.sep + 'IDE')
+      psipccEnv.PrependENVPath('PATH', ms_windows_sdk_path + os.sep + 'bin')
+      psipccEnv.PrependENVPath('INCLUDE', ms_vc_path + os.sep + 'VC' + os.sep + 'Include')
+      psipccEnv.PrependENVPath('INCLUDE', ms_vc_path + os.sep + 'VC' + os.sep + 'ATLMFC' + os.sep + 'Include')
+      psipccEnv.PrependENVPath('INCLUDE', ms_windows_sdk_path + os.sep + 'Include')
+      psipccEnv.PrependENVPath('LIB', ms_vc_path + os.sep + 'VC' + os.sep +  'lib')
+      psipccEnv.PrependENVPath('LIB', ms_windows_sdk_path + os.sep + 'Lib')
+    if int(debug) == 0:
+      print "Building RELEASE build"
+      if int(use_msvc_dll) == 1:
+        CPP_FLAGS += ['/MD']
+        name_suffix = "_MD"
+      else:
+        CPP_FLAGS += ['/MT']
+        name_suffix = "_MT"
+    else:
+      print "Building DEBUG build"
+      if int(use_msvc_dll) == 1:
+        CPP_FLAGS += [
+          '/MDd'
+        ]
+        name_suffix = "_MDd"
+      else:
+        CPP_FLAGS += [
+          '/MTd'
+        ]
+        name_suffix = "_MTd"
+
+    ## Want /Zi for both release and debug builds.
+    CPP_FLAGS += [
+      '/W3', 
+      '/c', 
+      '/Zi', 
+      '/Fdpsipcc'  + name_suffix,
+      '/wd4996', # suppress warning for strncpy and the like
+    ]
+
+# Build the general environment
+psipccEnv.AppendUnique(CPPFLAGS = CPP_FLAGS)
+psipccEnv.AppendUnique(CPPDEFINES = CPP_DEFINES)
+psipccEnv.AppendUnique(LINKFLAGS = ldflags)
+psipccEnv.AppendUnique(CPPPATH = include_dirs)
+
+
+psipcc_static_lib = psipccEnv.StaticLibrary('sipcc' + name_suffix, src_files, LIBS=[], LIBPATH=[])
+stub_static_lib = psipccEnv.StaticLibrary('sipcc-sample-plugins' + name_suffix, src_files_stub, LIBS=[], LIBPATH=[])
+
+# Package the collected objects as a static library 
+#Default(psipcc_static_lib, stub_static_lib)
+

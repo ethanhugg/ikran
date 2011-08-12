@@ -1,0 +1,58 @@
+import os
+import sys
+
+Import('build_env')
+Import('debug')
+Import('x64')
+
+include_dirs = Split("""
+            .
+            config
+            callcontrol
+            common
+            common/socket
+            common/thread
+            media
+            softphonewrapper
+            ../include
+            sipcc/include
+            sipcc/cpr/include
+            ../contrib/common
+            common/browser_logging                  
+            ..
+            ../third_party
+            ../third_party/chromium_base
+            """)
+
+if sys.platform =='win32':
+  include_dirs += ['../third_party/libcurl/include_win32']
+  include_dirs += ['../third_party/libxml2/include']
+else:
+  include_dirs += ['/usr/include/libxml2']
+
+
+src_files = Glob('config/*.cpp') + \
+      Glob('callcontrol/*.cpp') + \
+      Glob('common/*.cpp') + \
+      Glob('common/thread/*.cpp') + \
+      Glob('softphonewrapper/*.cpp')
+  
+
+src_files += Glob('media/*.cpp')  
+  
+# Ensure that the set of includes used here is in sync with the library linked in the Sconscriptlib file
+
+if (sys.platform =='win32'):
+  # need to move to gips/gips3.4.8 for webphone parity
+  include_dirs += ['../third_party/gips/gipsVideo3.4.8/include']
+elif (sys.platform=='darwin'):
+  include_dirs += ['../third_party/gips/gipsVideoMac341/include']
+elif (sys.platform=='linux2'):
+  include_dirs += ['../third_party/gips/gipsVideoLinux351/include']
+include_dirs += ['media/gips']
+src_files += Glob('media/gips/*.cpp')
+
+env = build_env.Clone(CPPPATH=include_dirs)
+
+env.Library('callcontrol', src_files, LIBS=[], LIBPATH=[])
+            
