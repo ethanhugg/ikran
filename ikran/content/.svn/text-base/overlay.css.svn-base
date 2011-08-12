@@ -1,4 +1,0 @@
-.popup-notification-icon[popupid="ikran-access-request"]
-{
-  list-style-image: url("chrome://ikran/content/request.png");
-}

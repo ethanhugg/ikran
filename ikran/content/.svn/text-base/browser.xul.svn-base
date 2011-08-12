@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet href="chrome://ikran/content/overlay.css" type="text/css"?>
-<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-         id="ikranOverlay">
-  <script type="application/javascript" src="chrome://ikran/content/injector.js"/>
-</overlay>
