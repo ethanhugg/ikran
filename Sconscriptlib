@@ -1,0 +1,65 @@
+Import('build_env')
+env = build_env.Clone()   
+import os,sys,shutil
+Import ('debug')
+Import ('componentName')
+Import ('suffixName')
+
+if sys.platform =='win32':
+  ms_vc_lib_dir=os.environ['MS_VC_PATH'] + '/VC/lib'
+  ms_vc_atlmfc_lib_dir=os.environ['MS_VC_PATH'] + '/VC/ATLMFC/lib'
+  windows_sdk_lib_dir=os.environ['MS_WINDOWS_SDK_PATH'] + '/lib'
+  
+  src_files = [ 
+    'src/callControl.lib'
+  ]
+  if int(debug):
+    src_files += [ 
+      'src/sipcc/sipcc_MTd.lib',
+      'src/sipcc/sipcc-sample-plugins_MTd.lib',
+    ]
+  else:
+    src_files += [
+      'src/sipcc/sipcc_MT.lib'
+      'src/sipcc/sipcc-sample-plugins_MT.lib',
+    ]
+
+elif sys.platform =='darwin':   
+  src_files = [
+    'src/sipcc/libsipcc.a',
+    'src/sipcc/libsipcc-sample-plugins.a',
+    'src/libcallcontrol.a',
+    'src/common/browser_logging/libbrowser_logging.a',
+  ]
+
+elif sys.platform =='linux2':
+  gipslib = 'third_party/lib/libVideoEngine_Linux_gcc.a'
+  src_files = [
+    'src/libcallcontrol.a',
+    'src/sipcc/libsipcc.a',
+    'src/sipcc/libsipcc-sample-plugins.a',
+    'src/common/browser_logging/libbrowser_logging.a',
+  ]
+      
+buildResult=env.Library(componentName + suffixName, src_files )
+if sys.platform =='win32':  
+  env.Install("./out/lib/", componentName + suffixName + ".lib")
+  env.Install("./out/lib/", 'third_party\lib\ddraw.lib')
+else:
+  env.Install("./out/lib/", "lib" + componentName + suffixName + ".a")
+  if sys.platform == 'linux2':
+    env.Install("./out/lib/", gipslib)
+      
+      
+# function to help write the linux_export directory
+def build_export(target, source, env):
+  if os.path.exists('tmp_linux_libs'):
+    shutil.rmtree('tmp_linux_libs')
+  os.mkdir('tmp_linux_libs')
+  os.system('cp ' + ' '.join(src_files) + ' tmp_linux_libs')
+  os.system('./combine_libs.sh ' + componentName)
+
+  
+# for linux we need all libraries in one directory for ease of export
+if sys.platform=='linux2':
+  env.AddPostAction(buildResult, build_export)    
