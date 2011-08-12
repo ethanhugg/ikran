@@ -1,0 +1,327 @@
+Import('build_env')
+import os, sys
+
+Import('debug')
+Import('x64')
+Import('mozsdkpath')
+Import('componentName')
+Import('suffixName')
+
+## Add Tests folders here
+# Temp using absolute paths
+include_dirs = [
+  '.',
+  '../include',
+  '../src/sipcc/include',
+  '../src/common',
+  '../out/include/system',
+  '../third_party/chromium_base',
+  '../src/common/browser_logging',
+  mozsdkpath + '/include',
+  mozsdkpath + '/include/system_wrappers',
+  mozsdkpath + '/include/xpcom',
+  mozsdkpath + '/include/string',
+  mozsdkpath + '/include/content',
+  mozsdkpath + '/include/dom',
+  mozsdkpath + '/include/nspr',
+  mozsdkpath + '/sdk/include'
+]
+
+if sys.platform =='linux2':
+  include_dirs += [
+		'/usr/include/gtk-2.0',
+		'/usr/lib/gtk-2.0/include',
+		'/usr/include/cairo',
+		'/usr/include/glib-2.0',
+		'/usr/lib/glib-2.0/include',
+		'/usr/include/pango-1.0',
+		'/usr/include/atk-1.0'
+	]
+
+## Add test src files here
+#
+src_files = [
+  'Logger.cpp',
+  'sipcc_controller.cpp',
+  'CallControl.cpp',
+  'CallControlModule.cpp'
+]
+libpath = ['../out/lib']
+libs = []
+
+
+
+env = build_env.Clone(CPPPATH=include_dirs)
+
+if sys.platform =='win32':
+  outputlibname = 'libsessioncontrol'
+  env["CPPDEFINES"] += [
+    'WIN32',
+    '_CONSOLE',
+    'MBCS'
+  ]
+  env["CPPFLAGS"] += [
+    '/c',
+    '/W4',
+    '/wd4100',
+    '/wd4275',
+    '/wd4512'
+  ]
+  windows_sdk_lib_dir=os.environ['MS_WINDOWS_SDK_PATH'] + '/lib'
+  ms_vc_lib_dir=os.environ['MS_VC_PATH'] + '/VC/lib'
+  ms_vc_atlmfc_lib_dir=os.environ['MS_VC_PATH'] + '/VC/ATLMFC/lib'
+  libpath += [ 
+    ms_vc_lib_dir,
+    windows_sdk_lib_dir,
+    ms_vc_atlmfc_lib_dir,
+    '../third_party/lib',
+    '../third_party/chromium_base',
+    '../src/common/browser_logging'
+  ]
+  libs += [
+    componentName + suffixName + '.lib',
+    'winmm.lib',
+    'kernel32.lib',
+    'user32.lib',
+    'gdi32.lib',
+    'winspool.lib',
+    'comdlg32.lib',
+    'advapi32.lib',
+    'shell32.lib',
+    'ole32.lib',
+    'oleaut32.lib',
+    'uuid.lib',
+    'odbc32.lib',
+    'odbccp32.lib', 
+    'atls.lib',  
+    'avrt.lib', 
+    'DelayImp.lib', 
+    'ddraw.lib', 
+    'ws2_32.lib', 
+    'mswsock.lib', 
+    'dbghelp.lib', 
+    'Psapi.lib'
+    'chromium.lib',
+    'browser_logging.lib',
+    'GIPSVideoEngineWindows_MT.lib'
+  ]
+  if int(debug):
+    libs += [
+      'libcmtd.lib',
+      'libcurl_mtd.lib',
+      'libxml2_mtd.lib',
+      'libeay32_mtd.lib',
+      'ssleay32_mtd.lib'
+    ]
+  else:
+    libs += [
+      'libcmt.lib',
+      'libcurl_mt.lib'
+      'libxml2_mt.lib',
+      'libeay32_mt.lib',
+      'ssleay32_mt.lib'
+    ]
+  env["LINKFLAGS"] = [
+    '/DELAYLOAD:"avrt.dll"',
+    '/SUBSYSTEM:CONSOLE',
+    '/DYNAMICBASE',
+    '/NXCOMPAT',
+    '/MACHINE:X86',
+    '/FORCE:MULTIPLE',
+    '/NODEFAULTLIB:"libcmtd.lib"',
+    '/NODEFAULTLIB:"libcmt.lib"',
+    '/NODEFAULTLIB:"libmmt.lib"',
+    '/NODEFAULTLIB:"libcpmt.lib"',
+    '/NODEFAULTLIB:"avrt.lib"',
+    '/NODEFAULTLIB:"libirc.lib"',
+    '/NODEFAULTLIB:"advapi32.lib"'
+  ]
+  if int(debug):
+    env["LINKFLAGS"] += [
+      '/DEBUG '
+    ]
+elif sys.platform=='darwin':
+  outputlibname = 'libsessioncontrol.dylib'
+  env["CPPDEFINES"] += [
+    'MOZ_NO_MOZALLOC'
+  ]
+  env["CPPFLAGS"] += [
+    '-c',
+    '-pipe',
+    '-Os',
+    '-dynamiclib',
+    '-shared',
+    '-Wall',
+    '-mmacosx-version-min=10.5',
+    '-fPIC',
+    '-fno-rtti',
+    '-fno-exceptions',
+    '-fno-strict-aliasing',
+    '-fno-common',
+    '-fshort-wchar',
+    '-fpascal-strings',
+    '-pthread',
+    '-Wconversion',
+    '-Wpointer-arith',
+    '-Woverloaded-virtual',
+    '-Wsynth',
+    '-Wno-ctor-dtor-privacy',
+    '-Wno-non-virtual-dtor',
+    '-Wcast-align',
+    '-Wno-long-long',
+    '-include',
+    'xpcom-config.h'
+  ]
+  env["LINKFLAGS"] += [
+    '-pthread',
+    '-pipe',
+    '-bundle',
+    '-mmacosx-version-min=10.5',
+    '-Wl,-executable_path,' + mozsdkpath + '/bin',
+    '-Wl,-dead_strip',
+    '-read_only_relocs',
+    'suppress',
+    '-framework',
+    'Cocoa',
+    '-framework',
+    'AGL',
+    '-framework',
+    'OpenGl',
+    '-framework',
+    'Carbon',
+    '-framework',
+    'CoreAudio',
+    '-framework',
+    'QuartzCore',
+    '-framework',
+    'QuickTime',
+    '-framework',
+    'AudioUnit',
+    '-framework',
+    'AudioToolbox',
+    '-framework',
+    'CoreServices'
+  ]
+  libpath += [
+    '..',
+    '../third_party/chromium_base',
+    '../third_party/lib',
+    mozsdkpath + '/lib',
+    mozsdkpath + '/bin'
+  ]
+  libs += [
+    componentName + suffixName,
+    'xpcomglue_s',
+    'xpcom',
+    'nspr4',
+    'mozalloc',
+    'plds4',
+    'plc4',
+    'ssl',
+    'crypto',
+    'apr-1',
+    'aprutil-1',
+    'z',
+    'curl', 
+    'libxml2', 
+    'iconv',
+    'X11',
+    'chromium',
+    'VideoEngine_mac_intel_gcc.a' 
+  ]
+  # Execute  xpcom commands
+  xpidl_h_cmd =  mozsdkpath + '/bin/xpidl -m header -I' + mozsdkpath + '/idl ./ICallControl.idl'
+  xpidl_tl_cmd = mozsdkpath + '/bin/xpidl -m typelib -I' + mozsdkpath + '/idl ./ICallControl.idl'
+  
+  env.Execute(xpidl_h_cmd)
+  env.Execute(xpidl_tl_cmd)
+elif sys.platform=='linux2':
+  outputlibname = 'libsessioncontrol.so'
+  env["CPPDEFINES"] += [
+    'MOZ_NO_MOZALLOC',
+    'MOZILLA_STRICT_API',
+    'IKRAN_LINUX'
+  ]
+  env["CPPFLAGS"] += [
+    '-pipe',
+    '-Os',
+    '-shared',
+    '-fshort-wchar',
+    '-fPIC',
+    '-fno-rtti',
+    '-fno-exceptions',
+    '-fno-strict-aliasing',
+    '-fno-common',
+    '-pthread',
+    '-Wall',
+    '-Wpointer-arith',
+    '-Woverloaded-virtual',
+    '-Wsynth',
+    '-Wno-ctor-dtor-privacy',
+    '-Wno-non-virtual-dtor',
+    '-Wcast-align',
+    '-Wno-long-long',
+    '-include',
+    'xpcom-config.h'
+  ]
+  libpath += [
+    '../third_party/chromium_base',
+    '../third_party/lib',
+    '/usr/include',
+    '/usr/lib',
+	mozsdkpath + '/lib',
+    mozsdkpath + '/bin'
+  ]
+  libs += [
+    componentName + suffixName, 
+    'mozsqlite3',
+    'xul',
+	'xpcomglue_s',
+    'xpcom',
+    'nspr4',
+    'mozalloc',
+    'plds4',
+    'plc4',
+    'ssl',
+    'pthread',
+    'z', 
+    'idn', 
+    'dl', 
+    'rt',
+    'curl',
+    'xml2', 
+    'asound',
+    'Xext',
+    'glib-2.0',
+    'chromium',
+    'VideoEngine_Linux_gcc',
+  ]
+  env["LINKFLAGS"] += [
+    '-shared',
+	'-pthread',
+	'-pipe',
+	'-m32',
+	'-Wl',	
+    '-z',
+    'muldefs'
+  ]
+
+  # Execute  xpcom commands
+  xpidl_h_cmd =  mozsdkpath + '/bin/xpidl -m header -I' + mozsdkpath + '/idl ./ICallControl.idl'
+  xpidl_tl_cmd = mozsdkpath + '/bin/xpidl -m typelib -I' + mozsdkpath + '/idl ./ICallControl.idl'
+  
+  env.Execute(xpidl_h_cmd)
+  env.Execute(xpidl_tl_cmd)
+
+
+buildResult = env.Program(outputlibname, src_files,
+  LIBS=libs,
+  LIBPATH=libpath)
+
+
+if sys.platform =='win32':
+  Depends(buildResult, '../' + componentName + suffixName + '.lib')
+else:
+  Depends(buildResult, '../lib' + componentName + suffixName + '.a')
+
+

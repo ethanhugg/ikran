@@ -1,0 +1,73 @@
+<html>
+<head>
+    <title>Rainbow!</title>
+    <script type="application/javascript;version=1.8">
+        let Me = window.navigator.service.media;
+    </script>
+    <script type="application/javascript"
+            src="http://www.blobsallad.se/blobsallad.js"></script>
+</head>
+<body onload="init();" style="margin:50px 0px;padding:0px;text-align:center;">
+    <h1>Canvas Recording Example</h1>
+    <canvas id="blob" width="640" height="480"></canvas>
+    <p><input type="button" id="tehbutton" value="Start!"/></p>
+    <p id="tehmsg"></p>
+</body>
+<script type="application/javascript;version=1.8">
+    let Re = false;
+    let msg = document.getElementById("tehmsg");
+    let but = document.getElementById("tehbutton");
+    let ctx = document.getElementById("blob").getContext("2d");
+
+    function onStateChange(type, arg) {
+        switch (type) {
+            case "session-began":
+                Re = true;
+                but.value = "Stop!";
+                but.disabled = false;
+                Me.beginRecording();
+                break;
+            case "record-began":
+                msg.innerHTML = "Recording has begun!";
+                break;
+            case "record-ended":
+                // Recording stopped, but file may not ready yet
+                Me.endSession();
+                Re = false;
+                but.value = "Start!";
+                but.disabled = false;
+                break;
+            case "record-finished":
+                // File is now available
+                // arg is a DOM File, see
+                // https://developer.mozilla.org/en/Using_files_from_web_applications
+                msg.innerHTML = "Your video was named: " +
+                    arg.files.item(0).fileName + " and is " +
+                    arg.files.item(0).fileSize + " bytes big!";
+                break;
+            case "session-ended":
+                // Ignore
+                break;
+            case "error":
+                msg.innerHTML = "There was an error :( " + type + " :: " + arg;
+                break;
+        }
+    }
+    
+    but.onclick = function() {
+        if (Re) {
+            // Stop recording
+            Me.endRecording();
+            but.disabled = true;
+        } else {
+            // Start recording
+            msg.innerHTML = "Loading...";
+            but.disabled = true;
+            Me.beginSession({
+                "width": 640, "height": 480, "source": true
+            }, ctx, onStateChange);
+        }
+    }
+</script>
+</html>
+
