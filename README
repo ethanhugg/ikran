@@ -148,6 +148,6 @@ JS APIs unRegisterUser() and hangupCall() allows de-registration
 
 Few Points to Note
 1. Only Audio is supported on OSX
-2. One user is suported
+2. One user is suported as registered by instance
  
 Please see content/ikran.html for sample usage of the API.
