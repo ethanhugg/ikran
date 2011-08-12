@@ -184,15 +184,14 @@ Logger::Instance()->logIt(" In Asnwer call ");
 		
 		CC_CallPtr answerableCall = GetFirstCallWithCapability(ccm_ptr_, CC_CallCapabilityEnum::canAnswerCall);
 	
-#ifdef IKRAN_LINUX
-		answerableCall->setRemoteWindow((VideoWindowHandle)video_window);
-#endif
-		answerableCall->setRemoteWindow((VideoWindowHandle)video_window);
 		if (answerableCall != NULL) {		
 			if (!answerableCall->answerCall(CC_SDP_DIRECTION_SENDRECV)) {
 			}
 		} else {
         }
+#ifdef IKRAN_LINUX
+		answerableCall->setRemoteWindow((VideoWindowHandle)video_window);
+#endif
 	} else {
 	}
 	
