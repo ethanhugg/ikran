@@ -33,6 +33,7 @@ Linux:
   +libcurl - sudo apt-get install libcurl4-openssl-dev
   +Glib    - sudo apt-get install libdbus-glib-1-dev
   +asound  - sudo apt-get install libasound2-dev
+  +libgtk  - sudo apt-get install libgtk2.0-dev     
 
 Mac OSX:
   Built regularly on OSX 10.6 with XCode 3.2.6
@@ -73,6 +74,7 @@ Windows:
 	Start Firefox in 32 bit as 
 		arch -i386 /Applications/Firefox.app/Contents/MacOS/firefox-bin 
   - Linux
+	Connect your camera and make sure it works :)
 	Start Firefox normally  
   - Install the addon
   - Test add-on with sample page at
@@ -81,6 +83,7 @@ Windows:
 --------------------------------
 6. Using the Test Application
 --------------------------------
+Use the test application to exercise the SIP stack.
 There are two ways to use the Test Application
 
  Run the Test Application from the command line with no parameters
