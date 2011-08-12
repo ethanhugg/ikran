@@ -1,0 +1,147 @@
+import os
+import sys
+
+Import('build_env')
+Import('debug')
+Import('x64')
+
+
+include_dirs = Split("""
+            .
+            ..
+            base/threading
+            base/synchronization
+            """)
+
+if sys.platform =='win32':
+	include_dirs += ['']
+elif sys.platform=='linux2':  
+	include_dirs += ['/usr/include/glib-2.0', '/usr/lib/glib-2.0/include']
+
+if sys.platform =='darwin':
+	include_dirs += ['']
+else:
+	include_dirs += ['']
+
+
+
+
+
+src_files = Split("""
+		base/ref_counted.cc
+		base/synchronization/lock.cc
+		base/threading/thread.cc
+		base/threading/simple_thread.cc
+		base/threading/thread_collision_warner.cc		
+		base/timer.cc
+		base/logging.cc
+		base/vlog.cc
+		base/string_piece.cc
+		base/string_split.cc
+		base/stringprintf.cc
+		base/threading/thread_restrictions.cc
+		base/lazy_instance.cc
+		base/command_line.cc
+		base/string_util.cc
+		base/utf_string_conversions.cc
+		base/path_service.cc
+		base/string_number_conversions.cc
+		base/base_switches.cc
+		base/third_party/icu/icu_utf.cc
+		base/utf_string_conversion_utils.cc
+		base/command_line.cc
+		base/file_path.cc
+		base/third_party/dmg_fp/g_fmt.cc
+		base/third_party/dmg_fp/dtoa.cc
+		base/at_exit.cc
+		base/pickle.cc
+		base/time.cc
+		base/base64.cc
+		third_party/modp_b64/modp_b64.cc
+		base/file_util.cc
+		base/platform_file.cc
+		base/base_paths.cc
+ 		""");
+
+if sys.platform =='win32':
+	src_files += Split("""
+			base/synchronization/lock_impl_win.cc
+			base/synchronization/condition_variable_win.cc
+			base/sys_string_conversions_win.cc
+			base/synchronization/waitable_event_win.cc
+			base/threading/platform_thread_win.cc
+			base/threading/thread_local_win.cc
+			base/time_win.cc
+			base/third_party/nspr/prtime.cc
+			base/version.cc
+			base/win/windows_version.cc
+			base/logging.cc
+			base/debug/debugger.cc
+			base/debug/debugger_win.cc
+			base/debug/stack_trace.cc
+			base/debug/stack_trace_win.cc
+			base/cpu.cc
+			base/file_util_win.cc
+			base/platform_file_win.cc
+			base/base_paths_win.cc
+			base/file_util_win.cc
+			base/win/win_util.cc
+			base/file_util_proxy.cc
+			base/win/registry.cc
+			base/metrics/histogram.cc
+			base/win/pe_image.cc
+ 			""");
+
+elif sys.platform =='darwin':
+	src_files += Split("""	
+			base/debug/stack_trace.cc
+			base/synchronization/lock_impl_posix.cc
+			base/synchronization/condition_variable_posix.cc
+			base/threading/platform_thread_posix.cc
+			base/safe_strerror_posix.cc
+			base/debug/debugger_posix.cc
+			base/debug/stack_trace_posix.cc
+			base/threading/thread_local_posix.cc
+			base/sys_string_conversions_mac.mm
+			base/threading/platform_thread_mac.mm
+			base/time_mac.cc
+			base/time_posix.cc
+			base/string16.cc
+			base/synchronization/waitable_event_posix.cc
+			base/third_party/nspr/prtime.cc
+			base/file_util_posix.cc
+			base/platform_file_posix.cc
+			base/file_util_mac.mm
+			base/base_paths_mac.mm
+			base/mac/foundation_util.mm
+			""");
+	
+elif sys.platform =='linux2':
+	src_files += Split("""	
+			base/debug/stack_trace.cc
+			base/synchronization/lock_impl_posix.cc
+			base/synchronization/condition_variable_posix.cc
+			base/threading/platform_thread_posix.cc
+			base/safe_strerror_posix.cc
+			base/debug/debugger_posix.cc
+			base/debug/stack_trace_posix.cc
+			base/threading/thread_local_posix.cc
+			base/time_posix.cc
+			base/string16.cc
+			base/synchronization/waitable_event_posix.cc
+			base/sys_string_conversions_linux.cc
+			base/atomicops_internals_x86_gcc.cc
+			base/third_party/nspr/prtime.cc
+			base/platform_file_posix.cc
+			base/base_paths_linux.cc
+			base/file_util_posix.cc
+			base/nix/xdg_util.cc
+			base/environment.cc
+			base/third_party/xdg_user_dirs/xdg_user_dir_lookup.cc
+			""");
+
+
+env = build_env.Clone(CPPPATH=include_dirs)
+
+env.Library('chromium', src_files, LIBS=[], LIBPATH=[])
+            
