@@ -319,8 +319,15 @@ CallControl::AnswerCall(nsIMediaStateObserver* obs)
         return NS_ERROR_FAILURE;
         }
 #ifdef IKRAN_LINUX
-		gtk_widget_show(video_widget);
-		SipccController::GetInstance()->SetVideoWindow(win_handle);
+	  if(!video_widget)
+    	{
+       	 	gtk_init(0,0);
+        	video_widget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+        	gtk_widget_set_size_request(video_widget, 640, 480);
+    	}
+    	gtk_widget_show(video_widget);
+    	win_handle = GDK_WINDOW_XWINDOW(GTK_WIDGET(video_widget)->window);
+    	SipccController::GetInstance()->SetVideoWindow(win_handle);
 #endif
 
         SipccController::GetInstance()->AnswerCall();
