@@ -79,6 +79,9 @@ Windows:
   - Install the addon
   - Test add-on with sample page at
 		<SOURCE>/ikran/content/ikran.html		
+NOTES:
+1. ikran.html should be served from a server due to permission issues
+   with file loaded locally (file://) 
 
 --------------------------------
 6. Using the Test Application
@@ -148,6 +151,6 @@ JS APIs unRegisterUser() and hangupCall() allows de-registration
 
 Few Points to Note
 1. Only Audio is supported on OSX
-2. One user is suported
+2. One user is suported as registered by instance
  
 Please see content/ikran.html for sample usage of the API.
