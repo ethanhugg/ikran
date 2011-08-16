@@ -79,6 +79,9 @@ Windows:
   - Install the addon
   - Test add-on with sample page at
 		<SOURCE>/ikran/content/ikran.html		
+NOTES:
+1. ikran.html should be served from a server due to permission issues
+   with file loaded locally (file://) 
 
 --------------------------------
 6. Using the Test Application
