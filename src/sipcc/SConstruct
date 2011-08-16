@@ -231,7 +231,8 @@ if targetPlatform == 'linux2':
   ]
 
   CPP_FLAGS += [
-    '-Werror'
+    '-Werror',
+    '-Wall'
   ] 
   if x64 == 'yes':
     CPP_FLAGS += [

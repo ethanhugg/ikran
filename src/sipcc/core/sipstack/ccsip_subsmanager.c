@@ -2612,7 +2612,7 @@ subsmanager_handle_ev_sip_subscribe (sipMessage_t *pSipMessage,
 {
     const char     *fname = "subsmanager_handle_ev_sip_subscribe";
     const char     *event = NULL;
-    cc_subscriptions_t eventPackage;
+    cc_subscriptions_t eventPackage = CC_SUBSCRIPTIONS_NONE;
     sipSCB_t       *scbpReg = NULL, *scbp = NULL;
     const char     *callID = NULL, *via = NULL;
     const char     *contact = NULL;
