@@ -79,6 +79,7 @@ if sys.platform =='win32':
 elif sys.platform=='darwin':
   build_env["CPPFLAGS"] = [
     '-Werror',
+    '-Wunused-function',
     '-fexceptions',
     '-fno-common'
   ]

@@ -259,6 +259,8 @@ if targetPlatform == 'darwin':
 
   CPP_FLAGS += [
     '-Werror',
+    '-Wall',
+    '-Wno-strict-aliasing',
     '-fexceptions',
     '-fno-common',
     '-isysroot', '/Developer/SDKs/MacOSX10.5.sdk',
