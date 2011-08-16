@@ -132,26 +132,3 @@ cprPostInit (void)
 
 }
 
-
-/**
- * cprExit
- *
- * Routine to gracefully shutdown CPR.
- *
- * Parameters: None
- *
- * Return Value: Always returns success
- */
-cprRC_t
-cprExit (void)
-{
-    static const char fname[] = "cprExit";
-
-    /* Cleared to start with cprPreInit */
-    pre_init_called = FALSE;
-
-    /*
-     * Clean up all memory/resources allocated by CPR
-     */
-    return cprSocketCleanup();
-}

@@ -261,33 +261,3 @@ cprPostInit (void)
     return CPR_SUCCESS;
 }
 
-/**
- * cprExit
- *
- * @brief Routine to gracefully shutdown CPR.
- *
- *   The cprExit function is called from pSIPCC to perform a graceful shutdown of the CPR
- *   system.
- *
- *
- * @return CPR_SUCCESS or CPR_FAILURE
- */
-cprRC_t
-cprExit (void)
-{
-    /*
-     * Clean up all memory/resources allocated by CPR
-     */
-    
-    pthread_mutex_destroy(&msgQueueListMutex);
-    cpr_timer_de_init();
-    
-    /* Clean up memory, MUST be last CPR object destroyed */
-    cpr_memory_mgmt_destroy();
-
-    /* Cleared to start with cprPreInit */
-    pre_init_called = FALSE;
-
-    return CPR_SUCCESS;
-}
-

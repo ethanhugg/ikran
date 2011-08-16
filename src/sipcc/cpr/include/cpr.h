@@ -87,20 +87,6 @@ cprPreInit(void);
 cprRC_t
 cprPostInit(void);
 
-/**
- * cprExit
- *
- * @brief Routine to gracefully shutdown CPR.
- *
- *   The cprExit function is called from pSIPCC to perform a graceful shutdown of the CPR
- *   system.
- *
- *
- * @return CPR_SUCCESS or CPR_FAILURE
- */
-cprRC_t
-cprExit(void);
-
 __END_DECLS 
 
 #endif
