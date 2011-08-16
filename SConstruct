@@ -139,6 +139,7 @@ elif sys.platform=='darwin':
 elif sys.platform=='linux2':
   build_env["CPPFLAGS"] = [
     '-Werror',
+    '-Wall',
     '-fexceptions',
     '-fno-common',
   ]

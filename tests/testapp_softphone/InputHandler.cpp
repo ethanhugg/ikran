@@ -154,6 +154,8 @@ UserOperationRequestData::~UserOperationRequestData()
     case eSendDTMFDigitOnFirstCallWithDTMFCaps:
         delete m_pDTMFDigit;
         break;
+    default:
+    	break;
     }
 }
 
@@ -344,7 +346,7 @@ InputHandler::UserInputWorkItem::~UserInputWorkItem()
 }
 
 InputHandler::InputHandler()
-: callback(NULL), thread(this)
+: thread(this), callback(NULL)
 {
 	thread.Start();
 }

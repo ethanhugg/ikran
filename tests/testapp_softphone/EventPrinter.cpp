@@ -336,6 +336,8 @@ void CC_CapsPrinter::onCallEvent (ccapi_call_event_e callEvent, CC_CallPtr call,
 		PRINT_EVENT_INFO_NICELY_USING_GETNAME("VideoDirection", info, getVideoDirection, sdp_direction_getname);
 	    PRINT_OFFSET_1;
 	    break;
+    default:
+    	break;
     }//end switch
 }
 
@@ -357,6 +359,7 @@ void CC_CapsPrinter::onDeviceEvent (ccapi_device_event_e deviceEvent, CC_DeviceP
         PRINT_EVENT_INFO_NICELY_USING_GETNAME("ServiceState", info, getServiceState, service_state_getname);
         break;
     case CCAPI_DEVICE_EV_SERVER_STATUS:
+    {
         vector<CC_CallServerInfoPtr> callServers = info->getCallServers();
         for (size_t i=0; i<callServers.size(); i++)
         {
@@ -368,6 +371,9 @@ void CC_CapsPrinter::onDeviceEvent (ccapi_device_event_e deviceEvent, CC_DeviceP
             PRINT_EVENT_INFO_NICELY_USING_GETNAME("CallServerStatus", callServerInfoPtr, getCallServerStatus, ccm_status_getname);
         }
         break;
+    }
+    default:
+    	break;
     }//end switch
 }
 
@@ -429,6 +435,8 @@ void CC_CapsPrinter::onLineEvent (ccapi_line_event_e lineEvent, CC_LinePtr line,
         PRINT_OFFSET_1;
         PRINT_EVENT_INFO_NICELY_FOR_INT32("MWIPrioOldMsgCount", info, getMWIPrioOldMsgCount);
         break;
+    default:
+    	break;
     }//end switch
 }
 
