@@ -159,56 +159,6 @@ typedef struct {
 } cpr_signal_t;
 
 
-/**
- * cprCreateSignal
- *
- * Creates a conditional signal block
- *
- * Parameters: name  - name of the signal
- *
- * Return Value: signal handle or NULL if creation failed.
- */
-cprSignal_t
-cprCreateSignal (const char *name);
-
-
-/**
- * cprDestroySignal
- *
- * Destroys the signal passed in.
- *
- * Parameters: signal - signal to destroy
- *
- * Return Value: CPR_SUCCESS or CPR_FAILURE
- */
-cprRC_t
-cprDestroySignal (cprSignal_t signal);
-
-
-/**
- * cprCondTimedWait
- *
- * Create a conditional wait
- *
- *
- * Return Value: CPR_SUCCESS or CPR_FAILURE
- */
-cprRC_t
-cprCondTimedWait (cprMutex_t mutex, cprSignal_t signal, 
-				unsigned int sec, unsigned int msec);
-
-
-/**
- * cprCondSignal
- *
- * Send a conditional 
- *
- *
- * Return Value: CPR_SUCCESS or CPR_FAILURE
- */
-cprRC_t
-cprCondSignal (cprSignal_t signal);
-
 __END_DECLS
 
 #endif
