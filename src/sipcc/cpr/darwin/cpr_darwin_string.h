@@ -45,7 +45,6 @@
 
 #define cpr_strtok(a,b,c) strtok_r(a,b,c)
 
-#ifndef CPR_USE_DIRECT_OS_CALL
 /**
  * cpr_strdup
  *
@@ -62,9 +61,7 @@
  */
 char * 
 cpr_strdup(const char *str);
-#endif
-//int *
-//strerror_r(int, char *, size_t);	// GGG
+
 /**
  * strcasestr
  *

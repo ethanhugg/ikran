@@ -43,31 +43,7 @@
 #include "stdlib.h"
 #include "string.h"
 
-/* If Mpatrol profiling is being done, include the mpatrol header file */
-#ifdef MPATROL_PROFILING
-#include <ucontext.h>
-#include <execinfo.h>
-#include <sys/sysinfo.h>
-#include <mpatrol.h>
-#endif
-
-/*
- * Use direct OS calls for memory allocation/free routines
- * until CPR has true memory management routines.
- */
-#ifdef DISABLE_MEMORY_ENHANCEMENTS
-
-#ifdef MPATROL_PROFILING
-void show_stackframe(void *curr);
-#define CPR_REACH_MEMORY_HIGH_WATER_MARK FALSE
-#else
-#define CPR_USE_DIRECT_OS_CALL
-#define CPR_USE_CALLOC_FOR_MALLOC
-#endif
-
-#else
 boolean cpr_mem_high_water_mark(void);
 #define CPR_REACH_MEMORY_HIGH_WATER_MARK cpr_mem_high_water_mark()
-#endif
 
 #endif

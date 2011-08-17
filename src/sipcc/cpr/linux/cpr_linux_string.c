@@ -43,7 +43,6 @@
 #include "cpr_strings.h"
 
 
-#ifndef CPR_USE_DIRECT_OS_CALL
 /**
  * cpr_strdup
  *
@@ -81,8 +80,6 @@ cpr_strdup (const char *str)
     (void) memcpy(dup, str, len);
     return dup;
 }
-
-#endif
 
 
 /**

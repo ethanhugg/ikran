@@ -86,9 +86,7 @@ strlib_malloc (const char *str, int length, const char *fname, int line)
 
     size = sizeof(string_block_t) + length + 1;
     temp = (string_block_t *) cpr_malloc(size);
-#ifdef MPATROL_PROFILING
-    show_stackframe((void *)temp);
-#endif
+
     if (!temp) {
         err_msg("Error: Strlib_Malloc() Failed. Requested Size = %d\n", size);
         return (string_t) 0;

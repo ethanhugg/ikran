@@ -481,131 +481,6 @@ cpr_memory_mgmt_destroy (void)
     (void) cprDestroyMutex(mem_tracking_mutex);
 }
 
-#ifdef MPATROL_PROFILING
-
-/**
- * Shows the call-stack
- *
- * @param[in] curr  The pointer that was allocated on the heap
- *
- * @return      none
- *
- * @note        This function uses the GLIBC backtrace_symbols to print out the
- *              call stack
- */
-void show_stackframe (void *curr) {
-#define SIZE_OF_STRLIB_TRACE 5
-    void *trace[SIZE_OF_STRLIB_TRACE];
-    char **messages = (char **)NULL;
-    int i, trace_size = 0;
-
-    trace_size = backtrace(trace, SIZE_OF_STRLIB_TRACE);
-    messages = backtrace_symbols(trace, trace_size);
-    buginf("[Ptr]0x%x:\n", curr);
-    if (NULL != messages) {
-        /* The value of i = 0 and 1 will be for show_stackframe and the malloc
-         * wrapper.
-         * No point in having those in the call-stack 
-         */
-        for (i=2; i<trace_size && messages[i]; ++i)
-            buginf("\t %s\n", messages[i]);
-        free (messages);
-    } else {
-        CPR_ERROR("ERROR: Call to backtrace_symbols failed\n");
-    }
-}
-
-/**
- * Allocate memory
- *
- * @param[in] size  size in bytes to allocate
- *
- * @return      pointer to allocated memory or #NULL
- *
- * @note        This function also prints out the call-stack.
- */
-void *
-cpr_malloc (size_t size)
-{
-    void *caller_pc, *p=NULL;
-
-    /* Get caller PC before calling other functions */
-    caller_pc = CPR_CALLER_PC;
-    p = malloc(size);
-    if (p) {
-        show_stackframe(p);
-    } else {
-        CPR_ERROR("ERROR: malloc %d bytes failed, pc=0x%x\n", size, caller_pc);
-    }
-    return p;
-}
-
-/**
- * Allocate memory using calloc
- *
- * @param[in] num   number of objects to allocate
- * @param[in] size  size in bytes of an object
- *
- * @return      pointer to allocated memory or #NULL
- *
- * @note        This function also prints out the call-stack.
- */
-void *
-cpr_calloc (size_t num, size_t size)
-{
-    void *caller_pc, *p=NULL;
-    /* Get caller PC before calling other functions */
-    caller_pc = CPR_CALLER_PC;
-    p = calloc(num, size);
-    if (p) {
-        show_stackframe(p);
-    } else {
-        CPR_ERROR("ERROR: calloc num %d of size %d bytes failed, pc=0x%x\n", 
-                  num, size, caller_pc);
-    }
-    return p;
-}
-
-/**
- * Reallocate memory
- *
- * @param[in] mem  memory to reallocate
- * @param[in] size new memory size
- *
- * @return     pointer to reallocated memory or #NULL
- *
- * @note       This function will also print out the call-stack
- */
-void *
-cpr_realloc (void *mem, size_t size)
-{
-    void *caller_pc, *p=NULL;
-    /* Get caller PC before calling other functions */
-    caller_pc = CPR_CALLER_PC;
-    p = realloc(mem, size);
-    if (p) {
-        show_stackframe(p);
-    } else {
-        CPR_ERROR("ERROR: realloc %d bytes failed, pc=0x%x\n", size, caller_pc);
-    }
-    return p;
-}
-
-/**
- * Free memory
- *
- * @param[in] mem  memory to free
- *
- * @return     none
- */
-void
-cpr_free (void *mem)
-{
-    free(mem);
-}
-
-#else
-#ifndef CPR_USE_DIRECT_OS_CALL
 /**
  * @brief Allocate memory
  *
@@ -968,10 +843,6 @@ cpr_free (void *mem)
 
     return;
 }
-#endif
-
-#endif
-/** @} */ /* End public APIs */
 
 
 /**
@@ -1570,9 +1441,6 @@ cpr_show_memory_tracking (void)
 cc_int32_t
 cpr_show_memory (cc_int32_t argc, const char *argv[])
 {
-#ifdef DISABLE_MEMORY_ENHANCEMENTS
-    debugif_printf("show cpr-memory commands are disabled\n");
-#else
     uint8_t i = 0;
 
     /* work even if the "show cpr-memory" is present */
@@ -1609,7 +1477,7 @@ cpr_show_memory (cc_int32_t argc, const char *argv[])
          */
         return 0;
     }
-#endif
+
     return 0;
 }
 
@@ -1658,9 +1526,6 @@ cpr_clear_memory_tracking (void)
 cc_int32_t
 cpr_clear_memory (cc_int32_t argc, const char *argv[])
 {
-#ifdef DISABLE_MEMORY_ENHANCEMENTS
-    debugif_printf("clear cpr-memory commands are disabled\n");
-#else
     uint8_t i = 0;
 
     /* work even if the "clear cpr-memory" is present */
@@ -1702,7 +1567,7 @@ cpr_clear_memory (cc_int32_t argc, const char *argv[])
         debugif_printf("\ttracking  \t- clear cpr-memory tracking\n");
         return 0;
     }
-#endif
+
     return 0;
 }
 
