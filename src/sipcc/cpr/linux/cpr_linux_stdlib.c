@@ -290,7 +290,7 @@ static size_t private_sys_mem_size;
  * complete which means this variable will be updated by the releasing
  * routine (and the variable content needs to be re-loaded).
  */
-volatile cpr_mem_tracking_node_t *next_display_node;
+static volatile cpr_mem_tracking_node_t *next_display_node;
 
 /*-------------------------------------
  *
@@ -445,40 +445,6 @@ cpr_memory_mgmt_pre_init (size_t size)
     }
 
     return TRUE;
-}
-
-/**
- * The second stage of memory management initialization where
- * those items that can wait for everything else to initialize
- * are now done.  This typically is the binding of CLI commands.
- *
- * @return TRUE (if a failure could occur then FALSE would also
- *         be a possibility)
- *
- * @todo Add support for help string
- */
-boolean
-cpr_memory_mgmt_post_init (void)
-{
-
-    return TRUE;
-}
-
-/**
- * Destroy those items created during initialization by memory management.
- *
- * @return none
- *
- * @warning This should be the @b last item called to be destroyed
- *          as all safety to memory calls will be gone.
- */
-void
-cpr_memory_mgmt_destroy (void)
-{
-    chunk_exit();
-
-    /* destroy mutexes */
-    (void) cprDestroyMutex(mem_tracking_mutex);
 }
 
 /**
@@ -844,24 +810,6 @@ cpr_free (void *mem)
     return;
 }
 
-
-/**
- * @addtogroup MemoryPrivRoutines Linux memory routines (private)
- * @ingroup  Memory
- * @brief Private memory routines
- *
- * Internal APIs for managing memory for the application code
- * running on top of the Cisco Portable Runtime layer, i.e. all
- * of the static functions.
- *
- * @{
- */
-
-void *
-cpr_linux_sbrk (int incr)
-{
-    return ((void *)-1);
-}
 
 /**
  * Force a crash dump which will allow a stack trace to be generated
@@ -1586,7 +1534,7 @@ cpr_clear_memory (cc_int32_t argc, const char *argv[])
  *
  * @note Additional arguments are ignored
  */
-int32_t
+static int32_t
 cpr_debug_memory_cli (int32_t argc, const char *argv[])
 {
     boolean debug;

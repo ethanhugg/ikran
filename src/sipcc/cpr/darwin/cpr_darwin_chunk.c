@@ -62,23 +62,10 @@
 #define CHUNK_DEBUG(fmt, arg)
 #endif
 
-/*
- * Compile-time switch to allow a separate memory pool for chunk memory
- *
- * @warning This is not implemented fully and has been kept during the
- *          porting from IOS since this may be useful in the future.
- */
-#ifdef CPR_PRIVATE_MEMORY
-#define CHUNK_PRIVATE_MEMPOOL_ARG mempool *mempool,
-#define CHUNK_PRIVATE_MEMPOOL_VAR mempool
-#define CHUNK_PRIVATE_MEMPOOL_ARG_REF(chunk) (chunk)->mempool
-#define CHUNK_PRIVATE_MEMPOOL_ASSIGN(chunk) (chunk)->mempool = mempool
-#else
 #define CHUNK_PRIVATE_MEMPOOL_ARG
 #define CHUNK_PRIVATE_MEMPOOL_VAR
 #define CHUNK_PRIVATE_MEMPOOL_ARG_REF(chunk)
 #define CHUNK_PRIVATE_MEMPOOL_ASSIGN(chunk)
-#endif
 
 
 /*-------------------------------------
@@ -565,12 +552,7 @@ chunk_create_inline (uint32_t cfg_size, uint32_t cfg_max, uint32_t flags,
         /*
          * We have independent memory. Allocate the data now.
          */
-#ifdef CHUNK_PRIVATE_MEMORY
-        //if (flags & CHUNK_FLAGS_PRIVATE)
-        chunk_data = cprGetBuffer(chunk_region, total_data_size);
-#else
         chunk_data = MEMALIGN(alignment, total_datasize);
-#endif
         if (!chunk_data) {
             CPR_ERROR("Out-of-memory for chunk\n");
             return NULL;

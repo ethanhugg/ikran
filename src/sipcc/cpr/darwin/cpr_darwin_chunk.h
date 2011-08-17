@@ -181,9 +181,6 @@ extern boolean chunk_init(void);
 extern void chunk_exit(void);
 extern chunk_t *chunk_create(uint32_t cfg_size, uint32_t cfg_max,
                              uint32_t flags, uint32_t alignment,
-#ifdef CPR_PRIVATE_MEMORY
-                             mempool *mempool,
-#endif
                              const char *name);
 extern boolean chunk_destroy(chunk_t *chunk);
 extern boolean chunk_destroy_forced(chunk_t *chunk);
@@ -196,9 +193,5 @@ extern boolean chunk_is_destroyable(chunk_t *chunk);
 extern boolean chunk_did_malloc_fail(chunk_t *chunk);
 extern uint32_t get_chunk_size(void *data);
 extern long chunk_totalfree_count(chunk_t *chunk);
-#if CHUNK_PRIVATE_MEMORY
-extern boolean chunk_optmemsize_from_mempool(struct mempool_ *mempool,
-                                             uint32_t *memsize);
-#endif
 
 #endif
