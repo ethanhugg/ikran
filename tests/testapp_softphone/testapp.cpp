@@ -1141,7 +1141,6 @@ static string logDestination = "stdout";
 static string CUCMIPAddress = TEST_IP_ADDRESS;
 static string username = TEST_USER_NAME;
 static string deviceName = TEST_DEVICE_NAME;
-static bool shortLogin = false;
 static string localIP = "";
 
 
@@ -1311,7 +1310,6 @@ static bool GetLocalActiveInterfaceAddress()
 
 static int runMainLoop ()
 {
-    int returnCode = 0;
     MyPhoneListener listener;
     CC_CapsPrinter CCCapsPrinter;
     ECC_CapsPrinter ECCCapsPrinter;
