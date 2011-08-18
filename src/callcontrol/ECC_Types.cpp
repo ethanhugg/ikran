@@ -119,44 +119,6 @@ std::string ECC_API toString(DeviceRetrievalFailureCode value)
 }
 }
 
-namespace AuthenticationCertificateLevelType
-{
-std::string ECC_API toString(AuthenticationCertificateLevel value)
-{
-    switch(value)
-	{
-    case eSignedCert:
-        return "eSignedCert";
-    case eSelfSignedCert:
-        return "eSelfSignedCert";
-    case eAllCerts:
-        return "eAllCerts";
-	default:
-		return "";
-	}
-}
-}
-
-namespace DeviceConfigStatusEnum
-{
-std::string ECC_API toString(DeviceConfigStatus value)
-{
-    switch(value)
-	{
-    case eNoConfig:
-        return "eNoConfig";
-    case eFetchedConfig:
-        return "eFetchedConfig";
-    case eCachedConfig:
-        return "eCachedConfig";
-    case eStaleConfig:
-        return "eStaleConfig";
-	default:
-		return "";
-	}
-}
-}
-
 namespace ConnectionStatusEnum
 {
 std::string ECC_API toString(ConnectionStatus value)

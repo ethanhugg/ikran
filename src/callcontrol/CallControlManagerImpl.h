@@ -66,12 +66,6 @@ namespace CSF
         virtual void removeECCObserver ( ECC_Observer * observer );
 
         // Config and global setup
-        virtual void setAuthenticationCredentials(const std::string &username, const std::string& password);
-        virtual void setAuthenticationPolicy(const AuthenticationCertificateLevelType::AuthenticationCertificateLevel& level);
-        virtual void setCCMCIPServers(const std::vector<std::string> &servers);
-        virtual void setCCMCIPServers(const std::string &server);
-        virtual void setTFTPServers(const std::vector<std::string> &servers);
-        virtual void setTFTPServers(const std::string &server);
         virtual void setMultiClusterMode(bool allowMultipleClusters);
         virtual void setSIPCCLoggingMask(const cc_int32_t mask);
         virtual void setAuthenticationString(const std::string &authString);
@@ -80,20 +74,9 @@ namespace CSF
         // Local IP Address and DefaultGateway
         virtual void setLocalIpAddressAndGateway(const std::string& localIpAddress, const std::string& defaultGW);
 
-        // CCMCIP
-        virtual AuthenticationFailureCodeType::AuthenticationFailureCode authenticate();
         virtual AuthenticationStatusEnum::AuthenticationStatus getAuthenticationStatus();
-        virtual std::string getLastCCMCIPServerUsed();
 
-        // TFTP
-        virtual DeviceRetrievalFailureCodeType::DeviceRetrievalFailureCode fetchDeviceConfig(const std::string& preferredDeviceName);
-        virtual bool setDeviceConfig(const std::string& preferredDeviceName, const std::string& deviceConfigFileContents);
-        virtual std::string getLastTFTPServerUsed();
-
-        // SIP and CTI stacks
-        virtual bool connect(const std::string& preferredDeviceName, const std::string& preferredLineDN);
-
-        virtual bool registerUser( const std::string& deviceName, const std::string& user, const std::string& domain, const std::string& sipContact );
+        virtual bool registerUser( const std::string& deviceName, const std::string& user, const std::string& domain );
 
         virtual bool disconnect();
         virtual std::string getPreferredDeviceName();
@@ -122,10 +105,6 @@ namespace CSF
         // Config and global setup
 		std::string username;
 		std::string password;
-		AuthenticationCertificateLevelType::AuthenticationCertificateLevel certificateLevel;
-		std::vector<std::string> ccmcipServers;
-		std::vector<std::string> tftpServers;
-		std::vector<std::string> ctiServers;
 		std::string authString;
 		std::string secureCachePath;
 		bool multiClusterMode;
@@ -135,14 +114,8 @@ namespace CSF
 		std::string localIpAddress;
 		std::string defaultGW;
 
-        // CCMCIP
 		AuthenticationStatusEnum::AuthenticationStatus authenticationStatus;
-		std::string lastCCMCIPServer;
 
-		// TFTP
-		std::string lastTFTPServer;
-
-        // SIP and CTI stacks
 		std::string preferredDevice;
 		std::string preferredLineDN;
 		CC_ServicePtr phone;			// The generic handle, for simple operations.

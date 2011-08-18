@@ -100,8 +100,8 @@ protected:
 
 
 private:
-	char *m_user_name;
-	char *m_user_password;
+	char *m_user_device;
+	char *m_user;
 	char *m_proxy_address;
 	char *m_dial_number;
 };

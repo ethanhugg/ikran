@@ -194,16 +194,16 @@ void CallControl::OnCallConnected()
  */
 NS_IMETHODIMP
 CallControl::RegisterUser(
-    const char* user_name,
-    const char* user_password,
+    const char* user_device,
+    const char* user,
     const char* proxy_address,
     nsISessionStateObserver *obs
 )
 {
 	//copy the parameters	
     sessionObserver = obs;
-    m_user_name = const_cast<char*>(user_name);
-    m_user_password = const_cast<char*>(user_password);
+    m_user_device = const_cast<char*>(user_device);
+    m_user = const_cast<char*>(user);
     m_proxy_address = const_cast<char*>(proxy_address);
 
     if (m_registered) {
@@ -216,7 +216,7 @@ CallControl::RegisterUser(
 
 	//lets give it a shot
 	SipccController::GetInstance()->AddSipccControllerObserver(this);
-	int res = SipccController::GetInstance()->Register(m_user_name, m_user_password, m_proxy_address);
+	int res = SipccController::GetInstance()->Register(m_user_device, m_user, m_proxy_address);
 	if(res == 0) {
 		m_registered = PR_TRUE;	
     	return NS_OK;

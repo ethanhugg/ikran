@@ -517,13 +517,3 @@ cc_ulong_t platGetDefaultgw(){
 	return 0;
 }
 
-/**
- * Provides the TFTP addr
- *
- * @param *addr the pointer to the string holding TFTP address (alt_tftp1)
- * @return void
- */
-void platGetTFTPAddr (char* addr)
-{
-    return;
-}

@@ -44,11 +44,6 @@
 #include "CC_SIPCCLineInfo.h"
 #include "CC_SIPCCCallInfo.h"
 #include "CallControlManagerImpl.h"
-
-#include "CCMCIPClient.h"
-#include "ConfigRetriever.h"
-
-
 #include "CSFLog.h"
 #include "csf_common.h"
 
@@ -59,24 +54,12 @@ static std::string logDestination = "CallControl.log";
 using namespace std;
 using namespace CSFUnified;
 
-static string toString(const vector<string>& strings)
-{
-    string result;
-    for(vector<string>::const_iterator it = strings.begin(); it != strings.end(); it++)
-    {
-        if(!result.empty())
-            result != ",";
-        result += *it;
-    }
-    return result;
-}
 
 namespace CSF
 {
 
 CallControlManagerImpl::CallControlManagerImpl()
-: certificateLevel(AuthenticationCertificateLevelType::eAllCerts),
-  multiClusterMode(false),
+: multiClusterMode(false),
   sipccLoggingMask(0),
   authenticationStatus(AuthenticationStatusEnum::eNotAuthenticated),
   connectionState(ConnectionStatusEnum::eIdle)
@@ -138,47 +121,6 @@ void CallControlManagerImpl::removeECCObserver ( ECC_Observer * observer )
     eccObservers.erase(observer);
 }
 
-
-// Config and global setup
-void CallControlManagerImpl::setAuthenticationCredentials(const std::string &username, const std::string& password)
-{
-    CSFLogInfoS(logTag, "setAuthenticationCredentials()");
-    this->username = username;
-    this->password = password;
-}
-
-void CallControlManagerImpl::setAuthenticationPolicy(const AuthenticationCertificateLevelType::AuthenticationCertificateLevel& level)
-{
-    CSFLogInfoS(logTag, "setAuthenticationPolicy(" << level << ")");
-    certificateLevel = level;
-}
-
-void CallControlManagerImpl::setCCMCIPServers(const std::vector<std::string> &servers)
-{
-    CSFLogInfoS(logTag, "setCCMCIPServers(" << toString(servers) << ")");
-    ccmcipServers.assign(servers.begin(), servers.end());
-}
-
-void CallControlManagerImpl::setCCMCIPServers(const std::string &server)
-{
-    CSFLogInfoS(logTag, "setCCMCIPServers(" << server << ")");
-    ccmcipServers.clear();
-    ccmcipServers.push_back(server);
-}
-
-void CallControlManagerImpl::setTFTPServers(const std::vector<std::string> &servers)
-{
-    CSFLogInfoS(logTag, "setTFTPServers(" << toString(servers) << ")");
-    tftpServers.assign(servers.begin(), servers.end());
-}
-
-void CallControlManagerImpl::setTFTPServers(const std::string &server)
-{
-    CSFLogInfoS(logTag, "setTFTPServers(" << server << ")");
-    tftpServers.clear();
-    tftpServers.push_back(server);
-}
-
 void CallControlManagerImpl::setMultiClusterMode(bool allowMultipleClusters)
 {
     CSFLogInfoS(logTag, "setMultiClusterMode(" << allowMultipleClusters << ")");
@@ -216,391 +158,16 @@ void CallControlManagerImpl::setLocalIpAddressAndGateway(const std::string& loca
     }
 }
 
-// CCMCIP
-AuthenticationFailureCodeType::AuthenticationFailureCode CallControlManagerImpl::authenticate()
-{
-    CSFLogInfoS(logTag, "authenticate()");
-    setConnectionState(ConnectionStatusEnum::eRegistering);
-
-    if(ccmcipServers.empty())
-    {
-        CSFLogErrorS(logTag, "authenticate() failed - no servers configured!");
-        setConnectionState(ConnectionStatusEnum::eFailed);
-
-        return AuthenticationFailureCodeType::eNoServersConfigured;
-    }
-
-    if(username.empty())
-    {
-        CSFLogErrorS(logTag, "authenticate() failed - no credentials configured!");
-        setConnectionState(ConnectionStatusEnum::eFailed);
-        return AuthenticationFailureCodeType::eNoCredentialsConfigured;
-    }
-
-    authenticationStatus = AuthenticationStatusEnum::eInProgress;
-    notifyAuthenticationStatusChange(authenticationStatus);
-
-    CCMCIPClient ccmcipClientInitializer;//Construct this here to keep XML and libCURL init'd across retries.
-
-    bool authenticated = false;
-    map<string, CSFUnified::DeviceInfo> localDeviceInfoMap;
-    AuthenticationFailureCodeType::AuthenticationFailureCode result = AuthenticationFailureCodeType::eNoServersConfigured;
-    for(vector<string>::iterator it = ccmcipServers.begin(); it != ccmcipServers.end(); it++)
-    {
-        string server = *it;
-
-        CSFUnified::DeviceRetrieveCertLevel internalCertLevel = (CSFUnified::DeviceRetrieveCertLevel) certificateLevel;
-
-        localDeviceInfoMap.clear();
-        int errorCode = 0;
-        authenticated = CCMCIPClient::fetchDevices(server, username, password, internalCertLevel, localDeviceInfoMap, &errorCode);
-
-        if(authenticated)
-        {
-            result = AuthenticationFailureCodeType::eNoError;
-        }
-        else
-        {
-            switch(errorCode)
-            {
-            case DEVICE_RETRIEVE_TIMEOUT:
-                result = AuthenticationFailureCodeType::eCouldNotConnect;
-                break;
-            case DEVICE_RETRIEVE_AUTH_FAILED:
-                result = AuthenticationFailureCodeType::eCredentialsRejected;
-                break;
-            case DEVICE_RETRIEVE_EMPTY_STRING:
-                result = AuthenticationFailureCodeType::eResponseEmpty;
-                break;
-            case DEVICE_RETRIEVE_XML_PARSE_DOC_FAILED:
-                result = AuthenticationFailureCodeType::eResponseInvalid;
-                break;
-            default:
-                result = AuthenticationFailureCodeType::eCouldNotConnect;
-            }
-        }
-
-        // Exit loop on first success.
-        if(authenticated)
-        {
-            CSFLogDebugS(logTag, "authenticate() succeeded with " << server);
-            lastCCMCIPServer = server;
-            break;
-        }
-
-        // If not in multi-cluster mode, also exit loop on authentication failure (but not on failure to connect etc)
-        if(result == AuthenticationFailureCodeType::eCredentialsRejected)
-        {
-        	setConnectionState(ConnectionStatusEnum::eFailed);
-
-            if(!multiClusterMode)
-            {
-                CSFLogErrorS(logTag, "authenticate() credentials rejected by " << server << ", abandoning");
-                break;
-            }
-            else
-            {
-                CSFLogDebugS(logTag, "authenticate() credentials rejected by " << server << ", try next server anyway");
-            }
-        }
-    }
-
-    if(authenticated)
-    {
-        for(map<string, DeviceInfo>::const_iterator it = localDeviceInfoMap.begin(); it != localDeviceInfoMap.end(); it++)
-        {
-            const DeviceInfo & deviceInfo = it->second;
-
-            PhoneDetailsImplPtr details;
-            bool added = false;
-            PhoneDetailsMap::iterator it2 = phoneDetailsMap.find(deviceInfo.getName());
-            if(it2 != phoneDetailsMap.end())
-            {
-                CSFLogDebugS(logTag, "authenticate() updated PhoneDetails " << deviceInfo.getName());
-                details = it2->second;
-            }
-            else
-            {
-                CSFLogDebugS(logTag, "authenticate() added PhoneDetails " << deviceInfo.getName());
-                details = PhoneDetailsImplPtr(new PhoneDetailsImpl());
-                details->setName(deviceInfo.getName());
-                phoneDetailsMap[deviceInfo.getName()] = details;
-                added = true;
-            }
-            details->setModelDescription(deviceInfo.getModel());
-            details->setDescription(deviceInfo.getDescription());
-
-            if(added)
-                notifyAvailablePhoneEvent(AvailablePhoneEventType::eFound, details);
-            else
-                notifyAvailablePhoneEvent(AvailablePhoneEventType::eUpdated, details);
-        }
-        authenticationStatus = AuthenticationStatusEnum::eAuthenticated;
-        notifyAuthenticationStatusChange(authenticationStatus);
-    }
-    else
-    {
-    	setConnectionState(ConnectionStatusEnum::eFailed);
-
-        CSFLogErrorS(logTag, "authenticate() failed [" << result << "]");
-        authenticationStatus = AuthenticationStatusEnum::eFailed;
-        notifyAuthenticationStatusChange(authenticationStatus);
-    }
-
-    return result;
-}
-
 AuthenticationStatusEnum::AuthenticationStatus CallControlManagerImpl::getAuthenticationStatus()
 {
     return authenticationStatus;
 }
 
-std::string CallControlManagerImpl::getLastCCMCIPServerUsed()
-{
-    return lastCCMCIPServer;
-}
-
-// TFTP
-DeviceRetrievalFailureCodeType::DeviceRetrievalFailureCode CallControlManagerImpl::fetchDeviceConfig(const std::string& preferredDeviceName)
-{
-    CSFLogInfoS(logTag, "fetchDeviceConfig(" << preferredDeviceName << ")");
-    if(tftpServers.empty())
-    {
-        CSFLogErrorS(logTag, "fetchDeviceConfig() failed - no servers configured!");
-        return DeviceRetrievalFailureCodeType::eNoServersConfigured;
-    }
-
-    if(preferredDeviceName == "")
-    {
-        CSFLogErrorS(logTag, "fetchDeviceConfig() failed - no device name given!");
-        return DeviceRetrievalFailureCodeType::eNoDeviceNameConfigured;
-    }
-
-    ConfigRetriever retriever;
-    retriever.setTFTPServers(tftpServers);
-    retriever.setAuthenticationString(authString);
-    retriever.setSecureCachePath(secureCachePath);
-    retriever.setMultiClusterMode(multiClusterMode);
-
-	string config;
-	DeviceRetrievalFailureCodeType::DeviceRetrievalFailureCode result = retriever.retrieveConfig(preferredDeviceName, config);
-	if (result == DeviceRetrievalFailureCodeType::eNoError)
-	{
-		CSFLogDebugS(logTag, "fetchDeviceConfig() retrieved config for " << preferredDeviceName);
-		lastTFTPServer = retriever.getLastTFTPServerUsed();
-
-		CSFLogDebug(logTag, "%s", config.c_str());
-
-		PhoneDetailsMap::iterator it = phoneDetailsMap.find(preferredDeviceName);
-		if(it != phoneDetailsMap.end())
-		{
-			CSFLogDebugS(logTag, "fetchDeviceConfig() added PhoneDetails " << preferredDeviceName);
-			PhoneDetailsImplPtr details = it->second;
-			details->setConfigStatus(DeviceConfigStatusEnum::eFetchedConfig);
-			details->setConfig(config);
-			notifyAvailablePhoneEvent(AvailablePhoneEventType::eUpdated, details);
-		}
-		else
-		{
-			CSFLogDebugS(logTag, "fetchDeviceConfig() added PhoneDetails " << preferredDeviceName);
-			PhoneDetailsImplPtr details(new PhoneDetailsImpl());
-			details->setName(preferredDeviceName);
-			details->setConfigStatus(DeviceConfigStatusEnum::eFetchedConfig);
-			details->setConfig(config);
-			phoneDetailsMap[preferredDeviceName] = details;
-			notifyAvailablePhoneEvent(AvailablePhoneEventType::eFound, details);
-		}
-
-		return DeviceRetrievalFailureCodeType::eNoError;
-	}
-	else
-	{
-		CSFLogErrorS(logTag, "fetchDeviceConfig() could not obtain config for " << preferredDeviceName);
-		return result;
-    }
-}
-
-bool CallControlManagerImpl::setDeviceConfig(const std::string& preferredDeviceName, const std::string& deviceConfigFileContents)
-{
-    CSFLogInfoS(logTag, "setDeviceConfig(" << preferredDeviceName << ", " <<
-            (deviceConfigFileContents.empty() ? "(null)" : "(...)") << ")");
-    bool isEmpty = (deviceConfigFileContents == "");
-    PhoneDetailsMap::iterator it = phoneDetailsMap.find(preferredDeviceName);
-    if(it != phoneDetailsMap.end())
-    {
-        CSFLogDebugS(logTag, "setDeviceConfig() updated PhoneDetails " << preferredDeviceName);
-        PhoneDetailsImplPtr details = it->second;
-        if(!isEmpty)
-        {
-            details->setConfigStatus(DeviceConfigStatusEnum::eCachedConfig);
-            details->setConfig(deviceConfigFileContents);
-        }
-        else
-        {
-            details->setConfigStatus(DeviceConfigStatusEnum::eNoConfig);
-            details->setConfig("");
-        }
-        notifyAvailablePhoneEvent(AvailablePhoneEventType::eUpdated, details);
-    }
-    else
-    {
-        CSFLogDebugS(logTag, "setDeviceConfig() added PhoneDetails " << preferredDeviceName);
-        PhoneDetailsImplPtr details(new PhoneDetailsImpl());
-        details->setName(preferredDeviceName);
-        if(!isEmpty)
-        {
-            details->setConfigStatus(DeviceConfigStatusEnum::eCachedConfig);
-            details->setConfig(deviceConfigFileContents);
-        }
-        else
-        {
-            details->setConfigStatus(DeviceConfigStatusEnum::eNoConfig);
-            details->setConfig("");
-        }
-        phoneDetailsMap[preferredDeviceName] = details;
-        notifyAvailablePhoneEvent(AvailablePhoneEventType::eFound, details);
-    }
-    return true;
-}
-
-std::string CallControlManagerImpl::getLastTFTPServerUsed()
-{
-    return lastTFTPServer;
-}
-
-// SIP and CTI stacks
-bool CallControlManagerImpl::connect(const std::string& preferredDeviceName, const std::string& preferredLineDN)
+bool CallControlManagerImpl::registerUser( const std::string& deviceName, const std::string& user, const std::string& domain )
 {
 	setConnectionState(ConnectionStatusEnum::eRegistering);
 
-    CSFLogInfoS(logTag, "connect(" << preferredDeviceName << ", " << preferredLineDN << ")");
-    if(phone != NULL)
-    {
-    	setConnectionState(ConnectionStatusEnum::eReady);
-
-        CSFLogErrorS(logTag, "connect() failed - already connected!");
-        return false;
-    }
-
-    // Check preconditions.
-    if(localIpAddress.empty() || localIpAddress == "127.0.0.1")
-    {
-    	setConnectionState(ConnectionStatusEnum::eFailed);
-        CSFLogErrorS(logTag, "connect() failed - No local IP address set!");
-    	return false;
-    }
-
-    // First determine the device to use.  Autoselect if none is provided.
-    string selectedDeviceName;
-    if(preferredDeviceName == "")
-    {
-        // If no device is indicated and we have not get tried to authenticate, and CCMCIP is configured,
-        // give CMCCIP a whirl, with luck we'll discover a suitable device.
-        if(authenticationStatus == AuthenticationStatusEnum::eNotAuthenticated && !ccmcipServers.empty()
-                    && !username.empty())
-        {
-            if(AuthenticationFailureCodeType::eNoError != authenticate())
-            {
-                setConnectionState(ConnectionStatusEnum::eFailed);
-                CSFLogErrorS(logTag, "connect() failed - Could not authenticate!");
-                return false;
-            }
-        }
-
-        // Pick the first likely looking device from our PhoneDetails map.
-        for(PhoneDetailsMap::iterator it = phoneDetailsMap.begin(); it != phoneDetailsMap.end(); it++)
-        {
-            PhoneDetailsPtr details = it->second;
-
-            if(details->isSoftPhone() || authenticationStatus != AuthenticationStatusEnum::eAuthenticated)
-            {
-                selectedDeviceName = details->getName();
-                break;
-            }
-        }
-    }
-    else
-    {
-        selectedDeviceName = preferredDeviceName;
-    }
-
-    // We must select a device.
-    if(selectedDeviceName == "")
-    {
-    	setConnectionState(ConnectionStatusEnum::eFailed);
-        CSFLogErrorS(logTag, "connect() failed - Could not select a device!");
-        return false;
-    }
-    CSFLogInfoS(logTag, "selected device '" << selectedDeviceName << "'");
-
-    // Not valid to give a preference for this.
-    if(preferredLineDN != "")
-    {
-    	setConnectionState(ConnectionStatusEnum::eFailed);
-        CSFLogErrorS(logTag, "connect() failed - PreferredLineDN must be blank!");
-        return false;
-    }
-
-    PhoneDetailsPtr details;
-    {
-        PhoneDetailsMap::iterator it = phoneDetailsMap.find(selectedDeviceName);
-        if(it != phoneDetailsMap.end())
-        {
-            details = it->second;
-        }
-
-        // If we don't have a config handy, try to fetch one.
-        if(details == NULL || details->getConfigStatus() == DeviceConfigStatusEnum::eNoConfig)
-        {
-            if(DeviceRetrievalFailureCodeType::eNoError != fetchDeviceConfig(selectedDeviceName))
-            {
-             	setConnectionState(ConnectionStatusEnum::eFailed);
-
-                CSFLogErrorS(logTag, "connect() failed - failed to fetch device config for " << selectedDeviceName << "!");
-                return false;
-            }
-            it = phoneDetailsMap.find(selectedDeviceName);
-            if(it != phoneDetailsMap.end())
-            {
-                details = it->second;
-            }
-        }
-    }
-
-    // We do have to obtain a PhoneDetails record containing a config.
-    if(details == NULL || details->getConfigStatus() == DeviceConfigStatusEnum::eNoConfig)
-    {
-     	setConnectionState(ConnectionStatusEnum::eFailed);
-        CSFLogErrorS(logTag, "connect() failed - could not obtain a device config!");
-        return false;
-    }
-
-    this->preferredDevice = selectedDeviceName;
-    this->preferredLineDN = preferredLineDN;
-    softPhone = CC_SIPCCServicePtr(new CC_SIPCCService());
-    phone = softPhone;
-    phone->init("","","","");
-    softPhone->setConfig(details->getConfig());
-    softPhone->setDeviceName(details->getName());
-    softPhone->setLoggingMask(sipccLoggingMask);
-    softPhone->setLocalAddressAndGateway(localIpAddress, defaultGW);
-    phone->addCCObserver(this);
-
-    bool bStarted = phone->start();
-    if (!bStarted) {
-        setConnectionState(ConnectionStatusEnum::eFailed);
-    } else {
-       setConnectionState(ConnectionStatusEnum::eReady);
-    }
-
-    return bStarted;
-}
-
-bool CallControlManagerImpl::registerUser( const std::string& deviceName, const std::string& user, const std::string& domain, const std::string& sipContact )
-{
-	setConnectionState(ConnectionStatusEnum::eRegistering);
-
-    CSFLogInfoS(logTag, "registerUser(" << user << ", " << domain << ", " << sipContact << " )");
+    CSFLogInfoS(logTag, "registerUser(" << user << ", " << domain << " )");
     if(phone != NULL)
     {
     	setConnectionState(ConnectionStatusEnum::eReady);
@@ -619,7 +186,7 @@ bool CallControlManagerImpl::registerUser( const std::string& deviceName, const 
 
     softPhone = CC_SIPCCServicePtr(new CC_SIPCCService());
     phone = softPhone;
-    phone->init(user, domain, deviceName, sipContact);
+    phone->init(user, domain, deviceName);
     softPhone->setLoggingMask(sipccLoggingMask);
     softPhone->setLocalAddressAndGateway(localIpAddress, defaultGW);
     phone->addCCObserver(this);

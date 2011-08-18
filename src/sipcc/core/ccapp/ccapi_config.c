@@ -58,7 +58,7 @@ extern int g_compl_cfg;
 extern boolean apply_config;
 extern cc_apply_config_result_t apply_config_result;
 cc_boolean parse_config_properties (int device_handle, const char *device_name, const char *cfg, int from_memory);
-cc_boolean parse_setup_properties (int device_handle, const char *device_name, const char *sipUser, const char *sipDomain, const char *sipContact);
+cc_boolean parse_setup_properties (int device_handle, const char *device_name, const char *sipUser, const char *sipDomain);
 
 /**
  * 
@@ -96,11 +96,11 @@ void CCAPI_Config_response(int device_handle, const char *device_name, const cha
 }
 
 
-void CCAPI_Start_response(int device_handle, const char *device_name, const char *sipUser, const char *sipDomain, const char* sipContact) {
+void CCAPI_Start_response(int device_handle, const char *device_name, const char *sipUser, const char *sipDomain) {
     static const char fname[] = "CCAPI_Start_response";
 
-    if (is_empty_str((char*)sipUser) || is_empty_str((char*)sipDomain) || is_empty_str((char*)sipContact)) {
-        CCAPP_ERROR(DEB_F_PREFIX" invalid registration details user=%x, domain=%x, contact=%x\n", DEB_F_PREFIX_ARGS(CC_API, fname), sipUser, sipDomain, sipContact);
+    if (is_empty_str((char*)sipUser) || is_empty_str((char*)sipDomain)) {
+        CCAPP_ERROR(DEB_F_PREFIX" invalid registration details user=%x, domain=%x\n", DEB_F_PREFIX_ARGS(CC_API, fname), sipUser, sipDomain);
         return;
     }
 
@@ -109,7 +109,7 @@ void CCAPI_Start_response(int device_handle, const char *device_name, const char
 
     if (is_phone_registered() == FALSE) {
 
-        if (parse_setup_properties(device_handle, device_name, sipUser, sipDomain, sipContact)) {
+        if (parse_setup_properties(device_handle, device_name, sipUser, sipDomain)) {
             registration_processEvent(EV_CC_CONFIG_RECEIVED);
         }
         return;
@@ -131,13 +131,13 @@ cc_boolean parse_config_properties (int device_handle, const char *device_name, 
     return TRUE;
 }
 
-/*  Enda New Function
+/*  New Function
     Register without using cucm config file
  */
-cc_boolean parse_setup_properties (int device_handle, const char *device_name, const char *sipUser, const char *sipDomain, const char *sipContact) {
+cc_boolean parse_setup_properties (int device_handle, const char *device_name, const char *sipUser, const char *sipDomain) {
     CC_Config_setStringValue(CFGID_DEVICE_NAME, device_name);
 
-    config_setup_main(sipUser, sipDomain, sipContact);
+    config_setup_main(sipUser, sipDomain);
 
     ccsnap_device_init();
     ccsnap_line_init();

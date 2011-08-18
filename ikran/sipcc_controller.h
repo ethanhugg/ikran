@@ -85,7 +85,7 @@ public:
 	static SipccController* GetInstance();
 
    	//Registration and Session Operations 
-	int Register(std::string aor, std::string credentials, std::string proxy);
+	int Register(std::string device, std::string sipUser, std::string sipDomain);
 	void UnRegister();
     void PlaceCall( std::string dial_number);
 	void EndCall();
@@ -128,10 +128,10 @@ private:
 
     //Session Information, passed in from the webkit
 	
-    std::string proxy_ip_address_; 
+    std::string sip_domain_;
     std::string user_name_; 
-    std::string user_credential_;
-    std::string aor_;
+    std::string device_;
+    std::string sip_user_;
     std::string destination_url_; // destination sip-address or phone number to call
     std::string dial_number_;
 	//Controllers local database

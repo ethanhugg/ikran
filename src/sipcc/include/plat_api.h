@@ -232,12 +232,6 @@ typedef enum {
        DHCP_STATUS_DISABLED
  } dhcp_status_e;
 
- // Coresponds to the values for XML tag TFTPCfgStatus
- typedef enum {
-     TFTP_CONFIG_DOWNLOAD_GOOD = 1,
-     TFTP_CONFIG_DOWNLOAD_TIMEOUT_OR_FAILURE,
-     TFTP_CONFIG_DOWNLOAD_NOT_CONFIGURED
-} tftp_status_e;
 
 // Corresponds to the value for XML tag for DNSStatusUnifiedCMX
 typedef enum {
@@ -698,13 +692,6 @@ void platGetMacAddr(char *addr);
  */
 void platGetDefaultGW(char *addr);
 
-/**
- * Provides the TFTP addr 
- *
- * @param *addr the pointer to the string holding TFTP address (alt_tftp1)
- * @return void
- */
-void platGetTFTPAddr(char *addr);
 
 /**
  *  platGetFeatureAllowed

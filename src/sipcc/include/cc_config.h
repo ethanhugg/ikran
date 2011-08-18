@@ -42,7 +42,7 @@
 
 /* Keep non line specific params here */
 #include "cc_constants.h"
-//#include "phone_constant.h"
+
 #define CC_MAX_CONFIG_LINES     MAX_CONFIG_LINES
 
 #define CFGID_BEGIN_INDEX                      0

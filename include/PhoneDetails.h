@@ -60,7 +60,7 @@ namespace CSF
 		/**
 		 * Get the model number (the internal CUCM number, not the number printed on the phone)
 		 * and the corresponding description (which normally does include the number printed on the phone).
-		 * Returns -1, "" if unknown (e.g. CCMCIP does not see the model number, but CTI fills it in).
+		 * Returns -1, "" if unknown
 		 */
 		virtual int getModel() const = 0;
 		virtual std::string getModelDescription() const = 0;
@@ -82,7 +82,6 @@ namespace CSF
 		 * TFTP config of device, and freshness of the config.
 		 */
 		virtual std::string getConfig() const = 0;
-		virtual DeviceConfigStatusEnum::DeviceConfigStatus getConfigStatus() const = 0;
 
 	protected:
 		PhoneDetails() {}

@@ -79,49 +79,34 @@ void SipccController::InitInternal() {
 	ccm_ptr_ = CSF::CallControlManager::create();
 	ccm_ptr_->addCCObserver(this);
 	ccm_ptr_->addECCObserver(this);
-	ccm_ptr_->setCCMCIPServers(proxy_ip_address_);
-	ccm_ptr_->setTFTPServers(proxy_ip_address_);
     ccm_ptr_->setLocalIpAddressAndGateway(local_ip_v4_address_,"");
 	//ccm_ptr_->setSIPCCLoggingMask( GSM_DEBUG_BIT | FIM_DEBUG_BIT | SIP_DEBUG_MSG_BIT | CC_APP_DEBUG_BIT | SIP_DEBUG_REG_STATE_BIT );
 	ccm_ptr_->setSIPCCLoggingMask(0); 
-	LOG(ERROR)<<"SipccController:: Authentication user : " << aor_;
-	ccm_ptr_->setAuthenticationCredentials(aor_, user_credential_);
-	
-	//Authenticate
-    if(ccm_ptr_->authenticate() != AuthenticationFailureCodeType::eNoError) {
-		initDone = false;
-		Logger::Instance()->logIt(" Authentication Failed ");
-		return;
-	} else {
-		
-	}
-
+	LOG(ERROR)<<"SipccController:: Authentication user : " << sip_user_;
 	initDone = true;	
 }
 
 bool SipccController::RegisterInternal() {
 	
 	Logger::Instance()->logIt("RegisterInternal");	
-    std::string deviceName;
-    std::string preferrdLine;
-    if(ccm_ptr_->connect(deviceName, preferrdLine) == false) {
-		Logger::Instance()->logIt("RegisterInternal - FAILED ");	
-		return false;
-    } 
-    
-return true;
 
+	if(ccm_ptr_->registerUser(device_, sip_user_, sip_domain_) == false) {
+		Logger::Instance()->logIt("RegisterInternal - FAILED ");
+		return false;
+	}
+    
+	return true;
 }
 
 // API Functions
-int SipccController::Register(std::string aor, std::string credentials, std::string proxy) {
+int SipccController::Register(std::string device, std::string sipUser, std::string sipDomain) {
 	int result = 0;	
-    aor_ = aor;
-    user_credential_ = credentials;
-    proxy_ip_address_ = proxy;
-    Logger::Instance()->logIt(aor_);
-    Logger::Instance()->logIt(user_credential_);
-    Logger::Instance()->logIt(proxy_ip_address_);
+	sip_user_ = sipUser;
+    device_ = device;
+    sip_domain_ = sipDomain;
+    Logger::Instance()->logIt(sip_user_);
+    Logger::Instance()->logIt(device_);
+    Logger::Instance()->logIt(sip_domain_);
     GetLocalActiveInterfaceAddress();
 
     InitInternal();
@@ -130,8 +115,6 @@ int SipccController::Register(std::string aor, std::string credentials, std::str
     }   
 	return result;
 }
-
-
 
 void SipccController::UnRegister() {
 	if (ccm_ptr_ != NULL) {
@@ -194,10 +177,7 @@ Logger::Instance()->logIt(" In Asnwer call ");
 #endif
 	} else {
 	}
-	
 }
-
-
 
 
 // Device , Line Events notification handlers
@@ -210,7 +190,6 @@ void SipccController::onFeatureEvent (ccapi_device_event_e deviceEvent, CC_Devic
 void SipccController::onLineEvent (ccapi_line_event_e lineEvent, CC_LinePtr line, CC_LineInfoPtr info) {
 }
 
-
 void SipccController::onAvailablePhoneEvent	(AvailablePhoneEventType::AvailablePhoneEvent event,const PhoneDetailsPtr availablePhoneDetails)
 {}
 
@@ -220,8 +199,6 @@ void SipccController::onAuthenticationStatusChange	(AuthenticationStatusEnum::Au
 //SipStack Callbacks for changes in call status.
 void SipccController::onCallEvent (ccapi_call_event_e callEvent, CC_CallPtr call, CC_CallInfoPtr info) 
 {
-
-	
 	if (callEvent == CCAPI_CALL_EV_STATE) {
 		
 		if (info->getCallState() == RINGIN) {
@@ -253,7 +230,6 @@ void SipccController::onCallEvent (ccapi_call_event_e callEvent, CC_CallPtr call
             	observer_->OnCallConnected();
 		}
     }
-
 }
 
 //SipStack Callbacks for changes in connection status.
@@ -325,7 +301,6 @@ CC_CallPtr SipccController::GetFirstCallWithCapability (CallControlManagerPtr cc
     return NULL_PTR(CC_Call);
 }
 
-
 // POSIX Only Implementation
 bool SipccController::GetLocalActiveInterfaceAddress() 
 {
@@ -334,7 +309,7 @@ bool SipccController::GetLocalActiveInterfaceAddress()
 	sock_desc_ = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	struct sockaddr_in proxy_server_client;
  	proxy_server_client.sin_family = AF_INET;
-	proxy_server_client.sin_addr.s_addr	= inet_addr(proxy_ip_address_.c_str());
+	proxy_server_client.sin_addr.s_addr	= inet_addr(sip_domain_.c_str());
 	proxy_server_client.sin_port = 12345;
 	fcntl(sock_desc_,F_SETFL,  O_NONBLOCK);
 	int ret = connect(sock_desc_, reinterpret_cast<sockaddr*>(&proxy_server_client),

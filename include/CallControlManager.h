@@ -77,50 +77,6 @@ namespace CSF
 	 * - Create/Destroy - Initialisation and clean shutdown.
 	 * 					  Destroy is optional if the destructor is used properly.
 	 * - Observer - Register for events when any state changes.  Optional but strongly advised.
-	 * - Config - Set* methods, apply initial setup, preferences and settings.
-	 * 			  The username, servers, etc are set here.
-	 * 			  Which settings are mandatory will depend on the intended usage.
-	 * 			  MultiClusterMode defaults to false, and is only applicable to CWC, making ECC
-	 * 			  keep trying the next servers in the list after authentication failures.
-	 * 			  AuthenticationPolicy defaults to AuthenticationCertificateLevelType::eSignedCert.
-	 * - Authenticate - this relates to using CCMCIP to validate the CUCM username and password,
-	 *                  basic connectivity to CUCM, and obtaining the list of available phones.
-	 *                  This step is optional.
-	 * - DeviceConfig - This is an additional step for softphone mode, to obtain the device config
-	 *                  file via TFTP from CUCM.  A client may cache the result or do its own
-	 *                  TFTP implementation and provide the file directly.
-	 *                  Optional if CCMCIP is performed or if using CTI mode only.
-	 * - Connect() - Actually start the SIP or CTI stacks, ultimately providing an active CC_Device for
-	 *               call control.
-	 *               Disconnect() is the opposite of connect() and will end all calls and tear down the
-	 *               SIP or CTI stack, but will not discard Config, Authentication or DeviceConfig.
-	 *               Destroy() wipes everything, ready to free CallControlManager or start fresh.
-	 *               The AvailablePhones is CallControlManager's best guess at what devices the user could
-	 *               control.  It is allowable for clients to cache or to "know better" and provide device
-	 *               names and line DNs from other sources.
-	 *               connect() in softphone mode will do its best to automatically call fetchDeviceConfig()
-	 *               implicitly as required, so long as sufficient information has already been provided
-	 *               via config and/or in AvailablePhones for it to decide which device to use.
-	 *
-	 *
-	 * @code
-	 * CallControlManagerPtr manager = CallControlManager::create();
-	 * manager->setLocalIpAddress("1.2.3.4");
-	 * if(!useFixedDeviceName) {
-	 *   manager->setCCMCIPServers("5.6.7.8");
-	 * }
-	 * manager->setTFTPServers("5.6.7.8");
-	 * if(!useFixedDeviceName) {
-	 *   manager->setAuthenticationCredentials("myuser", "mypass");
-	 *   manager->authenticate();
-	 *   manager->connect("", "");
-	 * } else {
-	 *   manager->connect(myDeviceName, "");
-	 * }
-	 * // At this point, getActiveDevice() will allow call control.
-	 * manager->disconnect();
-	 * manager->destroy();
-	 * @endcode
 	 *
 	 * Methods are generally synchronous (at present).
 	 */
@@ -155,31 +111,6 @@ namespace CSF
         virtual void addECCObserver ( ECC_Observer * observer ) = 0;
         virtual void removeECCObserver ( ECC_Observer * observer ) = 0;
 
-        /**
-         * Main config functions, to be called before connect().
-         * This is a separate step because it configures the servers for both CTI and SIPCC modes, allowing
-         *   subsequent mode switches to be handled more easily.
-         *
-	     * @param[in] certificateLevel - This specifies the acceptable certificate level that is to be accepted from
-							  the server. For example, if you specify SIGNED_CERT (highest level of strictness)
-							  then if the sever gives the client a self-signed cert during HTTPS auth stage then
-							  this is deemed not an acceptable level of security based on the fact that the client
-							  will only accept SIGNED_CERT. If SELF_SIGNED_CERT had been specified then the cert
-							  would be accepted in this case. ALL_CERTS is the lowest level of severity and
-							  will accept any class of cert.
-         *
-         * @param[in] mask - This controls what areas of the underlying Softphone implementation logs messages.
-                             pSIPCC has a number of defined areas of functionality for which the logging can
-                             be controlled independently, that is, logging can be turned on/off separately for
-                             each of these sub-components. The mask specified here has bits that are defined in
-                             the #defines at the top of ECC_Types.h.
-         */
-        virtual void setAuthenticationCredentials(const std::string &username, const std::string& password) = 0;
-        virtual void setAuthenticationPolicy(const AuthenticationCertificateLevelType::AuthenticationCertificateLevel& level) = 0;
-        virtual void setCCMCIPServers(const std::vector<std::string> &servers) = 0;
-        virtual void setCCMCIPServers(const std::string &server) = 0;
-        virtual void setTFTPServers(const std::vector<std::string> &servers) = 0;
-        virtual void setTFTPServers(const std::string &server) = 0;
         virtual void setMultiClusterMode(bool allowMultipleClusters) = 0;
         virtual void setSIPCCLoggingMask(const cc_int32_t mask) = 0;
         virtual void setAuthenticationString(const std::string &authString) = 0;
@@ -191,45 +122,7 @@ namespace CSF
          */
         virtual void setLocalIpAddressAndGateway(const std::string& localIpAddress, const std::string& defaultGW) = 0;
 
-        /**
-         * Performs CCMCIP authentication, which:
-         * - validates the server IP, username and password
-         * - obtains an initial list of available devices which may be connected to
-         *
-         * Note that changing the authentication credentials, etc can only be done while
-         * disconnect()ed and will wipe any existing available device list and reset
-         * hasAuthenticated() to false.
-         */
-        virtual AuthenticationFailureCodeType::AuthenticationFailureCode authenticate() = 0;
-        virtual AuthenticationStatusEnum::AuthenticationStatus getAuthenticationStatus() = 0;
-        virtual std::string getLastCCMCIPServerUsed() = 0;
-
-        /**
-         * Softphone operation requires an additional config step - the TFTP device config file
-         * must be retrieved.  The client is allowed to pass the config verbatim (if it was cached
-         * from a previous connection) or to request ECC to fetch a fresh copy.
-         */
-        virtual DeviceRetrievalFailureCodeType::DeviceRetrievalFailureCode fetchDeviceConfig(const std::string& preferredDeviceName) = 0;
-        virtual bool setDeviceConfig(const std::string& preferredDeviceName, const std::string& deviceConfigFileContents) = 0;
-        virtual std::string getLastTFTPServerUsed() = 0;
-
-        /**
-         * Main connect functions, to start/stop the SIPCC or CTI stacks.
-         *   Passing a blank device or line name instructs ECC to pick any available one from those available.
-         *   Passing a specific device and/or line name instructs ECC to only use that specific device and/or line,
-         *   	and to fail if it cannot successfully register it.
-         *
-         * Calling connect() before calling authenticate() is fine, and just skips this step.
-         *
-         * Calling connect() requires a device config for the preferred device to be available.
-         * If one has been passed verbatim, it will be used.  If not, this will implicitly call fetchDeviceConfig().
-         *
-         * All outstanding device, line and call objects are invalidated when disconnect() is called.
-         */
-        virtual bool connect(const std::string& preferredDeviceName, const std::string& preferredLineDN) = 0;
-
-        virtual bool registerUser( const std::string& deviceName, const std::string& user, const std::string& domain, const std::string& sipContact ) = 0;
-
+        virtual bool registerUser( const std::string& deviceName, const std::string& user, const std::string& domain ) = 0;
         virtual bool disconnect() = 0;
         virtual std::string getPreferredDeviceName() = 0;
         virtual std::string getPreferredLineDN() = 0;

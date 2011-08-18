@@ -69,7 +69,6 @@ namespace LoginErrorStatusEnum
 		NoCsfDevicesFound,				// Devices but none of type CSF
 		PhoneConfigGenError,			// Could not generate phone config
 		SipProfileGenError,			    // Could not build SIP profile
-		TftpFetchError,					// Could not get the config file
 		ConfigNotSet,					// Config not set before calling login()
 		CreateConfigProviderFailed,		// Could not create ConfigProvider
 		CreateSoftPhoneProviderFailed,	// Could not create SoftPhoneProvider
