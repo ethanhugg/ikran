@@ -30,7 +30,6 @@ Linux:
   Built regularly on Ubuntu 10.4 32bit and 64bit
   Third-Party Libraries
   +libxml2 - sudo apt-get install libxml2-dev
-  +libcurl - sudo apt-get install libcurl4-openssl-dev
   +Glib    - sudo apt-get install libdbus-glib-1-dev
   +asound  - sudo apt-get install libasound2-dev
   +libgtk  - sudo apt-get install libgtk2.0-dev     
@@ -93,8 +92,8 @@ There are two ways to use the Test Application
   ./tests/testapp_softphone/TestApp_SoftPhone
   
   Enter SIP Server IP address
-  Enter SIP Server Username
-  Enter SIP Server Password
+  Enter SIP Server Username (phone DN)
+  Enter device name
  
  
  Run the Test Application from the command line with a config file as a parameter
@@ -102,14 +101,16 @@ There are two ways to use the Test Application
     - Sample cfg.txt  (create file named e.g. cfg.txt)
 
        IP_ADDRESS=10.53.40.5
-       DEVICENAME=CSFemannion
+       DEVICENAME=emannionsip1
        LOGFILE=local.log
        LOCALIP=10.53.50.187
+       SIPUSER=1010
 
 Notes
- IP_ADDRESS = SIP server IP address
+ IP_ADDRESS = SIP server IP address, used as part of SIP AOR
  DEVICENAME = name of device config file on SIP server
  LOCALIP = IP address of local network adapter
+ SIPUSER = users DN configured on CUCM used as part of SIP AOR, i.e. SIPUSER@IP_ADDRESS
 
 TestApp Commands
  - ?           -- view commands available

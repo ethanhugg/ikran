@@ -263,12 +263,6 @@ void OnTerminateCall()
 //network\source\dns_utils.c
 //====================================================================================================
 
-const char *TFTPErrStr(int rc)
-{
-	return "Unknown";
-}
-
-
 int32_t
 cprShowMessageQueueStats (int32_t argc, const char *argv[])
 {

@@ -472,17 +472,6 @@ int platGetAudioDeviceStatus(plat_audio_device_t device_type)
 //    return;
 //}
 
-/**
- * Provides the TFTP addr
- *
- * @param *addr the pointer to the string holding TFTP address (alt_tftp1)
- * @return void
- */
-//void platGetTFTPAddr (char* addr)
-//{
-//    return;
-//}
-
 /*
  * Returns the default gateway
  * 

@@ -51,8 +51,7 @@ build_env = Environment()
 build_env["CPPDEFINES"] = [
   'LOG4CXX_STATIC', 
   '_NO_LOG4CXX', 
-  'USE_SSLEAY', 
-  'CURL_STATICLIB', 
+  'USE_SSLEAY',  
   'LIBXML_STATIC', 
   '_CPR_USE_EXTERNAL_LOGGER'
 ]

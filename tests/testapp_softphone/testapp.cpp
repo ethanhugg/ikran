@@ -100,23 +100,14 @@ is looked for in the directory this app is running, and config data is taken fro
 
 Configuration file format is quite simple. File has one assignment on each line for example
 IP_ADDRESS=10.53.40.5
-DEVICENAME=CSFemannion
-
-In the above example a DEVICENAME is specified which causes the app to bypass CCMCIP authentication
-and go straight to getting the phone config file for the given device name.
-
-In this example CCMCIP is used to authenticate before a suitable device is automatically selected.
-
-IP_ADDRESS=10.53.40.5
-USERNAME=emannion
-PASSWORD=xxx
+DEVICENAME=emannionsipdevice
 
 */
 
 #define CALL_ANSWER_DELAY_TIME_MS 2000
-#define TEST_USER_NAME  "emannion"
-#define TEST_IP_ADDRESS "10.53.47.140"
-#define TEST_PASSWORD   "gwyDL123"
+#define TEST_USER_NAME  "1000"
+#define TEST_IP_ADDRESS "10.99.10.75"
+#define TEST_DEVICE_NAME "emannionsip01"
 
 #ifndef NOVIDEO
 VideoWindow vWnd;
@@ -1146,17 +1137,12 @@ static void processUserInput (CallControlManagerPtr ccmPtr)
 }
 
 
-
 static string logDestination = "stdout";
 static string CUCMIPAddress = TEST_IP_ADDRESS;
 static string username = TEST_USER_NAME;
-static string password = TEST_PASSWORD;
-static string deviceName;
-static string preferredSoftphoneDeviceName;
-static bool shortLogin=false;
+static string deviceName = TEST_DEVICE_NAME;
 static string localIP = "";
-static string sipUser = "";
-static string sipContact = "";
+
 
 static void promptUserForInitialConfigInfo (const char * vxccCfgFilename)
 {
@@ -1166,14 +1152,10 @@ static void promptUserForInitialConfigInfo (const char * vxccCfgFilename)
     StringStringPtrMap paramMap;
 
     paramMap.insert(StringStringPtrPair("IP_ADDRESS", &CUCMIPAddress));
-    paramMap.insert(StringStringPtrPair("USER_NAME", &username));
-    paramMap.insert(StringStringPtrPair("PASSWORD", &password));
+    paramMap.insert(StringStringPtrPair("SIPUSER", &username));
     paramMap.insert(StringStringPtrPair("DEVICENAME", &deviceName));
-    paramMap.insert(StringStringPtrPair("PREF_SOFTPHONE_DEVICENAME", &preferredSoftphoneDeviceName));
     paramMap.insert(StringStringPtrPair("LOGFILE", &logDestination));
     paramMap.insert(StringStringPtrPair("LOCALIP", &localIP));
-    paramMap.insert(StringStringPtrPair("SIPUSER", &sipUser));
-    paramMap.insert(StringStringPtrPair("SIPCONTACT", &sipContact));
 
     ifstream myfile (vxccCfgFilename);
 
@@ -1213,7 +1195,7 @@ static void promptUserForInitialConfigInfo (const char * vxccCfgFilename)
             CUCMIPAddress = input;
         }
 
-        cout << "Enter SIP Server username [" << username << "]: ";
+        cout << "Enter SIP Server username (phone DN) [" << username << "]: ";
         getline( cin, input, '\n');
 
         if (input.length() > 0)
@@ -1221,53 +1203,14 @@ static void promptUserForInitialConfigInfo (const char * vxccCfgFilename)
             username = input;
         }
 
-        getPasswordFromConsole("Enter SIP Server Password (will not display on screen) [Enter]: ", input);
+        cout << "Enter device name [" << deviceName << "]: ";
+        getline( cin, input, '\n');
 
         if (input.length() > 0)
         {
-            password = input;
+        	deviceName = input;
         }
     }
-}
-
-static int performConnectToCUCM (const string & deviceName,
-                                 const string & preferredLine)
-{
-    int returnCode = 0;
-    int tBeforeConnect = GetTimeNow();
-
-    if (ccmPtr->connect(deviceName, preferredLine) == false)
-    {
-    	CSFLogDebugS(logTag, "Failed to connect.");
-        returnCode = -1;       
-    } 	
-    else
-    {
-        int loopCount = 0;
-        int tDiff = GetTimeElapsedSince(tBeforeConnect);
-
-        CSFLogDebug(logTag, "Connect succeeded after %d ms.", tDiff);
-
-        while ((ccmPtr->getActiveDevice() == NULL) && (loopCount < 5))
-        {
-        	CSFLogDebugS(logTag, "Device not available yet. Trying again in 2 seconds..");
-			base::PlatformThread::Sleep(2000);
-            ++loopCount;
-	    }
-	
-	    if (ccmPtr->getActiveDevice() != NULL)
-	    {
-	    	CSFLogDebugS(logTag, "Phone is now ready for use..");
-	        processUserInput(ccmPtr);
-	    }
-	    else
-	    {
-	    	CSFLogDebugS(logTag, "Timed out waiting for device. Cannot continue...");
-	        returnCode = -1;
-	    }
-    }
-
-    return returnCode;
 }
 
 /*
@@ -1279,7 +1222,7 @@ static int performRegister ()
     int returnCode = 0;
     int tBeforeConnect = GetTimeNow();
 
-    if( ccmPtr->registerUser( deviceName, sipUser, CUCMIPAddress, sipContact ) == false)
+    if( ccmPtr->registerUser( deviceName, username, CUCMIPAddress ) == false)
     {
     	CSFLogDebugS(logTag, "Failed to connect.");
         returnCode = -1;
@@ -1367,7 +1310,6 @@ static bool GetLocalActiveInterfaceAddress()
 
 static int runMainLoop ()
 {
-    int returnCode = 0;
     MyPhoneListener listener;
     CC_CapsPrinter CCCapsPrinter;
     ECC_CapsPrinter ECCCapsPrinter;
@@ -1381,9 +1323,6 @@ static int runMainLoop ()
     ccmPtr->addCCObserver(&listener);
     ccmPtr->addCCObserver(&CCCapsPrinter);
     ccmPtr->addECCObserver(&ECCCapsPrinter);
-    ccmPtr->setCCMCIPServers(CUCMIPAddress);
-    ccmPtr->setTFTPServers(CUCMIPAddress);
-
 
 #ifndef WIN32
     GetLocalActiveInterfaceAddress();
@@ -1395,65 +1334,9 @@ static int runMainLoop ()
     ccmPtr->setLocalIpAddressAndGateway(localIP,"");
 #endif
 
-    ccmPtr->setAuthenticationPolicy(AuthenticationCertificateLevelType::eAllCerts);
+    ccmPtr->setSIPCCLoggingMask( GSM_DEBUG_BIT | FIM_DEBUG_BIT | SIP_DEBUG_MSG_BIT | CC_APP_DEBUG_BIT | SIP_DEBUG_REG_STATE_BIT );
 
-    // Enabling detailed logging is causing a performance issue at present (at least on Windows)
-    // For the moment I'm going to have it not setting any of the logging bits. If you
-    // need detailed logging locally then you can change this, just don't commit this until
-    // we get some feedback from SIPCC on what we should do about this.
-    ccmPtr->setSIPCCLoggingMask( GSM_DEBUG_BIT | FIM_DEBUG_BIT | SIP_DEBUG_MSG_BIT | CC_APP_DEBUG_BIT | SIP_DEBUG_REG_STATE_BIT );//GSM_DEBUG_BIT | FIM_DEBUG_BIT | SIP_DEBUG_MSG_BIT | CC_APP_DEBUG_BIT );
-
-    if (sipUser.empty()) {
-
-    	if (!deviceName.empty())
-    	{
-    		// file contains a device name instead of a user name, so we will be skipping CCMCIP
-    		shortLogin  = true;
-    		CSFLogDebug(logTag, "Using short login to \"%s\", Device Name: \"%s\"", CUCMIPAddress.c_str(), deviceName.c_str());
-    	}
-    	else
-    	{
-    		// full login so use CCMCIP
-    		deviceName = "";
-    		ccmPtr->setAuthenticationCredentials(username, password);
-
-    		CSFLogDebug(logTag, "Attempting to authenticate user %s with CUCM @ IP %s", username.c_str(), CUCMIPAddress.c_str());
-
-    		if (ccmPtr->authenticate() != AuthenticationFailureCodeType::eNoError)
-    		{
-    			CSFLogDebugS(logTag, "Authentication failed.");
-    			returnCode = -1;
-    		}
-    		else
-    		{
-    			CSFLogDebugS(logTag, "Authentication succeeded.");
-    		}
-    	}
-
-    	if (returnCode == -1)
-    	{
-    		return returnCode;
-    	}
-
-    	string preferredDeviceName = preferredSoftphoneDeviceName;
-    	string preferredLine;
-
-    	if (deviceName.empty())
-    	{
-    		if (!preferredDeviceName.empty())
-    		{
-    			deviceName = preferredDeviceName;
-    		}
-    	}
-
-    	CSFLogDebug(logTag, "ttempting to connect to CUCM, selected device=\"%s\"...", deviceName.c_str());
-
-    	return performConnectToCUCM(deviceName, preferredLine);
-    }
-    else {
-    	return performRegister();
-    }
-
+    return performRegister();
 }
 
 static void initLogging(int argc, char** argv)

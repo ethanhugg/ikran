@@ -116,26 +116,6 @@ namespace CSF
 		std::string ECC_API toString(DeviceRetrievalFailureCode value);
 	};
 
-	namespace AuthenticationCertificateLevelType
-	{
-		typedef enum {
-			eSignedCert,
-			eSelfSignedCert,
-			eAllCerts
-		} AuthenticationCertificateLevel;
-		std::string ECC_API toString(AuthenticationCertificateLevel value);
-	};
-
-    namespace DeviceConfigStatusEnum
-    {
-    	typedef enum {
-    		eNoConfig,
-    		eFetchedConfig,
-    		eCachedConfig,
-    		eStaleConfig
-    	} DeviceConfigStatus;
-		std::string ECC_API toString(DeviceConfigStatus value);
-    };
 
     namespace ConnectionStatusEnum
     {

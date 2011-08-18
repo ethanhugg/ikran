@@ -69,7 +69,7 @@ namespace CSF
         /**
          * Use init() immediately on creating the service, and destroy() when finished with it.
          */
-        virtual bool init(const std::string& user, const std::string& domain, const std::string& deviceName, const std::string& contact) = 0;
+        virtual bool init(const std::string& user, const std::string& domain, const std::string& deviceName) = 0;
         virtual void destroy() = 0;
 
         /**
@@ -81,7 +81,6 @@ namespace CSF
          * Use start() to attempt to register for a device and stop() to cancel a current
          * registration (or registration attempt).
          */
-        virtual bool start() = 0;
         virtual bool startService() = 0;
         virtual void stop() = 0;
 

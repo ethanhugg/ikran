@@ -124,4 +124,103 @@ void cfg_check_la_appStatus(unsigned long appStatus);
 void cfg_set_inhibitLoading(int yesno);
 int cfg_get_inhibitLoading(void);
 
+
+/////////////////////////////////////////////////////////////
+//  Configuration Variables replacing CUCM config file
+//
+////
+//////
+
+//static char fname[] = "config_parser_handle_fcp_file";
+
+static const int gStartMediaPort = 16384;
+static const int gStopMediaPort = 32766;
+static const boolean gCallerIdBlocking = FALSE;
+static const boolean gAnonblock = FALSE;
+static const char gPreferredCodec[] = "none";
+static const char gDtmfOutOfBand[] = "avt";
+static const int gDtmfAvtPayload = 101;
+static const int gDtmfDbLevel = 3;
+static const int gSipRetx = 10;
+static const int gSipInviteRetx = 6;
+static const int gTimerT1 = 500;
+static const int gTimerT2 = 4000;
+static const int gTimerInviteExpires = 180;
+static const int gTimerRegisterExpires = 3600;
+static const boolean gRegisterWithProxy = TRUE;
+static const char gBackupProxy[] = "USECALLMANAGER";
+static const int gBackupProxyPort = 5060;
+static const char gEmergencyProxy[] = "USECALLMANAGER";
+static const int gEmergencyProxyPort = 5060;
+static const char gOutboundProxy[] = "USECALLMANAGER";
+static const int gOutboundProxyPort = 5060;
+static const boolean gNatRecievedProcessing = FALSE;
+static const char gUserInfo[] = "None";
+static const boolean gRemotePartyID = TRUE;
+static const boolean gSemiAttendedTransfer = TRUE;
+static const int gCallHoldRingback = 2;
+static const boolean gStutterMsgWaiting = FALSE;
+static const char gCallForwardURI[] = "x-cisco-serviceuri-cfwdall";
+static const boolean gCallStats = TRUE;
+static const int gTimerRegisterDelta = 5;
+static const int gMaxRedirects = 70;
+static const boolean gRfc2543Hold = FALSE;
+static const boolean gLocalCfwdEnable = TRUE;
+static const int gConnectionMonitorDuration = 120;
+static const int gCallLogBlfEnabled = 3 & 0x1;
+static const boolean gRetainForwardInformation = FALSE;
+static const int gRemoteCcEnable = 1;
+static const int gTimerKeepAliveExpires = 120;
+static const int gTimerSubscribeExpires = 120;
+static const int gTimerSubscribeDelta = 5;
+static const int gTransportLayerProtocol = 4;
+static const int gKpml = 3;
+static const boolean gNatEnabled = FALSE;
+static const char gNatAddress[] = "";
+static const int gVoipControlPort = 5060;
+static const boolean gAnableVad = FALSE;
+static const boolean gAutoAnswerAltBehavior = FALSE;
+static const int gAutoAnswerTimer = 1;
+static const boolean gAutoAnswerOverride = TRUE;
+static const int gOffhookToFirstDigitTimer = 15000;
+static const int gSilentPeriodBetweenCallWaitingBursts = 10;
+static const int gRingSettingBusyStationPolicy = 0;
+static const int gBlfAudibleAlertSettingOfIdleStation = 0;
+static const int gBlfAudibleAlertSettingOfBusyStation = 0;
+static const int gJoinAcrossLines = 0;
+static const boolean gCnfJoinEnabled = TRUE;
+static const int gRollover = 0;
+static const boolean gTransferOnhookEnabled = FALSE;
+static const int gDscpForAudio = 184;
+static const int gDscpVideo = 136;
+static const int gT302Timer = 5000;
+static const int gLineIndex = 1;
+static const int gFeatureID = 9;
+static const char gProxy[] = "USECALLMANAGER";
+static const int gPort = 5060;
+static const char gDisplayName[] = "";
+static const char gMessagesNumber[] = "";
+static const boolean gCallerName = TRUE;
+static const boolean gCallerNumber = FALSE;
+static const boolean gRedirectedNumber = FALSE;
+static const boolean gDialedNumber = TRUE;
+static const unsigned char gMessageWaitingLampPolicy = 3;
+static const unsigned char gMessageWaitingAMWI = 1;
+static const unsigned char gRingSettingIdle = 4;
+static const unsigned char gRingSettingActive = 5;
+static const int gMaxNumCalls = 1;
+static const int gBusyTrigger = 1;
+static const unsigned char gAutoAnswerEnabled = 2 & 0x1;
+static const unsigned char gCallWaiting = 3 & 0x1;
+static const int gDeviceSecurityMode = 1;
+static const int gCcm1_sip_port = 5060;
+static const int gCcm2_sip_port = 5060;
+static const int gCcm3_sip_port = 5060;
+static const boolean gCcm1_isvalid = TRUE;
+static const int gDscpCallControl = 1;
+static const int gSpeakerEnabled = 1;
+static const char gExternalNumberMask[] = "";
+
+
+
 #endif /* _CONFIG_H_ */

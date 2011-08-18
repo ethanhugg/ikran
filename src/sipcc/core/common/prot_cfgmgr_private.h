@@ -59,7 +59,7 @@
 #define DYNAMIC_DTMF_PAYLOAD_MIN 96
 #define DYNAMIC_DTMF_PAYLOAD_MAX 127
 
-// Includes 3 CCMS + TFTP
+// Includes 3 CCMS
 #define MAX_CCMS 4
 
 #define MAX_CODEC_ENTRIES 10
