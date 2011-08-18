@@ -827,37 +827,6 @@ void fsm_display_control_ringin_calls (boolean hide)
     }
 }
 
-#ifdef NOT_USED
-/**
- * The function retursn primary GSM's call_id of a transfer call
- * or of a b2b conference.
- * for all of the media.
- *
- * @param[in]call_id      - GSM call ID part of other xfer, conf. etc.
- *
- * @return  call_id of the primary call ID if this call ID is part of
- *          the xfer or b2b conf.
- *
- * @pre     (dcb not_eq NULL)
- */
-callid_t
-fsm_get_primary_call_id (callid_t call_id)
-{
-    callid_t prim_call_id;
-
-    if ((prim_call_id = fsmxfr_get_primary_call_id(call_id)) != CC_NO_CALL_ID) {
-        return (prim_call_id);
-    }
-
-    prim_call_id = fsmb2bcnf_get_primary_call_id(call_id);
-    if (prim_call_id != CC_NO_CALL_ID) {
-        return (prim_call_id);
-    }
-
-    return (CC_NO_CALL_ID);
-}
-#endif
-
 /*
  * fsmutil_init_groupid
  *
@@ -1002,79 +971,6 @@ fsmutil_is_xfr_consult_leg (callid_t call_id, fsmxfr_xcb_t *fsmxfr_xcbs,
     }
     return FALSE;
 }
-
-#if REMOVED_NOT_USED
-/*
- * fsmutil_get_feature_invocation_state
- *
- * Description:
- *    This function returns the feature invocation state of the feature id
- *    supplied. TRUE if state is SET (i.e. feature is invoked and awaiting
- *    feature ack from the SIP stack). FALSE if state is CLEAR (i.e. feature
- *    is not yet invoked or not waiting for the feature ack).
- *
- * Note: Code responsible for invoking features must call this function to
- *       check if the feature is already invoked and waiting for ack. If so,
- *       do not invoke the feature until previous invocation is completed by
- *       feature ack from the SIP stack.
- *
- * Parameters:
- *    fsmdef_dcb_t  *dcb - dcb associated with the call
- *    cc_features_t feature_id - feature id in question
- *
- * Returns: TRUE if feature invocation state is SET and FALSE otherwise
- */
-static boolean
-fsmutil_get_feature_invocation_state (fsmdef_dcb_t *dcb,
-                                      cc_features_t feature_id)
-{
-    static const char fname[] = "fsmutil_get_feature_invocation_state";
-    if ((feature_id < CC_FEATURE_NONE) || (feature_id >= CC_FEATURE_MAX)) {
-        /* Log Error */
-        FSM_DEBUG_SM(DEB_F_PREFIX"Invalid feature id -> %d\n", DEB_F_PREFIX_ARGS(FSM, fname), feature_id);
-        /* meaningless but won't allow feature invocation if TRUE */
-        return (TRUE);
-    }
-
-    if (rm_is_element_set(dcb->feature_invocation_state, (int16_t)feature_id)) {
-        return (TRUE);
-    }
-
-    return (FALSE);
-}
-
-/*
- * fsmutil_set_feature_invocation_state
- *
- * Description:
- *    This function sets the feature invocation state of the feature id
- *    supplied. This function is used by the code that would invoke a
- *    feature and then wait for the feature ack (from SIP stack).
- *
- * Note: Code responsible for invoking features must call this function
- *       to set the feature invocation state.
- *
- * Parameters:
- *    fsmdef_dcb_t  *dcb - dcb associated with the call
- *    cc_features_t feature_id - feature id in question
- *
- * Returns: None
- */
-static void
-fsmutil_set_feature_invocation_state (fsmdef_dcb_t *dcb,
-                                      cc_features_t feature_id)
-{
-    static const char fname[] = "fsmutil_set_feature_invocation_state";
-
-    if ((feature_id < CC_FEATURE_NONE) || (feature_id >= CC_FEATURE_MAX)) {
-        /* Log Error */
-        FSM_DEBUG_SM(DEB_F_PREFIX"Invalid feature id -> %d\n", DEB_F_PREFIX_ARGS(FSM, fname), feature_id);
-        return;
-    }
-
-    rm_set_element(dcb->feature_invocation_state, (int16_t)feature_id);
-}
-#endif
 
 /*
  * fsmutil_clear_feature_invocation_state

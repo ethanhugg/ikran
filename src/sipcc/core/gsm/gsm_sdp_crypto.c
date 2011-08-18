@@ -1216,49 +1216,6 @@ gsmsdp_add_single_crypto_attr (void *sdp_p, uint16_t level, int32_t tag,
     return (rc);
 }
 
-#ifdef NOT_USED
-
-/*
- *
- *  Function: gsmsdp_remove_all_crypto_lines
- *
- *  Parameters:
- *
- *     sdp_p - pointer to SDP
- *     level - the media level of the SDP where the media transport is.
- *
- *  Description:
- *      The function removes all crypto lines from SDP.
- *
- *  Returns:
- *      N/A.
- */
-static void
-gsmsdp_remove_all_crypto_lines (void *sdp_p, uint16_t level)
-{
-    uint16_t        num_attrs = 0;  /* number of attributes */
-    uint16_t        attr;
-    sdp_attr_e      attr_type;
-    sdp_result_e    rc;
-    uint16_t        inst_num;
-
-    /* Find the number of attributes at this level of media line */
-    if (sdp_get_total_attrs(sdp_p, level, 0, &num_attrs) != SDP_SUCCESS) {
-        /* no attributes or error */
-        return;
-    }
-
-    /* Find all crypto attributes and delete them */
-    for (attr = 1; attr <= num_attrs; attr++) {
-        rc = sdp_get_attr_type(sdp_p, level, 0, attr, &attr_type, &inst_num);
-        if ((rc == SDP_SUCCESS) && (attr_type == SDP_ATTR_SDESCRIPTIONS)) {
-            /* found sdescriptor, delete it */
-            (void) sdp_delete_attr(sdp_p, level, 0, attr_type, inst_num);
-        }
-    }
-}
-#endif
-
 /*
  *
  *  Function: gsmsdp_add_all_crypto_lines

@@ -45,7 +45,6 @@
 #include "uiapi.h"
 
 
-#define NOT_USED_YET    (0)
 #define LSM_NO_LINE     (0)
 #define LSM_NO_INSTANCE (0)
 #define NO_LINES_AVAILABLE (0)

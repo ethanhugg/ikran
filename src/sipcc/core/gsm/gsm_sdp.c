@@ -815,44 +815,6 @@ gsmsdp_update_local_time_stamp (fsmdef_dcb_t *dcb_p, boolean offer,
     }
 }
 
-#ifdef NOT_USED
-/*
- * gsmsdp_find_audio_media_line
- *
- * Description:
- *
- * Finds the first AUDIO line in a SDP
- *
- * Parameters:
- *
- * sdp_p - Pointer to the SDP to be searched for an AUDIO line
- * level_p - Pointer to the level used to record the media index
- *           of the located AUDIO line.
- *
- */
-static boolean
-gsmsdp_find_audio_media_line (void *sdp_p, uint16_t *level_p)
-{
-    uint16_t        num_m_lines, i;
-    boolean         audio_found = FALSE;
-    int32_t         port;
-
-    num_m_lines = sdp_get_num_media_lines(sdp_p);
-
-    /*
-     * Locate first AUDIO media line in the SDP.
-     */
-    for (i = 1; i <= num_m_lines && !audio_found; i++) {
-        port = sdp_get_media_portnum(sdp_p, i);
-        if (port && sdp_get_media_type(sdp_p, i) == SDP_MEDIA_AUDIO) {
-            *level_p = i;
-            audio_found = TRUE;
-        }
-    }
-    return audio_found;
-}
-#endif
-
 /**
  *
  * The function gets the local source address address and puts it into
