@@ -99,69 +99,6 @@ ccsipSocketSetNonblock (cpr_socket_t fd, int optval)
     return SIP_SUCCESS;
 }
 
-#if REMOVED_NOT_USED
-/*
- * The following routine that set the socket option has been
- * ported over from IOS. So not renaming.
- */
-static ccsipRet_e
-ccsipSocketSetStrictBind (cpr_socket_t fd, int optval)
-{
-    const char  *fname = "ccsipSocketSetStrictBind";
-
-    if (cprSetSockOpt(fd, SOL_SOCKET, SO_STRICT_ADDR_BIND, (void *)&optval,
-                      sizeof(optval))) {
-        CCSIP_DEBUG_ERROR(SIP_F_PREFIX"Unable to set strict bind on socket %d\n",
-                        fname, cpr_errno);
-        return SIP_INTERNAL_ERR;
-    }
-
-    return SIP_SUCCESS;
-}
-#endif
-
-#if REMOVED_NOT_USED
-/*
- * The following routine that set the socket option has been
- * ported over from IOS. So not renaming.
- */
-static ccsipRet_e
-ccsipSocketSetTCPNoDelay (cpr_socket_t fd, int optval)
-{
-    const char  *fname = "ccsipSocketSetTCPNoDelay";
-
-    if (cprSetSockOpt(fd, SOL_TCP, TCP_NODELAY, (void *)&optval,
-                      sizeof(optval))) {
-        CCSIP_DEBUG_ERROR(SIP_F_PREFIX"Unable to set no-delay option for TCP socket %d\n");
-                                fname, cpr_errno);
-        return SIP_INTERNAL_ERR;
-    }
-
-    return SIP_SUCCESS;
-}
-#endif
-
-#if REMOVED_NOT_USED
-/*
- * The following routine that set the socket option has been
- * ported over from IOS. So not renaming.
- */
-static ccsipRet_e
-ccsipSocketSetIPtos (cpr_socket_t fd, uint8_t optval)
-{
-    const char  *fname = "ccsipSocketSetIPtos";
-
-    if (cprSetSockOpt(fd, SOL_IP, IP_TOS, (void *)&optval,
-                      sizeof(optval))) {
-        CCSIP_DEBUG_ERROR(SIP_F_PREFIX"Unable to set IP TOS on a socket %d\n",
-                                fname, cpr_errno);
-        return SIP_INTERNAL_ERR;
-    }
-
-    return SIP_SUCCESS;
-}
-#endif
-
 /*
  * The following routine that set the socket option has been
  * ported over from IOS. So not renaming.
@@ -349,20 +286,6 @@ sip_tcp_set_sock_options (int fd)
         return FALSE;
     }
 
-#ifdef NOT_USED_WIN32
-    /* Disable NAGLE optimization(default is enabled) */
-    status = ccsipSocketSetTCPNoDelay(fd, optval);
-    if (status != SIP_SUCCESS) {
-        return FALSE;
-    }
-
-
-    /* Set PUSH bit option */
-    status = ccsipSocketSetPushBit(fd, optval);
-    if (status != SIP_SUCCESS) {
-        return FALSE;
-    }
-#endif /* NOT_USED_WIN32 */
     return TRUE;
 }
 
@@ -566,20 +489,6 @@ sip_tcp_create_connection (sipSPIMessage_t *spi_msg)
         CCSIP_DEBUG_ERROR(SIP_F_PREFIX"Socket set option failed.\n",
                             fname);
     }
-
-#ifdef NOT_USED_WIN32
-    srvaddr.sin_family = AF_INET6;
-//    srvaddr.sin_port = /*htons((ushort)create_msg->local_listener_port);*/0;
-    srvaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-
-    if (cprBind(new_fd, (cpr_sockaddr_t *)&srvaddr, sizeof(srvaddr))) {
-        CCSIP_DEBUG_ERROR(SIP_F_PREFIX"TCP bind failed with error %d\n", fname,
-                              cpr_errno);
-        (void) sipSocketClose(new_fd, FALSE);
-        sip_tcp_conn_tab[idx].fd = INVALID_SOCKET;
-        return INVALID_SOCKET;
-    }
-#endif /* NOT_USED_WIN32 */
 
     sip_config_get_net_device_ipaddr(&local_ipaddr);
      

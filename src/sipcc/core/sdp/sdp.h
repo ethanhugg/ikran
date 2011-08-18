@@ -543,11 +543,6 @@ typedef enum sdp_srtp_crypto_suite_t_ {
 extern void *sdp_init_config(void);
 extern void sdp_appl_debug(void *config_p, sdp_debug_e debug_type, 
                            tinybool debug_flag);
-#ifdef NOT_USED
-extern void sdp_show_config(void *conf_ptr);
-extern void sdp_show_stats(void *conf_ptr);
-extern void sdp_clear_stats(void *conf_ptr);
-#endif
 extern void sdp_require_version(void *config_p, tinybool version_required);
 extern void sdp_require_owner(void *config_p, tinybool owner_required);
 extern void sdp_require_session_name(void *config_p, 

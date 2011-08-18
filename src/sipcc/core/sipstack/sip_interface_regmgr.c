@@ -58,62 +58,6 @@
 extern ccm_act_stdby_table_t CCM_Active_Standby_Table;
 extern cc_config_table_t CC_Config_Table[];
 
-#ifdef REMOVED_NOT_USED
-/*
- * Return a SysBuf and initialize
- * Parameters supplied by application:
- *  - MinSize: size of buffer requested
- */
-static cprBuffer_t
-reg_get_msg_buf (int min_size)
-{
-    static const char fname[] = "reg_get_msg_buf";
-    cprBuffer_t buf;
-
-    if (min_size > CPR_MAX_MSG_SIZE) {
-        /* Size requested exceeds maximum ethernet buffer */
-        CCSIP_DEBUG_ERROR(get_debug_string(DEBUG_MSG_BUFFER_TOO_BIG),
-                          fname, min_size);
-        return NULL;
-    }
-
-    buf = SIPTaskGetBuffer((uint16_t)min_size);
-    if (!buf) {
-        CCSIP_DEBUG_ERROR(get_debug_string(DEBUG_SYSBUF_UNAVAILABLE), fname);
-        return NULL;
-    }
-
-    /* Clean out the data region of the message */
-    memset(buf, 0, min_size);
-
-    return buf;
-}
-#endif
-
-#ifdef REMOVED_NOT_USED
-/*
- ** reg_send_msg
- *
- *  FILENAME: ip_phone\sip\sip_interface_regmgr.c
- *
- *  PARAMETERS: buffer to send, length of message, dst_id
- *
- *  DESCRIPTION: Posts the message to the destination task as
- *               requested.
- *
- *  RETURNS:
- *
- */
-static reg_rcs_t
-reg_send_msg (cprBuffer_t buf, uint16_t len, cc_srcs_t dst_id)
-{
-    cpr_status_e rc;
-
-    rc = SIPTaskSendMsg(dst_id, buf, len, NULL);
-    return ((rc == CPR_SUCCESS) ? REG_RC_SUCCESS : REG_RC_ERROR);
-}
-#endif
-
 /*
  ** sip_regmgr_send_status
  *
