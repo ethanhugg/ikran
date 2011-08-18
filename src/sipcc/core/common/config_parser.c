@@ -784,15 +784,6 @@ void config_process_phone_services (xmlNode *services, xmlDocPtr doc)
     ccsnap_set_phone_services_provisioning(missed, plcd, rcvd);
 }
 
-/*
- * config_get_tftp_addr
- *
- * Get the tftp addr
- */
-void config_get_tftp_addr(char *buf)
-{
-    platGetTFTPAddr(buf);
-}
 
 /*
  * config_set_ccm_properties
@@ -800,13 +791,10 @@ void config_get_tftp_addr(char *buf)
  */
 void config_process_ccm_properties  (xmlNode *ccm_node, xmlDocPtr doc)
 {
-    static char fname[] = "config_process_ccm_properties";
-
     char ccm_name[MAX_CCM][MAX_SIP_URL_LENGTH];
     int ccm_index = 0;
     unsigned int i;
     cpr_ip_addr_t ip_addr;
-    char value[MAX_SIP_URL_LENGTH] = {'\0'};
     boolean valid_ccm_found = FALSE;
 
     memset(ccm_name, 0, sizeof(ccm_name));
@@ -815,13 +803,6 @@ void config_process_ccm_properties  (xmlNode *ccm_node, xmlDocPtr doc)
                 secured_sip_port[i] = 5061;
         }
         
-    // initialize tftp config-id property
-    config_get_tftp_addr(value);
-    if (value[0] == '\0') {
-        CONFIG_ERROR(CFG_F_PREFIX "No valid TFTP server configured", fname);
-    } else {
-        compare_or_set_string_value(CFGID_CCM_TFTP_IP_ADDR+0, value, (const unsigned char *) "ccm_tftp_ip_addr");
-    }
             
     process_ccm_config(ccm_node, doc, ccm_name, sip_port,
                                            secured_sip_port, &ccm_index);
@@ -847,14 +828,6 @@ void config_process_ccm_properties  (xmlNode *ccm_node, xmlDocPtr doc)
     if (strlen(ccm_name[0]) > 0 && !dnsGetHostByName(ccm_name[0], &ip_addr, 100, 1)) {
         compare_or_set_string_value(CFGID_CCM1_ADDRESS+0, ccm_name[0], (const unsigned char *) "ccm1_addr");
         compare_or_set_boolean_value(CFGID_CCM1_IS_VALID + 0, 1, (const unsigned char *)"ccm1_isvalid");
-    } else if (valid_ccm_found == FALSE) {
-        if (value[0] == '\0') {
-            CONFIG_ERROR(CFG_F_PREFIX "No valid TFTP server configured", fname);
-        } else {
-            CONFIG_DEBUG(CFG_F_PREFIX "No valid CCMs configured. Substituting TFTP server for CCM", fname);
-            compare_or_set_string_value(CFGID_CCM1_ADDRESS+0, value, (const unsigned char *) "ccm1_addr");
-            compare_or_set_boolean_value(CFGID_CCM1_IS_VALID + 0, 1, (const unsigned char *) "ccm1_isvalid");
-        }
     }
 }
 
@@ -944,7 +917,7 @@ void config_set_ccm_ip_mac ()
  * config_parse_element
  *
  * Parse the elements in the XML document and call the 
- * corressponding set functions
+ * corresponding set functions
  */
 void config_parse_element (xmlNode *cur_node, char *  value, xmlDocPtr doc )
 {
@@ -1374,16 +1347,13 @@ void config_parse_element (xmlNode *cur_node, char *  value, xmlDocPtr doc )
 
 
 /*
- * config_parse_element
- *
- * Parse the elements in the XML document and call the
- * corressponding set functions
+ * config_setup_element
+ * Setup elements that once were downloaded from CUCM in an XML file.
+ * Settings are stored in config.h
  */
-void config_setup_elements ( const char *sipUser, const char *sipDomain, const char *sipContact)
+void config_setup_elements ( const char *sipUser, const char *sipDomain)
 {
     unsigned int i;
-    int callidblock;
-    int anonblock;
     char buf[MAX_SIP_URL_LENGTH] = {'\0'};
     char ip[MAX_SIP_URL_LENGTH] = {'\0'};
     char option[MAX_SIP_URL_LENGTH] = {'\0'};
@@ -1391,418 +1361,100 @@ void config_setup_elements ( const char *sipUser, const char *sipDomain, const c
     cc_boolean isSecure = FALSE, isValid = TRUE;
     char macaddr[MAC_ADDR_SIZE];
 
-    //CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", "startMediaPort", "16384");
-
-    compare_or_set_int_value(CFGID_MEDIA_PORT_RANGE_START, 16384, (const unsigned char *) "startMediaPort");
-
-    //CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", "stopMediaPort","32766");
-    compare_or_set_int_value(CFGID_MEDIA_PORT_RANGE_END, 32766, (const unsigned char *) "stopMediaPort");
-
-    //CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", "callerIdBlocking", "2");
-
-    callidblock = 2;
-    if ((callidblock == ID_BLOCK_PREF1) || (callidblock == ID_BLOCK_PREF3)) {
-        callidblock = TRUE;
-    } else {
-        callidblock = FALSE;
-    }
-    compare_or_set_boolean_value(CFGID_CALLERID_BLOCKING, callidblock, (const unsigned char *) "callerIdBlocking");
-
-    //CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", "anonymousCallBlock", "2");
-    anonblock = 2;
-    if ((anonblock == ID_BLOCK_PREF1) || (anonblock == ID_BLOCK_PREF3)) {
-        anonblock = TRUE;
-    } else {
-        anonblock = FALSE;
-    }
-    compare_or_set_boolean_value(CFGID_ANONYMOUS_CALL_BLOCK, anonblock, (const unsigned char *) "anonymousCallBlock");
-
-    //CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", "preferredCodec", "none");
-    compare_or_set_string_value(CFGID_PREFERRED_CODEC, "none", (const unsigned char *) "preferredCodec");
-
-    //CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", "dtmfOutofBand", "avt");
-    compare_or_set_string_value(CFGID_DTMF_OUTOFBAND, "avt", (const unsigned char *) "dtmfOutofBand");
-
-    //CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", "dtmfAvtPayload", "101");
-    compare_or_set_int_value(CFGID_DTMF_AVT_PAYLOAD, 101, (const unsigned char *) "dtmfAvtPayload");
-
-    //    } else if (!xmlStrcmp(cur_node->name, (const xmlChar *) "dialTemplate")) {
-    //        CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //            value);
-    //        strncpy(dialTemplateFile, value, FILE_PATH);
-
-    //CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", "dtmfDbLevel","3");
-    compare_or_set_int_value(CFGID_DTMF_DB_LEVEL, 3, (const unsigned char *) "dtmfDbLevel");
-
-    //CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", "sipRetx","10");
-    compare_or_set_int_value(CFGID_SIP_RETX, 10, (const unsigned char *) "sipRetx");
-
-
-
-    //CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", "sipInviteRetx", "6");
-    compare_or_set_int_value(CFGID_SIP_INVITE_RETX, 6, (const unsigned char *) "sipInviteRetx");
-
-    //CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", "timerT1", "500");
-    compare_or_set_int_value(CFGID_TIMER_T1, 500, (const unsigned char *) "timerT1");
-
-    compare_or_set_int_value(CFGID_TIMER_T2, 4000, (const unsigned char *) "timerT2");
-
-    //CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", "timerInviteExpires", "180");
-    compare_or_set_int_value(CFGID_TIMER_INVITE_EXPIRES, 180, (const unsigned char *) "timerInviteExpires");
-
-    //    CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //        value);
-    compare_or_set_int_value(CFGID_TIMER_REGISTER_EXPIRES, 3600, (const unsigned char *) "timerRegisterExpires");
-
-     //   CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-     //       value);
-    compare_or_set_boolean_value(CFGID_PROXY_REGISTER, TRUE, (const unsigned char *) "registerWithProxy");
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //          value);
-    compare_or_set_string_value(CFGID_PROXY_BACKUP, "USECALLMANAGER", (const unsigned char *) "backupProxy");
-
-    //     CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //         value);
-    compare_or_set_int_value(CFGID_PROXY_BACKUP_PORT, 5060, (const unsigned char *) "backupProxyPort");
-
-    //    CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //        value);
-    compare_or_set_string_value(CFGID_PROXY_EMERGENCY, "USECALLMANAGER", (const unsigned char *) "emergencyProxy");
-
-    //    CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //        value);
-    compare_or_set_int_value(CFGID_PROXY_EMERGENCY_PORT, 5060, (const unsigned char *) "emergencyProxyPort");
-
-    //    CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //        value);
-    compare_or_set_string_value(CFGID_OUTBOUND_PROXY, "USECALLMANAGER", (const unsigned char *) "outboundProxy");
-
-    //     CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //         value);
-    compare_or_set_int_value(CFGID_OUTBOUND_PROXY_PORT, 5060, (const unsigned char *) "outboundProxy");
-
-    //     CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //         value);
-    compare_or_set_boolean_value(CFGID_NAT_RECEIVED_PROCESSING, FALSE, (const unsigned char *) "natRecievedProcessing");
-
-    //} else if (!xmlStrcmp(cur_node->name, (const xmlChar *) "userInfo")) {
-    //    for (i=0; i < strlen("None"); i++) {
-    //        temp_string[i] = tolower(value[i]);
-    //    }
-    //    temp_string[i] = '\0';
-    compare_or_set_string_value(CFGID_REG_USER_INFO, "None", (const unsigned char *) "userInfo");
-
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //         temp_string);
-
-    //     CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //         value);
-    compare_or_set_boolean_value(CFGID_REMOTE_PARTY_ID, TRUE, (const unsigned char *) "remotePartyID");
-
-    //     CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //         value);
-    compare_or_set_boolean_value (CFGID_SEMI_XFER, TRUE, (const unsigned char *) "semiAttendedTransfer");
-
-    //     CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //         value);
-    compare_or_set_int_value(CFGID_CALL_HOLD_RINGBACK, 2, (const unsigned char *) "callHoldRingback");
-
-    //    CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //        value);
-    compare_or_set_boolean_value(CFGID_STUTTER_MSG_WAITING, FALSE, (const unsigned char *) "stutterMsgWaiting");
-
-    //     CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //         value);
-    compare_or_set_string_value(CFGID_CALL_FORWARD_URI, "x-cisco-serviceuri-cfwdall", (const unsigned char *) "callForwardURI");
-
-    //    CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //        value);
-    compare_or_set_boolean_value(CFGID_CALL_STATS, TRUE, (const unsigned char *) "callStats");
-
-    //     CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //         value);
-    compare_or_set_int_value(CFGID_TIMER_REGISTER_DELTA, 5, (const unsigned char *) "timerRegisterDelta");
-
-    //     CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //         value);
-    compare_or_set_int_value(CFGID_SIP_MAX_FORWARDS, 70, (const unsigned char *) "maxRedirects");
-
-    //     CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //         value);
-    compare_or_set_boolean_value(CFGID_2543_HOLD, FALSE, (const unsigned char *) "rfc2543Hold");
-
-    //     CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //         value);
-    compare_or_set_boolean_value(CFGID_LOCAL_CFWD_ENABLE, TRUE, (const unsigned char *) "localCfwdEnable");
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //          value);
-    compare_or_set_int_value(CFGID_CONN_MONITOR_DURATION, 120, (const unsigned char *) "connectionMonitorDuration");
-
-    compare_or_set_int_value(CFGID_CALL_LOG_BLF_ENABLED, 3 & 0x1, (const unsigned char *) "callLogBlfEnabled");
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //         value);
-    compare_or_set_boolean_value(CFGID_RETAIN_FORWARD_INFORMATION, FALSE, (const unsigned char *) "retainForwardInformation");
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //          value);
-    // if (!strncasecmp(value, "true", 4)) {
-                compare_or_set_int_value(CFGID_REMOTE_CC_ENABLED, 1, (const unsigned char *) "remoteCcEnable");
-    //  } else {
-    //          compare_or_set_int_value(CFGID_REMOTE_CC_ENABLED, 0, cur_node->name);
-    //  }
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //          value);
-    compare_or_set_int_value(CFGID_TIMER_KEEPALIVE_EXPIRES, 120, (const unsigned char *) "timerKeepAliveExpires");
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //          value);
-    compare_or_set_int_value(CFGID_TIMER_SUBSCRIBE_EXPIRES, 120, (const unsigned char *) "timerSubscribeExpires");
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //          value);
-    compare_or_set_int_value(CFGID_TIMER_SUBSCRIBE_DELTA, 5, (const unsigned char *) "timerSubscribeDelta");
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //           value);
-
-    security_mode = 1;
-
-    //        CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //           value);
-    compare_or_set_int_value(CFGID_TRANSPORT_LAYER_PROT, 4, (const unsigned char *) "transportLayerProtocol");
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //          value);
-    compare_or_set_int_value(CFGID_KPML_ENABLED, 3, (const unsigned char *) "kpml");
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //          value);
-    compare_or_set_boolean_value(CFGID_NAT_ENABLE, FALSE, (const unsigned char *) "natEnabled");
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //          value);
-    compare_or_set_string_value(CFGID_NAT_ADDRESS, "", (const unsigned char *) "natAddress");
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //          value);
-    compare_or_set_int_value(CFGID_VOIP_CONTROL_PORT, 5060, (const unsigned char *) "voipControlPort");
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //                      value);
-    compare_or_set_boolean_value(CFGID_ENABLE_VAD, FALSE, (const unsigned char *) "enableVad");
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element",
-    //                   cur_node->name, value);
-    compare_or_set_boolean_value(CFGID_AUTOANSWER_IDLE_ALTERNATE, FALSE, (const unsigned char *) "autoAnswerAltBehavior");
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //          value);
-    compare_or_set_int_value(CFGID_AUTOANSWER_TIMER, 1, (const unsigned char *) "autoAnswerTimer");
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n",
-    //                           "config_parser_element", cur_node->name, value);
-    compare_or_set_boolean_value(CFGID_AUTOANSWER_OVERRIDE, TRUE, (const unsigned char *) "autoAnswerOverride");
-                                       //   (!strcmp(value,"true")) ? TRUE : FALSE, cur_node->name);
-
-    //     CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //          value);
-    compare_or_set_int_value(CFGID_OFFHOOK_TO_FIRST_DIGIT_TIMER, 15000, (const unsigned char *) "offhookToFirstDigitTimer");
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //          value);
-    compare_or_set_int_value(CFGID_CALL_WAITING_SILENT_PERIOD, 10, (const unsigned char *) "silentPeriodBetweenCallWaitingBursts");
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //                        value);
-    compare_or_set_int_value(CFGID_RING_SETTING_BUSY_POLICY, 0, (const unsigned char *) "ringSettingBusyStationPolicy");
-
-    //     CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //         value);
-    compare_or_set_int_value (CFGID_BLF_ALERT_TONE_IDLE, 0, (const unsigned char *) "blfAudibleAlertSettingOfIdleStation");
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //          value);
-    compare_or_set_int_value (CFGID_BLF_ALERT_TONE_BUSY, 0, (const unsigned char *) "blfAudibleAlertSettingOfBusyStation");
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //          value);
-    compare_or_set_int_value (CFGID_JOIN_ACROSS_LINES, 0, (const unsigned char *) "joinAcrossLines");
-
-    //     CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //         value);
-    compare_or_set_boolean_value(CFGID_CNF_JOIN_ENABLE, TRUE, (const unsigned char *) "cnfJoinEnabled");
-
-    //    CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //        value);
-    compare_or_set_int_value (CFGID_ROLLOVER, 0, (const unsigned char *) "rollover");
-
-    //    CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //        value);
-    compare_or_set_boolean_value(CFGID_XFR_ONHOOK_ENABLED, FALSE, (const unsigned char *) "transferOnhookEnabled");
-
-    //     CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //         value);
-    compare_or_set_int_value(CFGID_DSCP_AUDIO, 184, (const unsigned char *) "dscpForAudio");
-
-    //     CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //         value);
-    compare_or_set_int_value(CFGID_DSCP_VIDEO, 136, (const unsigned char *) "dscpVideo");
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //          value);
-    compare_or_set_int_value(CFGID_INTER_DIGIT_TIMER, 5000, (const unsigned char *) "T302Timer");
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //         value);
-
-    //update_sipline_properties(cur_node,  doc);
-
-    // only one line for now
-
-    /* this button is configured in new config */
-    // button_configured[line] = 1;
-
- 	compare_or_set_int_value(CFGID_LINE_INDEX + line, 1, (const unsigned char *)"lineIndex");
-
- 	//     CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n",
-    //                 "config_set_sipline_properties", cur_node->name, value);
-    compare_or_set_int_value(CFGID_LINE_FEATURE + line, 9, (const unsigned char *) "featureID");
-
-     //     CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n",
-    //                  "config_set_sipline_properties", cur_node->name, value);
-    compare_or_set_string_value(CFGID_PROXY_ADDRESS + line, "USECALLMANAGER", (const unsigned char *) "proxy");
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n",
-    //                   "config_set_sipline_properties", cur_node->name, value);
-    compare_or_set_int_value(CFGID_PROXY_PORT + line, 5060, (const unsigned char *) "port");
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_set_sipline_properties",
-    //                   cur_node->name, value);
+    compare_or_set_int_value(CFGID_MEDIA_PORT_RANGE_START, gStartMediaPort, (const unsigned char *) "startMediaPort");
+    compare_or_set_int_value(CFGID_MEDIA_PORT_RANGE_END, gStopMediaPort, (const unsigned char *) "stopMediaPort");
+    compare_or_set_boolean_value(CFGID_CALLERID_BLOCKING, gCallerIdBlocking, (const unsigned char *) "callerIdBlocking");
+    compare_or_set_boolean_value(CFGID_ANONYMOUS_CALL_BLOCK, gAnonblock, (const unsigned char *) "anonymousCallBlock");
+    compare_or_set_string_value(CFGID_PREFERRED_CODEC, gPreferredCodec, (const unsigned char *) "preferredCodec");
+    compare_or_set_string_value(CFGID_DTMF_OUTOFBAND, gDtmfOutOfBand, (const unsigned char *) "dtmfOutofBand");
+    compare_or_set_int_value(CFGID_DTMF_AVT_PAYLOAD, gDtmfAvtPayload, (const unsigned char *) "dtmfAvtPayload");
+    compare_or_set_int_value(CFGID_DTMF_DB_LEVEL, gDtmfDbLevel, (const unsigned char *) "dtmfDbLevel");
+    compare_or_set_int_value(CFGID_SIP_RETX, gSipRetx, (const unsigned char *) "sipRetx");
+    compare_or_set_int_value(CFGID_SIP_INVITE_RETX, gSipInviteRetx, (const unsigned char *) "sipInviteRetx");
+    compare_or_set_int_value(CFGID_TIMER_T1, gTimerT1, (const unsigned char *) "timerT1");
+    compare_or_set_int_value(CFGID_TIMER_T2, gTimerT2, (const unsigned char *) "timerT2");
+    compare_or_set_int_value(CFGID_TIMER_INVITE_EXPIRES, gTimerInviteExpires, (const unsigned char *) "timerInviteExpires");
+    compare_or_set_int_value(CFGID_TIMER_REGISTER_EXPIRES, gTimerRegisterExpires, (const unsigned char *) "timerRegisterExpires");
+    compare_or_set_boolean_value(CFGID_PROXY_REGISTER, gRegisterWithProxy, (const unsigned char *) "registerWithProxy");
+    compare_or_set_string_value(CFGID_PROXY_BACKUP, gBackupProxy, (const unsigned char *) "backupProxy");
+    compare_or_set_int_value(CFGID_PROXY_BACKUP_PORT, gBackupProxyPort, (const unsigned char *) "backupProxyPort");
+    compare_or_set_string_value(CFGID_PROXY_EMERGENCY, gEmergencyProxy, (const unsigned char *) "emergencyProxy");
+    compare_or_set_int_value(CFGID_PROXY_EMERGENCY_PORT, gEmergencyProxyPort, (const unsigned char *) "emergencyProxyPort");
+    compare_or_set_string_value(CFGID_OUTBOUND_PROXY, gOutboundProxy, (const unsigned char *) "outboundProxy");
+    compare_or_set_int_value(CFGID_OUTBOUND_PROXY_PORT, gOutboundProxyPort, (const unsigned char *) "outboundProxyPort");
+    compare_or_set_boolean_value(CFGID_NAT_RECEIVED_PROCESSING, gNatRecievedProcessing, (const unsigned char *) "natRecievedProcessing");
+    compare_or_set_string_value(CFGID_REG_USER_INFO, gUserInfo, (const unsigned char *) "userInfo");
+    compare_or_set_boolean_value(CFGID_REMOTE_PARTY_ID, gRemotePartyID, (const unsigned char *) "remotePartyID");
+    compare_or_set_boolean_value (CFGID_SEMI_XFER, gSemiAttendedTransfer, (const unsigned char *) "semiAttendedTransfer");
+    compare_or_set_int_value(CFGID_CALL_HOLD_RINGBACK, gCallHoldRingback, (const unsigned char *) "callHoldRingback");
+    compare_or_set_boolean_value(CFGID_STUTTER_MSG_WAITING, gStutterMsgWaiting, (const unsigned char *) "stutterMsgWaiting");
+    compare_or_set_string_value(CFGID_CALL_FORWARD_URI, gCallForwardURI, (const unsigned char *) "callForwardURI");
+    compare_or_set_boolean_value(CFGID_CALL_STATS, gCallStats, (const unsigned char *) "callStats");
+    compare_or_set_int_value(CFGID_TIMER_REGISTER_DELTA, gTimerRegisterDelta, (const unsigned char *) "timerRegisterDelta");
+    compare_or_set_int_value(CFGID_SIP_MAX_FORWARDS, gMaxRedirects, (const unsigned char *) "maxRedirects");
+    compare_or_set_boolean_value(CFGID_2543_HOLD, gRfc2543Hold, (const unsigned char *) "rfc2543Hold");
+    compare_or_set_boolean_value(CFGID_LOCAL_CFWD_ENABLE, gLocalCfwdEnable, (const unsigned char *) "localCfwdEnable");
+    compare_or_set_int_value(CFGID_CONN_MONITOR_DURATION, gConnectionMonitorDuration, (const unsigned char *) "connectionMonitorDuration");
+    compare_or_set_int_value(CFGID_CALL_LOG_BLF_ENABLED, gCallLogBlfEnabled, (const unsigned char *) "callLogBlfEnabled");
+    compare_or_set_boolean_value(CFGID_RETAIN_FORWARD_INFORMATION, gRetainForwardInformation, (const unsigned char *) "retainForwardInformation");
+    compare_or_set_int_value(CFGID_REMOTE_CC_ENABLED, gRemoteCcEnable, (const unsigned char *) "remoteCcEnable");
+    compare_or_set_int_value(CFGID_TIMER_KEEPALIVE_EXPIRES, gTimerKeepAliveExpires, (const unsigned char *) "timerKeepAliveExpires");
+    compare_or_set_int_value(CFGID_TIMER_SUBSCRIBE_EXPIRES, gTimerSubscribeExpires, (const unsigned char *) "timerSubscribeExpires");
+    compare_or_set_int_value(CFGID_TIMER_SUBSCRIBE_DELTA, gTimerSubscribeDelta, (const unsigned char *) "timerSubscribeDelta");
+    compare_or_set_int_value(CFGID_TRANSPORT_LAYER_PROT, gTransportLayerProtocol, (const unsigned char *) "transportLayerProtocol");
+    compare_or_set_int_value(CFGID_KPML_ENABLED, gKpml, (const unsigned char *) "kpml");
+    compare_or_set_boolean_value(CFGID_NAT_ENABLE, gNatEnabled, (const unsigned char *) "natEnabled");
+    compare_or_set_string_value(CFGID_NAT_ADDRESS, gNatAddress, (const unsigned char *) "natAddress");
+    compare_or_set_int_value(CFGID_VOIP_CONTROL_PORT, gVoipControlPort, (const unsigned char *) "voipControlPort");
+    compare_or_set_boolean_value(CFGID_ENABLE_VAD, gAnableVad, (const unsigned char *) "enableVad");
+    compare_or_set_boolean_value(CFGID_AUTOANSWER_IDLE_ALTERNATE, gAutoAnswerAltBehavior, (const unsigned char *) "autoAnswerAltBehavior");
+    compare_or_set_int_value(CFGID_AUTOANSWER_TIMER, gAutoAnswerTimer, (const unsigned char *) "autoAnswerTimer");
+    compare_or_set_boolean_value(CFGID_AUTOANSWER_OVERRIDE, gAutoAnswerOverride, (const unsigned char *) "autoAnswerOverride");
+    compare_or_set_int_value(CFGID_OFFHOOK_TO_FIRST_DIGIT_TIMER, gOffhookToFirstDigitTimer, (const unsigned char *) "offhookToFirstDigitTimer");
+    compare_or_set_int_value(CFGID_CALL_WAITING_SILENT_PERIOD, gSilentPeriodBetweenCallWaitingBursts, (const unsigned char *) "silentPeriodBetweenCallWaitingBursts");
+    compare_or_set_int_value(CFGID_RING_SETTING_BUSY_POLICY, gRingSettingBusyStationPolicy, (const unsigned char *) "ringSettingBusyStationPolicy");
+    compare_or_set_int_value (CFGID_BLF_ALERT_TONE_IDLE, gBlfAudibleAlertSettingOfIdleStation, (const unsigned char *) "blfAudibleAlertSettingOfIdleStation");
+    compare_or_set_int_value (CFGID_BLF_ALERT_TONE_BUSY, gBlfAudibleAlertSettingOfBusyStation, (const unsigned char *) "blfAudibleAlertSettingOfBusyStation");
+    compare_or_set_int_value (CFGID_JOIN_ACROSS_LINES, gJoinAcrossLines, (const unsigned char *) "joinAcrossLines");
+    compare_or_set_boolean_value(CFGID_CNF_JOIN_ENABLE, gCnfJoinEnabled, (const unsigned char *) "cnfJoinEnabled");
+    compare_or_set_int_value (CFGID_ROLLOVER, gRollover, (const unsigned char *) "rollover");
+    compare_or_set_boolean_value(CFGID_XFR_ONHOOK_ENABLED, gTransferOnhookEnabled, (const unsigned char *) "transferOnhookEnabled");
+    compare_or_set_int_value(CFGID_DSCP_AUDIO, gDscpForAudio, (const unsigned char *) "dscpForAudio");
+    compare_or_set_int_value(CFGID_DSCP_VIDEO, gDscpVideo, (const unsigned char *) "dscpVideo");
+    compare_or_set_int_value(CFGID_INTER_DIGIT_TIMER, gT302Timer, (const unsigned char *) "T302Timer");
+ 	compare_or_set_int_value(CFGID_LINE_INDEX + line, gLineIndex, (const unsigned char *)"lineIndex");
+    compare_or_set_int_value(CFGID_LINE_FEATURE + line, gFeatureID, (const unsigned char *) "featureID");
+    compare_or_set_string_value(CFGID_PROXY_ADDRESS + line, gProxy, (const unsigned char *) "proxy");
+    compare_or_set_int_value(CFGID_PROXY_PORT + line, gPort, (const unsigned char *) "port");
 
     if ( apply_config == FALSE )  {
-         ccsnap_set_line_label(line+1, "ENDAMANNIONTODISCUSS");
+         ccsnap_set_line_label(line+1, "LINELABEL");
     }
 
-    //        CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_set_sipline_properties",
-    //                   cur_node->name, value);
     compare_or_set_string_value(CFGID_LINE_NAME + line, sipUser, (const unsigned char *) "name");
-
-    //       CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_set_sipline_properties",
-    //                    cur_node->name, value);
-
-    compare_or_set_string_value(CFGID_LINE_DISPLAYNAME + line, "Enda Mannion", (const unsigned char *) "displayName");
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_set_sipline_properties",
-    //                   cur_node->name, value);
-    //  compare_or_set_string_value(CFGID_LINE_SPEEDDIAL_NUMBER + line, value, cur_node->name);
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_set_sipline_properties",
-    //                  cur_node->name, value);
-    //   compare_or_set_string_value(CFGID_LINE_RETRIEVAL_PREFIX + line, value, cur_node->name);
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_set_sipline_properties",
-    //                   cur_node->name, value);
-
-    compare_or_set_string_value(CFGID_LINE_MESSAGES_NUMBER + line, "81384601", (const unsigned char *) "messagesNumber");
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_set_sipline_properties",
-    //                   cur_node->name, value);
-    compare_or_set_boolean_value(CFGID_LINE_FWD_CALLER_NAME_DIPLAY + line, TRUE, (const unsigned char *) "callerName");
-                              //        (!strcmp(value,"true")) ? TRUE : FALSE, cur_node->name);
-
-    //       CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_set_sipline_properties",
-    //                   cur_node->name, value);
-    compare_or_set_boolean_value(CFGID_LINE_FWD_CALLER_NUMBER_DIPLAY + line, FALSE, (const unsigned char *) "callerNumber");
-                    //                  (!strcmp(value,"true")) ? TRUE : FALSE, cur_node->name);
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_set_sipline_properties",
-    //                   cur_node->name, value);
-    compare_or_set_boolean_value(CFGID_LINE_FWD_REDIRECTED_NUMBER_DIPLAY + line, FALSE, (const unsigned char *) "redirectedNumber");
-                           //           (!strcmp(value,"true")) ? TRUE : FALSE, cur_node->name);
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_set_sipline_properties",
-    //                  cur_node->name, value);
-    compare_or_set_boolean_value(CFGID_LINE_FWD_DIALED_NUMBER_DIPLAY + line, TRUE, (const unsigned char *) "dialedNumber");
-                                 //     (!strcmp(value,"true")) ? TRUE : FALSE, cur_node->name);
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_set_sipline_properties",
-    //                   cur_node->name, value);
-    //    compare_or_set_int_value(CFGID_LINE_FEATURE_OPTION_MASK + line, atoi(value), cur_node->name);
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_set_sipline_properties",
-    //                   cur_node->name, value);
-    //      compare_or_set_string_value(CFGID_LINE_AUTHNAME + line, value, cur_node->name);
-
-    //      CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_set_sipline_properties",
-    //                  cur_node->name, value);
-    //      compare_or_set_string_value(CFGID_LINE_PASSWORD + line, value, cur_node->name);
-
-    //       CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_set_sipline_properties",
-    //                    cur_node->name, value);
-    compare_or_set_byte_value(CFGID_LINE_MSG_WAITING_LAMP + line, 3, (const unsigned char *) "messageWaitingLampPolicy");
-
-    //       CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_set_sipline_properties",
-    //                    cur_node->name, value);
-    compare_or_set_byte_value(CFGID_LINE_MESSAGE_WAITING_AMWI + line, 1, (const unsigned char *) "messageWaitingAMWI");
-
-    //       CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_set_sipline_properties",
-    //                    cur_node->name, value);
-    compare_or_set_byte_value(CFGID_LINE_RING_SETTING_IDLE + line, 4, (const unsigned char *) "ringSettingIdle");
-
-    //       CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_set_sipline_properties",
-    //                    cur_node->name, value);
-    compare_or_set_byte_value(CFGID_LINE_RING_SETTING_ACTIVE + line, 5, (const unsigned char *) "ringSettingActive");
-
-    CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_set_sipline_properties", "contact", sipContact);
-    compare_or_set_string_value(CFGID_LINE_CONTACT + line, sipContact, (const unsigned char *) "contact");
-
-    CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_set_sipline_properties", "maxNumCalls", "1");
-    compare_or_set_int_value(CFGID_LINE_MAXNUMCALLS + line, 1, (const unsigned char *) "maxNumCalls");
-
-    //       CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_set_sipline_properties",
-    //                    cur_node->name, value);
-    compare_or_set_int_value(CFGID_LINE_BUSY_TRIGGER + line, 1, (const unsigned char *) "busyTrigger");
-
-    //          CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_set_sipline_properties",
-    //                     cur_node->name, value);
-
-    //    CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_set_sipline_properties",
-    //                cur_node->name, value);
-    compare_or_set_byte_value(CFGID_LINE_AUTOANSWER_ENABLED + line, 2 & 0x1, (const unsigned char *) "autoAnswerEnabled");
-
-    //         CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_set_sipline_properties",
-    //                    cur_node->name, value);
-    //  compare_or_set_string_value(CFGID_LINE_AUTOANSWER_MODE + line, value, cur_node->name);
-
-    //         CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_set_sipline_properties",
-    //                    cur_node->name, value);
-    compare_or_set_byte_value(CFGID_LINE_CALL_WAITING + line, 3 & 0x1, (const unsigned char *) "callWaiting");
-
-    //          CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_set_sipline_properties",
-    //                     cur_node->name, value);
-    // compare_or_set_string_value(CFGID_LINE_CFWDALL + line, value, cur_node->name);
-
-    //       CONFIG_DEBUG(CFG_F_PREFIX "%s  %s\n", "config_parser_element", cur_node->name,
-    //           value);
-
-    //cc_boolean isSecure = FALSE, isValid = TRUE;
-
-    sstrncpy(ip, "", MAX_SIP_URL_LENGTH);
-
-    sstrncpy(option, "User Specific", MAX_SIP_URL_LENGTH);
+    compare_or_set_string_value(CFGID_LINE_DISPLAYNAME + line, gDisplayName, (const unsigned char *) "displayName");
+    compare_or_set_string_value(CFGID_LINE_MESSAGES_NUMBER + line, gMessagesNumber, (const unsigned char *) "messagesNumber");
+    compare_or_set_boolean_value(CFGID_LINE_FWD_CALLER_NAME_DIPLAY + line, gCallerName, (const unsigned char *) "callerName");
+    compare_or_set_boolean_value(CFGID_LINE_FWD_CALLER_NUMBER_DIPLAY + line, gCallerNumber, (const unsigned char *) "callerNumber");
+    compare_or_set_boolean_value(CFGID_LINE_FWD_REDIRECTED_NUMBER_DIPLAY + line, gRedirectedNumber, (const unsigned char *) "redirectedNumber");
+    compare_or_set_boolean_value(CFGID_LINE_FWD_DIALED_NUMBER_DIPLAY + line, gDialedNumber, (const unsigned char *) "dialedNumber");
+    compare_or_set_byte_value(CFGID_LINE_MSG_WAITING_LAMP + line, gMessageWaitingLampPolicy, (const unsigned char *) "messageWaitingLampPolicy");
+    compare_or_set_byte_value(CFGID_LINE_MESSAGE_WAITING_AMWI + line, gMessageWaitingAMWI, (const unsigned char *) "messageWaitingAMWI");
+    compare_or_set_byte_value(CFGID_LINE_RING_SETTING_IDLE + line, gRingSettingIdle, (const unsigned char *) "ringSettingIdle");
+    compare_or_set_byte_value(CFGID_LINE_RING_SETTING_ACTIVE + line, gRingSettingActive, (const unsigned char *) "ringSettingActive");
+    compare_or_set_string_value(CFGID_LINE_CONTACT + line, sipUser, (const unsigned char *) "contact");
+    compare_or_set_int_value(CFGID_LINE_MAXNUMCALLS + line, gMaxNumCalls, (const unsigned char *) "maxNumCalls");
+    compare_or_set_int_value(CFGID_LINE_BUSY_TRIGGER + line, gBusyTrigger, (const unsigned char *) "busyTrigger");
+    compare_or_set_byte_value(CFGID_LINE_AUTOANSWER_ENABLED + line, gAutoAnswerEnabled, (const unsigned char *) "autoAnswerEnabled");
+    compare_or_set_byte_value(CFGID_LINE_CALL_WAITING + line, gCallWaiting, (const unsigned char *) "callWaiting");
+    compare_or_set_int_value(CFGID_CCM1_SEC_LEVEL, gDeviceSecurityMode,(const unsigned char *)"deviceSecurityMode");
+    compare_or_set_int_value(CFGID_CCM1_SIP_PORT, gCcm1_sip_port,(const unsigned char *)"ccm1_sip_port");
+    compare_or_set_int_value(CFGID_CCM2_SIP_PORT, gCcm2_sip_port,(const unsigned char *)"ccm2_sip_port");
+    compare_or_set_int_value(CFGID_CCM3_SIP_PORT, gCcm3_sip_port, (const unsigned char *)"ccm3_sip_port");
 
     isSecure = FALSE;
-
-    compare_or_set_int_value(CFGID_CCM1_SEC_LEVEL, 1,(const unsigned char *)"deviceSecurityMode");
-    compare_or_set_int_value(CFGID_CCM1_SIP_PORT, 5060,(const unsigned char *)"ccm1_sip_port");
-    compare_or_set_int_value(CFGID_CCM2_SIP_PORT, 5060,(const unsigned char *)"ccm2_sip_port");
-    compare_or_set_int_value(CFGID_CCM3_SIP_PORT, 5060, (const unsigned char *)"ccm3_sip_port");
-
+    sstrncpy(ip, "", MAX_SIP_URL_LENGTH);
+    sstrncpy(option, "User Specific", MAX_SIP_URL_LENGTH);
 
     if (!strncmp( option, "Use Default Gateway", MAX_SIP_URL_LENGTH)) {
         config_get_default_gw(buf);
@@ -1817,23 +1469,10 @@ void config_setup_elements ( const char *sipUser, const char *sipDomain, const c
         ip[0] = '\0';
     }
 
-    //    CONFIG_DEBUG(CFG_F_PREFIX "%s  \n", "config_parser_element - SIP Domain", sipDomain);
-    //    config_process_ccm_properties(cur_node,  doc);
-
-    //if (strlen(ccm_name[0]) > 0 && !dnsGetHostByName(ccm_name[0], &ip_addr, 100, 1)) {
-
     compare_or_set_string_value(CFGID_CCM1_ADDRESS+0, sipDomain, (const unsigned char *) "ccm1_addr");
-    compare_or_set_boolean_value(CFGID_CCM1_IS_VALID + 0, 1, (const unsigned char *)"ccm1_isvalid");
-
-    //compare_or_set_string_value(CFGID_CCM2_ADDRESS+0, sipDomain, (const unsigned char *) "ccm2_addr");
-    //compare_or_set_boolean_value(CFGID_CCM2_IS_VALID + 0, 1, (const unsigned char *)"ccm2_isvalid");
-
-    //compare_or_set_string_value(CFGID_CCM3_ADDRESS+0, sipDomain, (const unsigned char *) "ccm3_addr");
-    //compare_or_set_boolean_value(CFGID_CCM3_IS_VALID + 0, 1, (const unsigned char *)"ccm3_isvalid");
-
-
-    compare_or_set_int_value(CFGID_DSCP_FOR_CALL_CONTROL , 1, (const unsigned char *) "DscpCallControl");
-    compare_or_set_int_value(CFGID_SPEAKER_ENABLED, 1, (const unsigned char *) "speakerEnabled");
+    compare_or_set_boolean_value(CFGID_CCM1_IS_VALID + 0, gCcm1_isvalid, (const unsigned char *)"ccm1_isvalid");
+    compare_or_set_int_value(CFGID_DSCP_FOR_CALL_CONTROL , gDscpCallControl, (const unsigned char *) "DscpCallControl");
+    compare_or_set_int_value(CFGID_SPEAKER_ENABLED, gSpeakerEnabled, (const unsigned char *) "speakerEnabled");
 
     if (apply_config == FALSE) {
         config_get_mac_addr(macaddr);
@@ -1846,20 +1485,11 @@ void config_setup_elements ( const char *sipUser, const char *sipDomain, const c
         CC_Config_setArrayValue(CFGID_MY_ACTIVE_MAC_ADDR, macaddr, MAC_ADDR_SIZE);
     }
 
-    //CONFIG_DEBUG(CFG_F_PREFIX "%s  \n", "config_parse_element", cur_node->name);
-    // config_process_multi_level_config(cur_node->children, doc, cur_node->name, updateVendorConfig);
-
-    //CONFIG_DEBUG(CFG_F_PREFIX "%s  \n", "config_parse_element", cur_node->name);
-    // config_process_multi_level_config(cur_node->children, doc, cur_node->name, updateCommonConfig);
-
-    //CONFIG_DEBUG(CFG_F_PREFIX "%s  \n", "config_parse_element", "enterpriseConfig");
-    //config_process_multi_level_config(cur_node->children, doc, cur_node->name, updateEnterpriseConfig);
-
     CONFIG_DEBUG(CFG_F_PREFIX "%s \n", "config_parse_element", "phoneServices");
-
     CONFIG_DEBUG(CFG_F_PREFIX "%s \n", "config_parse_element", "versionStamp");
     CONFIG_ERROR(CFG_F_PREFIX "%s new=%s old=%s \n", "config_parser_element", "versionStamp",
         		"1284570837-bbc096ed-7392-427d-9694-5ce49d5c3acb", g_cfg_version_stamp);
+
     if (apply_config == FALSE) {
         memset(g_cfg_version_stamp, 0, sizeof(g_cfg_version_stamp));
         i = strlen("1284570837-bbc096ed-7392-427d-9694-5ce49d5c3acb");
@@ -1874,7 +1504,7 @@ void config_setup_elements ( const char *sipUser, const char *sipDomain, const c
     }
 
     CONFIG_DEBUG(CFG_F_PREFIX "%s \n", "config_parser_element", "externalNumberMask");
-    compare_or_set_string_value(CFGID_CCM_EXTERNAL_NUMBER_MASK, "9138XXXX", (const unsigned char *) "externalNumberMask");
+    compare_or_set_string_value(CFGID_CCM_EXTERNAL_NUMBER_MASK, gExternalNumberMask, (const unsigned char *) "externalNumberMask");
 }
 
 /**
@@ -2192,7 +1822,7 @@ config_parser_main( char *config, int complete_config)
 /**
  * Function called as part of registration without using cnf device file download.
  */
-int config_setup_main( const char *sipUser, const char *sipDomain, const char *sipContact)
+int config_setup_main( const char *sipUser, const char *sipDomain)
 {
     // initialize the (global) values for dial template and fcp files
     strcpy (dialTemplateFile, "");
@@ -2201,7 +1831,7 @@ int config_setup_main( const char *sipUser, const char *sipDomain, const char *s
     /* initialize multi level config table */
     initMultiLevelConfigs();
     /*Get the elements in the xml doc */
-    config_setup_elements(sipUser, sipDomain, sipContact);
+    config_setup_elements(sipUser, sipDomain);
 
     /* update multi level config values */
     compare_or_set_multi_level_config_value();

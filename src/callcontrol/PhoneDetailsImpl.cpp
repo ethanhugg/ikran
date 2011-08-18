@@ -46,8 +46,7 @@ namespace CSF
 
 PhoneDetailsImpl::PhoneDetailsImpl()
 : model(-1),
-  state(ServiceStateType::eUnknown),
-  configStatus(DeviceConfigStatusEnum::eNoConfig)
+  state(ServiceStateType::eUnknown)
 {
 }
 
@@ -107,10 +106,6 @@ void PhoneDetailsImpl::setServiceState(ServiceStateType::ServiceState state)
 void PhoneDetailsImpl::setConfig(const std::string& config)
 {
 	this->config = config;
-}
-void PhoneDetailsImpl::setConfigStatus(DeviceConfigStatusEnum::DeviceConfigStatus configStatus)
-{
-	this->configStatus = configStatus;
 }
 
 }

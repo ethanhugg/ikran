@@ -66,17 +66,6 @@ void NotifyStateChange (cc_callid_t callid, int32_t state) {
     //Call state change are notified to us via SIPCC "high level" API
 }
 
-/**
- * Provides the TFTP addr 
- *
- * @param *addr the pointer to the string holding TFTP address (alt_tftp1)
- * @return void
- */
-void platGetTFTPAddr(char *addr) {
-    ///Need to be able to tell SIPCC what the TFTP address is. This isn't in the config file.
-    //From talking to SIPCC it sounds an edge case that we should not have to worry about.
-}
-
 #ifndef OSX
 /**
  *  platGetFeatureAllowed

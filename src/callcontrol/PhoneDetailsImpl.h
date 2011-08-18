@@ -55,7 +55,6 @@ namespace CSF
 		virtual std::vector<std::string> getLineDNs() const {return lineDNs; }
 		virtual ServiceStateType::ServiceState getServiceState() const { return state; }
 		virtual std::string getConfig() const { return config; }
-		virtual DeviceConfigStatusEnum::DeviceConfigStatus getConfigStatus() const { return configStatus; }
 
 	public:
 		PhoneDetailsImpl();
@@ -69,7 +68,6 @@ namespace CSF
 		virtual void setLineDNs(const std::vector<std::string> & lineDNs);
 		virtual void setServiceState(ServiceStateType::ServiceState state);
 		virtual void setConfig(const std::string& config);
-		virtual void setConfigStatus(DeviceConfigStatusEnum::DeviceConfigStatus configStatus);
 
 	private:
 		std::string name;
@@ -79,7 +77,6 @@ namespace CSF
 		std::vector<std::string> lineDNs;
 		ServiceStateType::ServiceState state;
 		std::string config;
-		DeviceConfigStatusEnum::DeviceConfigStatus configStatus;
 
 	};
 }

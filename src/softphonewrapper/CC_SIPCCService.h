@@ -90,7 +90,7 @@ namespace CSF
 	    virtual void addCCObserver ( CC_Observer * observer );
 	    virtual void removeCCObserver ( CC_Observer * observer );
 
-	    virtual bool init(const std::string& user, const std::string& domain, const std::string& deviceName, const std::string& contact);
+	    virtual bool init(const std::string& user, const std::string& domain, const std::string& deviceName);
 	    virtual void destroy();
 
 	    virtual void setConfig(const std::string& xmlConfig);
@@ -98,8 +98,7 @@ namespace CSF
 	    virtual void setLoggingMask(int mask);
 	    virtual void setLocalAddressAndGateway(const std::string& localAddress, const std::string& defaultGW);
 
-	    virtual bool start();
-	    bool startService();
+	    virtual bool startService();
 	    virtual void stop();
 
 	    virtual bool isStarted();
@@ -151,7 +150,6 @@ namespace CSF
         void applyLoggingMask(int newMask);
         void applyAudioVideoConfigSettings (PhoneConfig & phoneConfig);
 
-        bool isValidConfig (PhoneConfig & phoneConfig);
         bool isValidMediaPortRange(int mediaStartPort, int mediaEndPort);
         bool isValidDSCPValue(int value);
 
@@ -188,7 +186,6 @@ namespace CSF
 		bool bUseConfig;
 		std::string sipUser;
 		std::string sipDomain;
-		std::string sipContact;
     };
 }
 

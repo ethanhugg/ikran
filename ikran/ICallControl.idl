@@ -64,8 +64,8 @@ interface nsIMediaStateObserver : nsISupports
 [scriptable, uuid(c467b1f4-551c-4e2f-a6ba-cb7d792d5244)]
 interface ICallControl : nsISupports
 {
-	void registerUser(in string user_name,
-						in string user_password,
+	void registerUser(in string user_device,
+						in string user,
 						in string proxy_address,
 						in nsISessionStateObserver sess_obs);
 	void unregisterUser();

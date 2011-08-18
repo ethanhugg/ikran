@@ -55,7 +55,6 @@
 #include "CSFMediaProvider.h"
 #include "CSFAudioTermination.h"
 #include "CSFVideoTermination.h"
-#include "PhoneConfig.h"
 
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
@@ -142,7 +141,7 @@ void configCtlFetchReq(int device_handle)
     	if (pPhone->bUseConfig == true)
     		CCAPI_Config_response(device_handle, pPhone->deviceName.c_str(), pPhone->xmlConfig.c_str(), true);
     	else
-    		CCAPI_Start_response( device_handle, pPhone->deviceName.c_str(), pPhone->sipUser.c_str(), pPhone->sipDomain.c_str(), pPhone->sipContact.c_str());
+    		CCAPI_Start_response(device_handle, pPhone->deviceName.c_str(), pPhone->sipUser.c_str(), pPhone->sipDomain.c_str());
     }
 }
 
@@ -471,7 +470,7 @@ CC_SIPCCService::~CC_SIPCCService()
     _self = NULL;
 }
 
-bool CC_SIPCCService::init(const std::string& user, const std::string& domain, const std::string& device, const std::string& contact)
+bool CC_SIPCCService::init(const std::string& user, const std::string& domain, const std::string& device)
 {
 #if defined (_CPR_USE_EXTERNAL_LOGGER_)
     cprRegisterLogger(_SIPCCLoggerFunction);
@@ -480,7 +479,6 @@ bool CC_SIPCCService::init(const std::string& user, const std::string& domain, c
     sipUser = user;
     sipDomain = domain;
     deviceName = device;
-    sipContact = contact;
 
     if (!(bCreated = (CCAPI_Service_create() == CC_SUCCESS)))
     {
@@ -563,115 +561,9 @@ void CC_SIPCCService::setLocalAddressAndGateway(const std::string& localAddress,
 	}
 }
 
-bool CC_SIPCCService::isValidConfig (PhoneConfig & phoneConfig)
-{
-    if (!phoneConfig.isValidConfig())
-	{
-		CSFLogErrorS( logTag, "validateConfig() failed, PhoneConfig.isValidConfig() returned false.");
-		return false;
-	}
-
-    int mediaStartPort = phoneConfig.getMediaStartPort();
-	int mediaEndPort = phoneConfig.getMediaEndPort();
-
-	if(!isValidMediaPortRange(mediaStartPort, mediaEndPort))
-	{
-		CSFLogErrorS( logTag, "validateConfig() failed, isValidMediaPortRange() returned false.");
-		return false;
-	}
-
-    int dscpAudioValue = phoneConfig.getDSCPAudio();
-
-    if (!isValidDSCPValue(dscpAudioValue))
-    {
-		CSFLogErrorS( logTag, "validateConfig() failed, phone config contained invalid value for DSCP for Audio.");
-		return false;
-	}
-
-    int dscpVideoValue = phoneConfig.getDSCPVideo();
-
-    if (!isValidDSCPValue(dscpVideoValue))
-    {
-		CSFLogErrorS( logTag, "validateConfig() failed, phone config contained invalid value for DSCP for Video.");
-		return false;
-	}
-
-    return true;
-}
-
-void CC_SIPCCService::applyAudioVideoConfigSettings (PhoneConfig & phoneConfig)
-{
-    int mediaStartPort = phoneConfig.getMediaStartPort();
-	int mediaEndPort = phoneConfig.getMediaEndPort();
-    int dscpAudioValue = phoneConfig.getDSCPAudio();
-    int dscpVideoValue = phoneConfig.getDSCPVideo();
-    bool vadEnabled = phoneConfig.isVADEnabled();
-	AudioTermination * pAudio = VcmSIPCCBinding::getAudioTermination();
-	VideoTermination * pVideo = VcmSIPCCBinding::getVideoTermination();
-
-	if(pAudio != NULL)
-	{
-		pAudio->setMediaPorts(mediaStartPort, mediaEndPort);
-		pAudio->setDSCPValue(dscpAudioValue);
-    	pAudio->setVADEnabled(vadEnabled);
-	}
-
-    if (pVideo != NULL)
-    {
-		pVideo->setDSCPValue(dscpVideoValue);
-    }
-}
-
-bool CC_SIPCCService::start()
-{
-	PhoneConfig phoneConfig;
-	if(xmlConfig == "")
-	{
-		CSFLogErrorS( logTag, "start failed, xmlConfig is blank.");
-		return false;
-	}
-
-	if(deviceName == "")
-	{
-		CSFLogErrorS( logTag, "start failed, deviceName is blank.");
-		return false;
-	}
-
-	if (!phoneConfig.parse(xmlConfig))
-	{
-		CSFLogErrorS( logTag, "start failed, PhoneConfig.parse() returned false");
-		return false;
-	}
-
-    if (!isValidConfig(phoneConfig))
-    {
-		CSFLogErrorS( logTag, "start failed, validateConfig() returned false.");
-		return false;
-    }
-	
-    applyAudioVideoConfigSettings(phoneConfig);
-
-    bUseConfig = true;
-    if (!(bStarted = (CCAPI_Service_start() == CC_SUCCESS)))
-    {
-        CSFLogErrorS( logTag, "Call to CCAPI_Service_start() failed.");
-        return false;
-    }
-
-    CC_DevicePtr devicePtr = CC_SIPCCDevice::createAndValidateXML(true, xmlConfig);
-    if (devicePtr == NULL)
-    {
-    	CSFLogWarnS( logTag, "stopping because createAndValidateXML failed");
-    	stop();
-        return false;
-    }
-    CSFLogDebugS( logTag, "About to imposeLoggingMask");
-    applyLoggingMask(loggingMask);
-
-    return waitUntilSIPCCFullyStarted();
-}
-
-
+/*
+ * New function to start sip stack without device file download.
+ */
 bool CC_SIPCCService::startService()
 {
 	AudioTermination * pAudio = VcmSIPCCBinding::getAudioTermination();

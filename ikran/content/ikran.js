@@ -154,7 +154,7 @@ Ikran.prototype = {
         }
     },
     
-    registerUser: function(user, password, proxy,  obs) {
+    registerUser: function(user_device, user, proxy,  obs) {
         if (this._session)
             throw "Session already in progress";
 
@@ -163,7 +163,7 @@ Ikran.prototype = {
         else this._session_observer = function() {};
         
         // Start rainbow session
-        this._ikran.registerUser(user, password, proxy, this._session_observer);
+        this._ikran.registerUser(user_device, user, proxy, this._session_observer);
         this._session = true;
     },
     
