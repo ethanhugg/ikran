@@ -135,8 +135,9 @@ The JS API offers support for
 window.navigator.service.call obtains handle to session-control 
 object. 
 
-<session-control>.registerUser(user,passwd,sip-proxy,sessObserver);
+<session-control>.registerUser(user_device, user, sip-proxy, sessObserver);
 registers user to the sip-proxy. 
+
 'sessObserver' is a JS function that will be called whenever there is 
 a change in the session state such as "no-registrar","registering",
 "registered", "incoming-call" & "registration-failed".
@@ -155,3 +156,4 @@ Few Points to Note
 2. One user is suported as registered by instance
  
 Please see content/ikran.html for sample usage of the API.
+
