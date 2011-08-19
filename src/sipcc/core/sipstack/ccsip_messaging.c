@@ -420,7 +420,6 @@ sipSPISendRegister (ccsipCCB_t *ccb,
         send_result = SendRequest(ccb, request, sipMethodRegister,
                                   FALSE, TRUE, FALSE);
     } else {
-//CPR TODO: need reference for
         err_msg("%s: Unable to retrieve address of proxy.\n", fname);
         free_sip_message(request);
     }
@@ -4647,9 +4646,6 @@ sipSPIGenerateAuthorizationResponse (sip_authen_t *sip_authen,
     HASHHEX         HA2 = "";
     char            cnonce_str[NONCE_LEN];
     char            nc_count_str[NONCE_LEN];
-#ifdef CPR_TODO_FOR_DEBUG
-    int             entity_len;
-#endif
     boolean         md5_sess_used;
     uint32_t        i;
 
@@ -4724,15 +4720,6 @@ sipSPIGenerateAuthorizationResponse (sip_authen_t *sip_authen,
             if (ccb->local_msg_body.parts[i].body != NULL) {
                 DigestString(ccb->local_msg_body.parts[i].body, HA2);
                 AUTH_DEBUG(DEB_F_PREFIX"entity body= \n", DEB_F_PREFIX_ARGS(SIP_MSG, fname));
-                if (AuthDebug) {
-#ifdef CPR_TODO_FOR_DEBUG
-//debug
-                    entity_len = ccb->local_msg_body.parts[i].body_length;
-                    hexdump(FALSE,
-                            (uint32_t) (ccb->local_msg_body.parts[i].body),
-                            entity_len, 4, 4, 1);
-#endif
-                }
             }
         }
     } else {
