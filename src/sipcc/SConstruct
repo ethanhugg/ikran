@@ -194,7 +194,6 @@ if targetPlatform in [ 'linux2', 'darwin' ]:
     '_POSIX_SOURCE',
     'CPR_MEMORY_LITTLE_ENDIAN',
     'NO_SOCKET_POLLING',
-    'USE_TIMER_SELECT_BASED',
     'USE_PRINTF'
   ]
 
@@ -216,7 +215,6 @@ if targetPlatform in [ 'win32' ]:
     'WIN32',
     'LIBXML_STATIC',
     'CPR_MEMORY_LITTLE_ENDIAN',
-    'USE_TIMER_SELECT_BASED',
     'CISCO_SIP_CC_ADAPTER_WIN32',
     '_WIN32_WCE',
     'EXTERNAL_TICK_REQUIRED',

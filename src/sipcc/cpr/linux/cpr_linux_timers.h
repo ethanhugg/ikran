@@ -71,20 +71,12 @@ typedef struct cpr_timer_s
 /* Linked List of currently running timers */
 typedef struct timerDef
 {
-#ifdef USE_TIMER_SELECT_BASED
-
     int32_t duration;
-#else
-    int32_t ticksLeft;
-#endif
     boolean timerActive;
     cpr_timer_t *cprTimerPtr;
     struct timerDef *previous;
     struct timerDef *next;
 } timerBlk;
-
-/* Keeps track of the top of the timer list. */
-//extern timerBlk *timerListHead;
 
 /* Timer mutex for updating the timer linked list */
 extern pthread_mutex_t timerMutex;
