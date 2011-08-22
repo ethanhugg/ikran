@@ -7,7 +7,6 @@ Import('x64')
 
 
 use_msvc_dll = ARGUMENTS.get('use_msvc_dll', 1)     ##1 = MSVC C RT as a DLL rather than a static lib (libc)
-unicode = ARGUMENTS.get('unicode', 1)         ##0 = Multi-byte (includes support for UTF-8) - on  Windows that gives "char" type rather than "wchar_t"
 use_msvc_dll=0
 targetPlatform = ARGUMENTS.get('platform', sys.platform)
 
@@ -163,18 +162,16 @@ src_files += Split("""
     plat/csf2g/reset_api.c
     """)
 
-if targetPlatform in [ 'darwin' ]:
-    src_files += Glob('plat/darwin/*.c')
-elif targetPlatform in [ 'win32' ]:        
+if targetPlatform == 'win32':
     src_files += Glob('plat/win32/*.c')
+elif targetPlatform == 'linux2':
+  src_files += ['plat/linux/plat_api_stub.c']
+elif targetPlatform == 'darwin':
+    src_files += Glob('plat/darwin/*.c')
 
 if targetPlatform in [ 'linux2', 'darwin' ]:
     src_files += ['plat/common/dns_utils.c']
     src_files += Glob('plat/unix-common/*.c')
-
-if targetPlatform in [ 'linux2' ]:
-  src_files += ['plat/linux/plat_api_stub.c']
-
 
 src_files_stub = Split("""
     stub/cc_blf_stub.c
@@ -184,7 +181,10 @@ src_files_stub = Split("""
 env = build_env.Clone(CPPPATH=include_dirs)
  
 
-CPP_DEFINES = ['SIPCC_BUILD']
+CPP_DEFINES = [
+  'SIPCC_BUILD',
+  'CPR_MEMORY_LITTLE_ENDIAN',
+]
 CPP_FLAGS = []
 ldflags = []
 
@@ -192,7 +192,6 @@ ldflags = []
 if targetPlatform in [ 'linux2', 'darwin' ]:
   CPP_DEFINES += [
     '_POSIX_SOURCE',
-    'CPR_MEMORY_LITTLE_ENDIAN',
     'NO_SOCKET_POLLING',
   ]
 
@@ -200,27 +199,21 @@ if targetPlatform in [ 'linux2', 'darwin' ]:
   if int(debug) != 0:
     CPP_FLAGS += ['-g']
 
-if targetPlatform in [ 'win32' ]:
-
-  if int(unicode) == 1:
-    print "Unicode build"
-    CPP_DEFINES += ['_UNICODE', 'UNICODE']
-  else:
-    print "Multi-byte build"
-    CPP_DEFINES += ['_MBCS']  
+if targetPlatform == 'win32':
 
   CPP_DEFINES += [
+    '_UNICODE',
+    'UNICODE',
     'SIP_OS_WINDOWS',
     'WIN32',
     'LIBXML_STATIC',
-    'CPR_MEMORY_LITTLE_ENDIAN',
     'CISCO_SIP_CC_ADAPTER_WIN32',
     '_WIN32_WCE',
     'EXTERNAL_TICK_REQUIRED',
     'NEED_TO_CALL_FOR_WIN32',
   ]
 
-if targetPlatform == 'linux2':
+elif targetPlatform == 'linux2':
   CPP_DEFINES += [
     '_GNU_SOURCE',
     'SIP_OS_LINUX',
@@ -248,7 +241,7 @@ if targetPlatform == 'linux2':
       '-march=i486'
     ]
 
-if targetPlatform == 'darwin':
+elif targetPlatform == 'darwin':
   CPP_DEFINES += [
     'SIP_OS_OSX',
     '_DARWIN_C_SOURCE'
