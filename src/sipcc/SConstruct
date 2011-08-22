@@ -194,7 +194,6 @@ if targetPlatform in [ 'linux2', 'darwin' ]:
     '_POSIX_SOURCE',
     'CPR_MEMORY_LITTLE_ENDIAN',
     'NO_SOCKET_POLLING',
-    'USE_PRINTF'
   ]
 
   CPP_FLAGS += ['-O']

@@ -84,14 +84,9 @@ buginf (const char *_format, ...)
         return rc;
     }
 
-#ifdef USE_PRINTF
-      printf ("%s", fmt_buf);	/* tbd: keep this until syslog is in place */
-#elif CPR_CSF_LOG
-      CSFLog(CSF_LOG_DEBUG, "", 0, "",fmt_buf);
-#else
-      syslog(LOG_DEBUG, "%s", fmt_buf); /* temporarily disabled */
-#endif
-    return rc;
+  printf ("%s", fmt_buf);	/* tbd: keep this until syslog is in place */
+
+  return rc;
 }
 
 /**
@@ -122,33 +117,15 @@ buginf_msg (const char *str)
             p += LOG_MAX;
             len -= LOG_MAX;
 
-#ifdef USE_PRINTF
             printf("%s",buf);
-#elif CPR_CSF_LOG
-            CSFLog(CSF_LOG_DEBUG, "", 0, "",buf);
-#else
-            syslog(LOG_DEBUG, "%s", buf);
-#endif
         } while (len > LOG_MAX);
 
         if (len) {
-#ifdef USE_PRINTF
             printf("%s", (char *)p);
-#elif CPR_CSF_LOG
-            CSFLog(CSF_LOG_DEBUG, "", 0, "",(char *)p);
-#else
-            syslog(LOG_DEBUG, "%s", (char *) p);
-#endif
             
         }
     } else {
-#ifdef USE_PRINTF
         printf("%s", (char *) str);
-#elif CPR_CSF_LOG
-        CSFLog(CSF_LOG_DEBUG, "", 0, "",str);
-#else
-        syslog(LOG_DEBUG, "%s", (char *) str);
-#endif
     }
 
     return 0;
@@ -178,13 +155,7 @@ err_msg (const char *_format, ...)
         return;
     }
 
-#ifdef USE_PRINTF
     printf ("%s", fmt_buf);
-#elif CPR_CSF_LOG
-    CSFLog(CSF_LOG_ERROR, "", 0, "",fmt_buf);
-#else
-    syslog((int) LOG_ERR, "%s", fmt_buf);
-#endif
 }
 
 
@@ -212,13 +183,6 @@ notice_msg (const char *_format, ...)
         return;
     }
 
-#ifdef USE_PRINTF
     printf("%s", fmt_buf); /* tbd: remove once syslog in place */
-#elif CPR_CSF_LOG
-    CSFLog(CSF_LOG_NOTICE, "", 0, "",fmt_buf);
-#else
-    syslog((int) LOG_NOTICE, "%s", fmt_buf);
-#endif
-    
 }
 
