@@ -64,7 +64,7 @@ src_files += Split("""
 
 if targetPlatform in [ 'linux2', 'darwin' ]:
     src_files += [ 'core/sdp/sdp_services_unix.c' ]
-elif targetPlatform in [ 'win32' ]:
+elif targetPlatform == 'win32':
     src_files += [ 'core/sdp/sdp_services_win32.c' ]
     
 src_files += Split("""
@@ -96,7 +96,7 @@ src_files += Split("""
         core/sipstack/sip_interface_regmgr.c
     """)
 
-if targetPlatform in [ 'win32' ]:  
+if targetPlatform == 'win32':  
     src_files += ['core/sipstack/sip_platform_win32_task.c']
 else:
     src_files += ['core/sipstack/sip_platform_task.c']
@@ -120,7 +120,7 @@ src_files += Split("""
         core/src-common/util_string.c
     """)
          
-if targetPlatform in [ 'linux2' ]:        
+if targetPlatform == 'linux2':        
     src_files += Split("""
         cpr/linux/cpr_linux_chunk.c
         cpr/linux/cpr_linux_errno.c
@@ -136,7 +136,7 @@ if targetPlatform in [ 'linux2' ]:
         cpr/linux/cpr_linux_timers_using_select.c 
         """)
  
-elif targetPlatform in [ 'darwin' ]: 
+elif targetPlatform == 'darwin': 
     src_files += Split("""
         cpr/darwin/cpr_darwin_chunk.c
         cpr/darwin/cpr_darwin_errno.c
@@ -152,7 +152,7 @@ elif targetPlatform in [ 'darwin' ]:
         cpr/darwin/cpr_darwin_timers_using_select.c 
         """)
         
-elif targetPlatform in [ 'win32' ]: 
+elif targetPlatform == 'win32': 
   src_files += Glob('cpr/win32/*.c')
           
 src_files += Split("""
@@ -217,7 +217,6 @@ elif targetPlatform == 'linux2':
   CPP_DEFINES += [
     '_GNU_SOURCE',
     'SIP_OS_LINUX',
-    'LINUX',
   ]
 
   CPP_FLAGS += [
@@ -285,53 +284,49 @@ name_suffix = ""
 
 # Set platform specific flags
 if targetPlatform == 'win32':
-  if ARGUMENTS.get('compiler', 'msvc') == 'mingw':
-    print 'Using MinGW toolset'
-    psipccEnv = Environment(tools=['mingw'])
-    psipccEnv['OBJSUFFIX'] = ['.obj']
-    CPP_FLAGS += ['-O']
-  else:
-    print 'Using MSVC toolset'
-    if 'MS_VC_PATH' in os.environ:
-      ms_vc_path=os.environ['MS_VC_PATH']
-      ms_windows_sdk_path=os.environ['MS_WINDOWS_SDK_PATH']
-      psipccEnv.PrependENVPath('PATH', ms_vc_path + os.sep + 'VC' + os.sep + 'bin')
-      psipccEnv.PrependENVPath('PATH', ms_vc_path + os.sep + 'Common7' + os.sep + 'IDE')
-      psipccEnv.PrependENVPath('PATH', ms_windows_sdk_path + os.sep + 'bin')
-      psipccEnv.PrependENVPath('INCLUDE', ms_vc_path + os.sep + 'VC' + os.sep + 'Include')
-      psipccEnv.PrependENVPath('INCLUDE', ms_vc_path + os.sep + 'VC' + os.sep + 'ATLMFC' + os.sep + 'Include')
-      psipccEnv.PrependENVPath('INCLUDE', ms_windows_sdk_path + os.sep + 'Include')
-      psipccEnv.PrependENVPath('LIB', ms_vc_path + os.sep + 'VC' + os.sep +  'lib')
-      psipccEnv.PrependENVPath('LIB', ms_windows_sdk_path + os.sep + 'Lib')
-    if int(debug) == 0:
-      print "Building RELEASE build"
-      if int(use_msvc_dll) == 1:
-        CPP_FLAGS += ['/MD']
-        name_suffix = "_MD"
-      else:
-        CPP_FLAGS += ['/MT']
-        name_suffix = "_MT"
-    else:
-      print "Building DEBUG build"
-      if int(use_msvc_dll) == 1:
-        CPP_FLAGS += [
-          '/MDd'
-        ]
-        name_suffix = "_MDd"
-      else:
-        CPP_FLAGS += [
-          '/MTd'
-        ]
-        name_suffix = "_MTd"
+  print 'Using MSVC toolset'
+  if 'MS_VC_PATH' in os.environ:
+    ms_vc_path=os.environ['MS_VC_PATH']
+    ms_windows_sdk_path=os.environ['MS_WINDOWS_SDK_PATH']
+    psipccEnv.PrependENVPath('PATH', ms_vc_path + os.sep + 'VC' + os.sep + 'bin')
+    psipccEnv.PrependENVPath('PATH', ms_vc_path + os.sep + 'Common7' + os.sep + 'IDE')
+    psipccEnv.PrependENVPath('PATH', ms_windows_sdk_path + os.sep + 'bin')
+    psipccEnv.PrependENVPath('INCLUDE', ms_vc_path + os.sep + 'VC' + os.sep + 'Include')
+    psipccEnv.PrependENVPath('INCLUDE', ms_vc_path + os.sep + 'VC' + os.sep + 'ATLMFC' + os.sep + 'Include')
+    psipccEnv.PrependENVPath('INCLUDE', ms_windows_sdk_path + os.sep + 'Include')
+    psipccEnv.PrependENVPath('LIB', ms_vc_path + os.sep + 'VC' + os.sep +  'lib')
+    psipccEnv.PrependENVPath('LIB', ms_windows_sdk_path + os.sep + 'Lib')
 
-    ## Want /Zi for both release and debug builds.
-    CPP_FLAGS += [
-      '/W3', 
-      '/c', 
-      '/Zi', 
-      '/Fdpsipcc'  + name_suffix,
-      '/wd4996', # suppress warning for strncpy and the like
-    ]
+  if int(debug) == 0:
+    print "Building RELEASE build"
+    if int(use_msvc_dll) == 1:
+      CPP_FLAGS += ['/MD']
+      name_suffix = "_MD"
+    else:
+      CPP_FLAGS += ['/MT']
+      name_suffix = "_MT"
+  else:
+    print "Building DEBUG build"
+    if int(use_msvc_dll) == 1:
+      CPP_FLAGS += [
+        '/MDd'
+      ]
+      name_suffix = "_MDd"
+    else:
+      CPP_FLAGS += [
+        '/MTd'
+      ]
+      name_suffix = "_MTd"
+
+  ## Want /Zi for both release and debug builds.
+  CPP_FLAGS += [
+    '/W3', 
+    '/c', 
+    '/Zi', 
+    '/Fdpsipcc'  + name_suffix,
+    '/wd4996', # suppress warning for strncpy and the like
+  ]
+
 
 # Build the general environment
 psipccEnv.AppendUnique(CPPFLAGS = CPP_FLAGS)
