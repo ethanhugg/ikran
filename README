@@ -25,7 +25,7 @@ Required for all platforms:
   Python (www.python.org) -  known to work with 2.6 & 2.7 
   SCons (www.scons.org)
   MOZSDKPATH environment variable pointing to the Gecko2 SDK.
-
+  WEBRTCPATH environment variable pointing to the webrtc source trunk
 Linux:
   Built regularly on Ubuntu 10.4 32bit and 64bit
   Third-Party Libraries
@@ -50,6 +50,9 @@ Windows:
   - Get Gecko2 SDK (32bit) for your platform from 
 	 https://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/5.0/sdk
   - Extract the package & Set the MOZSDKPATH env variable to point to it
+  - Build WEBRTC for video and audio engine libraries 
+	+  Follow the instructions @ http://www.webrtc.org/reference/getting-started
+	+  Set WEBRTCPATH to point to it : export WEBRTCPATH=/Users/XTM/HTML5/webrtc/trunk
   - Instead of using scons directly, use runSconsBuild.py like this
     'python runSconsBuild.py debug' or
     'python runSconsBuild.py clean'

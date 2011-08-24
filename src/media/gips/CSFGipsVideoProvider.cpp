@@ -185,6 +185,8 @@ void GipsVideoProvider::setRenderWindow( int streamId, GipsPlatformWindow window
     	streamIdToWindow.insert( std::make_pair(streamId, RenderWindow( window)) );
     	// now that the window is in the map for this stream, refresh the stream with the window
     	setRenderWindowForStreamIdFromMap(streamId);
+    	// the assumption is that the rendering may have been stopped when the previous window was destroyed.
+    	//gipsVideo->GIPSVideo_StartRender( getChannelForStreamId( streamId ) );
     }
     else
     {
@@ -196,6 +198,7 @@ void GipsVideoProvider::setRenderWindow( int streamId, GipsPlatformWindow window
 
 const GipsVideoProvider::RenderWindow* GipsVideoProvider::getRenderWindow( int streamId )
 {
+	//base::AutoLock lock(streamMapMutex);
     std::map<int, RenderWindow>::const_iterator it = streamIdToWindow.find( streamId );
     return ( it != streamIdToWindow.end() ) ? &it->second : NULL;
 }
@@ -206,6 +209,7 @@ void GipsVideoProvider::setPreviewWindow( void* window, int top, int left, int b
 	if(this->previewWindow != NULL)
 	{
 #ifdef WIN32
+		//setRenderWindow( 0, (GipsPlatformWindow)window, top, left, bottom, right, style );
 		((GipsVideoEnginePlatform *)gipsVideo)->GIPSVideo_AddLocalRenderer( NULL, 0, 0.0f, 0.0f, 1.0f, 1.0f );
 #elif LINUX
 		((GipsVideoEnginePlatform *)gipsVideo)->GIPSVideo_AddLocalRenderer( NULL, 0.0f, 0.0f, 1.0f, 1.0f );
@@ -218,6 +222,7 @@ void GipsVideoProvider::setPreviewWindow( void* window, int top, int left, int b
 	{
 		// Set new window.
 #ifdef WIN32
+		//setRenderWindow( 0, (GipsPlatformWindow)window, top, left, bottom, right, style );
 		((GipsVideoEnginePlatform *)gipsVideo)->GIPSVideo_AddLocalRenderer( (HWND)window, 0, 0.0f, 0.0f, 1.0f, 1.0f );
 #elif LINUX
 		((GipsVideoEnginePlatform *)gipsVideo)->GIPSVideo_AddLocalRenderer( (Window)window, 0.0f, 0.0f, 1.0f, 1.0f );
@@ -263,6 +268,7 @@ int GipsVideoProvider::getCodecList( CodecRequestType requestType )
 
 GipsVideoStreamPtr GipsVideoProvider::getStreamByChannel( int channel )
 {
+	//base::AutoLock lock(streamMapMutex);
     for( std::map<int, GipsVideoStreamPtr>::const_iterator it = streamMap.begin(); it != streamMap.end(); it++ )
     {
         GipsVideoStreamPtr stream = it->second;
@@ -333,6 +339,16 @@ int GipsVideoProvider::rxAlloc( int groupId, int streamId, int requestedPort )
     }
     gipsVideo->GIPSVideo_EnableKeyFrameRequestCallback( true );
 
+    if ( previewWindow != NULL )
+    {
+#ifdef WIN32    // temporary
+        // TODO: implement render scaling
+    	// NDM not sure if this is available on linux - needs to check GIPS v4
+    	// maybe this call should be moved to setPreviewWindw, since it does not seem
+    	// to be linked to the current stream in any way
+        //((GipsVideoEnginePlatform *)gipsVideo)->GIPSVideo_AddLocalRenderer( previewWindow, 0, 0.0f, 0.0f, 1.0f, 1.0f );
+#endif
+    }
     LOG_GIPS_INFO( logTag, "rxAllocVideo: Created channel %d", channel );
 
     int beginPort;        // where we started
@@ -478,6 +494,7 @@ int GipsVideoProvider::rxStart ( int groupId, int streamId, int payloadType, int
                 break;
             }  
         }
+		//setRenderWindowForStreamIdFromMap(streamId);
         if ( gipsVideo->GIPSVideo_StartRender( channel ) != 0 )
         {
             LOG_GIPS_ERROR( logTag, "rxStartVideo: StartRender on channel %d failed, error %d", channel, gipsVideo->GIPSVideo_GetLastError() );
@@ -501,12 +518,14 @@ void GipsVideoProvider::setRenderWindowForStreamIdFromMap(int streamId)
     if ( remote != NULL )
     {
 #ifdef WIN32    // temporary
+        // TODO: implement render scaling
         if ( ((GipsVideoEnginePlatform *)gipsVideo)->GIPSVideo_AddRemoteRenderer( channel, remote->window, 1, 0.0f, 0.0f, 1.0f, 1.0f ) != 0 )
         {
             LOG_GIPS_ERROR( logTag, "setRenderWindowForStreamIdFromMap: AddRemoteRenderer on channel %d failed, error %d", channel, gipsVideo->GIPSVideo_GetLastError() );
         }
 #endif
 #ifdef LINUX
+        // TODO: implement render scaling
         if ( ((GipsVideoEnginePlatform *)gipsVideo)->GIPSVideo_AddRemoteRenderer( channel, (Window)remote->window, 0.0f, 0.0f, 1.0f, 1.0f ) != 0 )
         {
             LOG_GIPS_ERROR( logTag, "setRenderWindowForStreamIdFromMap: AddRemoteRenderer on channel %d failed, error %d", channel, gipsVideo->GIPSVideo_GetLastError() );
@@ -535,6 +554,7 @@ void GipsVideoProvider::rxClose( int groupId, int streamId)
     {
         gipsVideo->GIPSVideo_StopRender( channel );
         LOG_GIPS_INFO( logTag, "rxCloseVideo: Stop render on channel %d", channel );
+//        gipsVideo->GIPSVideo_Stop();
     }
 }
 

@@ -43,7 +43,7 @@
 #ifndef _USE_CPVE
 
 #include <CSFAudioTermination.h>
-#include <GIPSVECommon.h>
+#include "common_types.h"
 
 #define MAX_TONEGENS		4
 #define MAX_CADENCES		4
@@ -78,7 +78,7 @@ namespace CSF {
 		unsigned short		Descriptor;
 	} TONE_TABLE_TYPE, *PTONE_TABLE_TYPE;
 
-	class GipsToneGenerator : public InStream
+	class GipsToneGenerator : public webrtc::InStream
 	{
 	public:
 		GipsToneGenerator( ToneType type );

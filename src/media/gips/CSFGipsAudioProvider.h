@@ -47,23 +47,26 @@
 #include "CSFAudioTermination.h"
 #include "CSFGipsAudioCodecSelector.h"
 
-#include <GIPSVEBase.h>
-#include <GIPSVEDTMF.h>
-#include <GIPSVENetwork.h>
-#include <GIPSVEVolumeControl.h>
-#include <GIPSVEEncryption.h>
+#include "voe_base.h"
+#include "voe_file.h"
+#include "voe_hardware.h"
+#include "voe_dtmf.h"
+#include "voe_network.h"
+#include "voe_audio_processing.h"
+#include "voe_volume_control.h"
+#include "voe_encryption.h"
 #include <string>
 #include <map>
 #include "base/synchronization/lock.h"
 
+class webrtc::VoiceEngine;
+class VoEFile;
+class VoEHardware;
+class VoEDtmf;
+class VoENetwork;
+class VoEVolumeControl;
+class VoEAudioProcessing;
 
-class GIPSVoiceEngine;
-class GIPSVEFile;
-class GIPSVEHardware;
-class GIPSVEDTMF;
-class GIPSVENetwork;
-class GIPSVEVolumeControl;
-class GIPSVEVQE;
 namespace CSF
 {
     class GipsMediaProvider;
@@ -73,11 +76,9 @@ namespace CSF
     class GipsVideoProvider;
     DECLARE_PTR(GipsAudioStream);
 
-    class GipsAudioProvider : public AudioControl, AudioTermination, GIPSVoiceEngineObserver,
-            GIPSVEConnectionObserver
-#if GIPS_VER >= 3510
-            ,GIPSTraceCallback
-#endif
+    class GipsAudioProvider : public AudioControl, AudioTermination, webrtc::VoiceEngineObserver,
+            webrtc::VoEConnectionObserver
+            ,webrtc::TraceCallback
             {
     friend class GipsVideoProvider;
 
@@ -141,16 +142,12 @@ namespace CSF
         void setVADEnabled(bool VADEnabled){this->VADEnabled = VADEnabled;}
 
         // used by video, for lip sync
-        GIPSVoiceEngine* getVoiceEngine() { return gipsVoice; }
+        webrtc::VoiceEngine* getVoiceEngine() { return voeVoice; }
 
     protected:
         // GIPSVoiceEngineObserver
         void CallbackOnError(const int errCode, const int channel);
-#if GIPS_VER < 3500
-        void CallbackOnTrace(const GIPS::TraceLevel level, const char* message, const int length);
-#else
-        void Print(const GIPS::TraceLevel level, const char* message, const int length);
-#endif
+        void Print(const webrtc::TraceLevel level, const char* message, const int length);
         // GIPSVEConnectionObserver
         void OnPeriodicDeadOrAlive(int channel, bool alive);
 
@@ -160,15 +157,15 @@ namespace CSF
 
     private:
         GipsMediaProvider* provider;
-        ::GIPSVoiceEngine* gipsVoice;
-        GIPSVEBase* gipsBase;
-        GIPSVEFile* gipsFile;
-        GIPSVEHardware* gipsHw;
-        GIPSVEDTMF* gipsDTMF;
-        GIPSVENetwork* gipsNetwork;
-        GIPSVEVolumeControl* gipsVolumeControl;
-        GIPSVEVQE* gipsVoiceQuality;
-        GIPSVEEncryption* gipsEncryption;
+        webrtc::VoiceEngine* voeVoice;
+        webrtc::VoEBase* voeBase;
+        webrtc::VoEFile* voeFile;
+        webrtc::VoEHardware* voeHw;
+        webrtc::VoEDtmf* voeDTMF;
+        webrtc::VoENetwork* voeNetwork;
+        webrtc::VoEVolumeControl* voeVolumeControl;
+        webrtc::VoEAudioProcessing* voeVoiceQuality; 
+        webrtc::VoEEncryption* voeEncryption;
         int localToneChannel;
         int localRingChannel;
         std::string recordingDevice;
