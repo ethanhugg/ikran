@@ -51,11 +51,11 @@
 #include "CSFGipsAudioProvider.h"
 #include "CSFGipsToneGenerator.h"
 #include "CSFGipsRingGenerator.h"
-#include "GIPSVEFile.h"
-#include "GIPSVEHardware.h"
-#include "GIPSVEErrors.h"
-#include "GIPSVENetwork.h"
-#include "GIPSVEVQE.h"
+#include "voe_file.h"
+#include "voe_hardware.h"
+#include "voe_errors.h"
+#include "voe_network.h"
+#include "voe_audio_processing.h"
 #include "CSFGipsLogging.h"
 
 #include "CSFLog.h"
@@ -93,15 +93,15 @@ public:
 
 GipsAudioProvider::GipsAudioProvider( GipsMediaProvider* provider )
 : provider(provider), 
-  gipsVoice(NULL),
-  gipsBase(NULL), 
-  gipsFile(NULL),
-  gipsHw(NULL), 
-  gipsDTMF(NULL), 
-  gipsNetwork(NULL), 
-  gipsVolumeControl(NULL), 
-  gipsVoiceQuality(NULL), 
-  gipsEncryption(NULL),
+  voeVoice(NULL),
+  voeBase(NULL), 
+  voeFile(NULL),
+  voeHw(NULL), 
+  voeDTMF(NULL), 
+  voeNetwork(NULL), 
+  voeVolumeControl(NULL), 
+  voeVoiceQuality(NULL), 
+  voeEncryption(NULL),
   toneGen(NULL), 
   ringGen(NULL), 
   startPort(1024), 
@@ -117,87 +117,119 @@ GipsAudioProvider::GipsAudioProvider( GipsMediaProvider* provider )
 
 int GipsAudioProvider::init()
 {
-	LOG_GIPS_INFO( logTag, "GipsAudioProvider::init");
+	LOG_GIPS_INFO( logTag, "VoEAudioProvider::init");
 
-	if (gipsVoice != NULL)
+	if (voeVoice != NULL)
 	{
-		LOG_GIPS_ERROR( logTag, "GipsAudioProvider::init : already initialized");
+		LOG_GIPS_ERROR( logTag, "VoEAudioProvider::init : already initialized");
 		return -1;
 	}
 
-    gipsVoice = GIPSVoiceEngine::Create();
-	if (gipsVoice== NULL)
+    voeVoice = webrtc::VoiceEngine::Create();
+	if (voeVoice== NULL)
 	{
-		LOG_GIPS_ERROR( logTag, "GipsAudioProvider(): GIPSVoiceEngine::Create failed");
+		LOG_GIPS_ERROR( logTag, "VoEAudioProvider():VoiceEngine::Create failed");
 		return -1;
 	}
 
-	gipsBase = GIPSVEBase::GIPSVE_GetInterface( gipsVoice );
-	if (gipsBase== NULL)
+	voeBase = webrtc::VoEBase::GetInterface( voeVoice );
+	if (voeBase== NULL)
 	{
-		LOG_GIPS_ERROR( logTag, "GipsAudioProvider(): GIPSVEBase::GIPSVE_GetInterface failed");
+		LOG_GIPS_ERROR( logTag, "VoEAudioProvider(): VoEBase::GetInterface failed");
 		return -1;
 	}
 
 	const int VERSIONBUFLEN=1024;
 	char versionbuf[VERSIONBUFLEN];
-	gipsBase->GIPSVE_GetVersion(versionbuf,VERSIONBUFLEN);
+	voeBase->GetVersion(versionbuf);
 	LOG_GIPS_INFO( logTag, "%s", versionbuf );
-//	gipsBase->GIPSVE_SetObserver( *this );
-#ifdef ENABLE_GIPS_AUDIO_TRACE
-#if GIPS_VER < 3510
-	gipsBase->GIPSVE_SetTraceFile( "GIPSaudiotrace.out" );
-#elif GIPS_VER >= 3510
-	gipsVoice->SetTraceFile( "GIPSaudiotrace.out" );
-	gipsVoice->SetTraceCallback(this);
-#endif	
-#endif
-	gipsDTMF = GIPSVEDTMF::GetInterface( gipsVoice );
-	gipsFile = GIPSVEFile::GetInterface( gipsVoice );
-	gipsHw = GIPSVEHardware::GetInterface( gipsVoice );
-	gipsNetwork = GIPSVENetwork::GetInterface( gipsVoice );
-	gipsVolumeControl = GIPSVEVolumeControl::GetInterface( gipsVoice );
-	gipsVoiceQuality = GIPSVEVQE::GetInterface( gipsVoice );
-    gipsEncryption = GIPSVEEncryption::GetInterface(gipsVoice);
+//	voeBase->voeVE_SetObserver( *this );
 
-	if ((!gipsDTMF) || (!gipsFile) || (!gipsHw) ||(!gipsNetwork) || (!gipsVolumeControl) || (!gipsVoiceQuality) || (!gipsEncryption)) 
+//#ifdef ENABLE_GIPS_AUDIO_TRACE
+	LOG_GIPS_ERROR( logTag, "VoEAudioProvider(): Enabling Trace ");
+	voeVoice->SetTraceFilter(webrtc::kTraceAll);
+	voeVoice->SetTraceFile( "voeaudiotrace.out" );
+	voeVoice->SetTraceCallback(this);
+//#endif
+	voeDTMF = webrtc::VoEDtmf::GetInterface( voeVoice );
+	voeFile = webrtc::VoEFile::GetInterface( voeVoice );
+	voeHw =   webrtc::VoEHardware::GetInterface( voeVoice );
+	voeNetwork = webrtc::VoENetwork::GetInterface( voeVoice );
+	voeVolumeControl = webrtc::VoEVolumeControl::GetInterface( voeVoice );
+	voeVoiceQuality = webrtc::VoEAudioProcessing::GetInterface( voeVoice );
+    voeEncryption = webrtc::VoEEncryption::GetInterface(voeVoice);
+
+	if ((!voeDTMF) || (!voeFile) || (!voeHw) ||(!voeNetwork) || (!voeVolumeControl) || (!voeVoiceQuality) || (!voeEncryption)) 
 	{
-		LOG_GIPS_ERROR( logTag, "GipsAudioProvider(): GIPSVE_GetInterface failed gipsDTMF=%p gipsFile=%p gipsHw=%p gipsNetwork=%p gipsVolumeControl=%p gipsVoiceQuality=%p gipsEncryption=%p",
-		gipsDTMF,gipsFile,gipsHw,gipsNetwork,gipsVolumeControl,gipsVoiceQuality,gipsEncryption);
+		LOG_GIPS_ERROR( logTag, "VoEAudioProvider(): voeVE_GetInterface failed voeDTMF=%p voeFile=%p voeHw=%p voeNetwork=%p voeVolumeControl=%p voeVoiceQuality=%p voeEncryption=%p",
+		voeDTMF,voeFile,voeHw,voeNetwork,voeVolumeControl,voeVoiceQuality,voeEncryption);
 		return -1;
 	}
 
-	codecSelector.init(gipsVoice, false, true);
-	gipsBase->GIPSVE_Init();
-	gipsNetwork->GIPSVE_SetDeadOrAliveObserver(this);
-	localRingChannel = gipsBase->GIPSVE_CreateChannel();
-	localToneChannel = gipsBase->GIPSVE_CreateChannel();
+	codecSelector.init(voeVoice, false, true);
+	voeBase->Init();
+
+
+	localRingChannel = voeBase->CreateChannel();
+	localToneChannel = voeBase->CreateChannel();
 
 /*	
 	Set up Voice Quality Enhancement Parameters
 */
-#if GIPS_VER >= 3510
+//#if GI,PS_VER >= 3510
 //	Extra code for 3.5.X currently just used on the Mac
 // Should be enabled when we move to 3.5 on Windows
-	GIPS_AGC_config  webphone_agc_config={targetLeveldBOvdefault,digitalCompressionGaindBdefault,limiterEnableon};
-	gipsVoiceQuality->GIPSVE_SetAGCConfig(webphone_agc_config); 
-#endif
+	webrtc::AgcConfig webphone_agc_config = {3,9,1};
+	voeVoiceQuality->SetAgcConfig(webphone_agc_config); 
+//#endif
 
-#if GIPS_VER >= 3510
-	gipsVoiceQuality->GIPSVE_SetAGCStatus(true, AGC_FIXED_DIGITAL);
-#else
-	gipsVoiceQuality->GIPSVE_SetAGCStatus(true, AGC_STANDALONE_DIGITAL);
-#endif
-	gipsVoiceQuality->GIPSVE_SetNSStatus(true, NS_MODERATE_SUPPRESSION);
-//	gipsVoiceQuality->GIPSVE_SetECStatus(true, EC_AEC);
+//#if GIPS_VER >= 3510
+	voeVoiceQuality->SetAgcStatus(true, webrtc::kAgcFixedDigital);
+//#else
+ //  	  LOG_GIPS_ERROR( logTag, "VoEAudioProvider():  UnSupported AGC Status for version < 3510");
+  //      return -1;
+	//voeVoiceQuality->SetAgcStatus(true, AGC_STANDALONE_DIGITAL);
+//#endif
+
+
+
+	voeVoiceQuality->SetNsStatus(true, webrtc::kNsModerateSuppression);
+//	voeVoiceQuality->voeVE_SetECStatus(true, EC_AEC);
 
 	// get default device names
-	char name[128];
-	if ( gipsHw->GIPSVE_GetRecordingDeviceName( -1, name, sizeof(name) ) == 0 )
-		recordingDevice = name;
+	int nDevices, error = 0;
+	//returning the first found recording and playout device name
+	error = voeHw->GetNumOfRecordingDevices(nDevices);	
+	for(int i = 0; i < nDevices; i++)
+	{
+		char name[128];
+		char guid[128];
+		memset(name,0,128);
+		memset(guid,0,128);
+		error = voeHw->GetRecordingDeviceName(i, name, guid);
+		if(error == 0) {
+			recordingDevice = name;
+		} else {
+			LOG_GIPS_ERROR( logTag, "VoEAudioProvider: GetRecordingDeviceNamefailed: Error: %d", voeBase->LastError() );
 
-	if ( gipsHw->GIPSVE_GetPlayoutDeviceName( -1, name, sizeof(name) ) == 0 )
-		playoutDevice = name;
+		}	
+	}
+	
+	//playout
+	nDevices = 0;
+	error = voeHw->GetNumOfPlayoutDevices(nDevices);
+	for(int i=0; i < nDevices; i++)
+	{
+		char pname[128], pguid[128];
+		memset(pname,0,128);
+		memset(pguid,0,128);
+		if ( voeHw->GetPlayoutDeviceName( i, pname, pguid ) == 0 ) {
+			playoutDevice = pname;
+		} else {
+				LOG_GIPS_ERROR( logTag, "VoEAudioProvider: GetlayoutDeviceNamefailed: Error: %d", voeBase->LastError() );
+		}
+	}
+	
 
     LOG_GIPS_DEBUG( logTag, "local IP: \"%s\"", localIP.c_str());
     LOG_GIPS_DEBUG( logTag, "RecordingDeviceName: \"%s\"", recordingDevice.c_str());
@@ -208,37 +240,36 @@ int GipsAudioProvider::init()
 
 GipsAudioProvider::~GipsAudioProvider()
 {
-	LOG_GIPS_INFO( logTag, "GipsAudioProvider::~GipsAudioProvider");
+	LOG_GIPS_INFO( logTag, "VoEAudioProvider::~VoEAudioProvider");
 
 	int num_ifs=0;
 	stopping = true;
 	// tear down in reverse order, for symmetry
 	codecSelector.release();
 
-	gipsNetwork->GIPSVE_SetDeadOrAliveObserver(NULL);
 
-	gipsBase->GIPSVE_DeleteChannel( localToneChannel );
-	gipsBase->GIPSVE_DeleteChannel( localRingChannel );
-	gipsBase->GIPSVE_Terminate();
-	gipsBase->GIPSVE_Release();
+	voeBase->DeleteChannel( localToneChannel );
+	voeBase->DeleteChannel( localRingChannel );
+	voeBase->Terminate();
+	voeBase->Release();
 
 	
-	if ((num_ifs=gipsDTMF->Release())!=0)
-		LOG_GIPS_ERROR( logTag, "~GipsAudioProvider(): gipsDTMF->Release failed, num_ifs left= %d",num_ifs);
-	if ((num_ifs=gipsFile->Release())!=0)
-		LOG_GIPS_ERROR( logTag, "~GipsAudioProvider(): gipsFile->Release failed, num_ifs left= %d ",num_ifs);
-	if((num_ifs=gipsHw->Release())!=0)
-		LOG_GIPS_ERROR( logTag, "~GipsAudioProvider(): gipsHw->Release failed, num_ifs left= %d " ,num_ifs);
-	if((num_ifs=gipsNetwork->Release())!=0)
-		LOG_GIPS_ERROR( logTag, "~GipsAudioProvider(): gipsNetwork->Release() failed, num_ifs left= %d" ,num_ifs);
-	if((num_ifs=gipsVolumeControl->Release())!=0)
-		LOG_GIPS_ERROR( logTag, "~GipsAudioProvider(): gipsVolumeControl->Release() failed, num_ifs left= %d" ,num_ifs);
-	if((num_ifs=gipsVoiceQuality->Release())!=0)
-		LOG_GIPS_ERROR( logTag, "~GipsAudioProvider(): gipsVoiceQuality->Release() failed, num_ifs left= %d ",num_ifs );
-    if((num_ifs=gipsEncryption->Release())!=0)
-        LOG_GIPS_ERROR( logTag, "~GipsAudioProvider(): gipsEncryption->Release() failed, num_ifs left= %d ",num_ifs );
-	if(GIPSVoiceEngine::Delete( gipsVoice )==false)
-		LOG_GIPS_ERROR( logTag, "~GipsAudioProvider(): GIPSVoiceEngine::Delete failed" );
+	if ((num_ifs=voeDTMF->Release())!=0)
+		LOG_GIPS_ERROR( logTag, "~VoEAudioProvider(): voeDTMF->Release failed, num_ifs left= %d",num_ifs);
+	if ((num_ifs=voeFile->Release())!=0)
+		LOG_GIPS_ERROR( logTag, "~VoEAudioProvider(): voeFile->Release failed, num_ifs left= %d ",num_ifs);
+	if((num_ifs=voeHw->Release())!=0)
+		LOG_GIPS_ERROR( logTag, "~VoEAudioProvider(): voeHw->Release failed, num_ifs left= %d " ,num_ifs);
+	if((num_ifs=voeNetwork->Release())!=0)
+		LOG_GIPS_ERROR( logTag, "~VoEAudioProvider(): voeNetwork->Release() failed, num_ifs left= %d" ,num_ifs);
+	if((num_ifs=voeVolumeControl->Release())!=0)
+		LOG_GIPS_ERROR( logTag, "~VoEAudioProvider(): voeVolumeControl->Release() failed, num_ifs left= %d" ,num_ifs);
+	if((num_ifs=voeVoiceQuality->Release())!=0)
+		LOG_GIPS_ERROR( logTag, "~VoEAudioProvider(): voeVoiceQuality->Release() failed, num_ifs left= %d ",num_ifs );
+    if((num_ifs=voeEncryption->Release())!=0)
+        LOG_GIPS_ERROR( logTag, "~VoEAudioProvider(): voeEncryption->Release() failed, num_ifs left= %d ",num_ifs );
+	if(webrtc::VoiceEngine::Delete( voeVoice )==false)
+		LOG_GIPS_ERROR( logTag, "~VoEAudioProvider(): voeVoiceEngine::Delete failed" );
 
 	delete toneGen;
 	toneGen = NULL;
@@ -247,30 +278,33 @@ GipsAudioProvider::~GipsAudioProvider()
 	ringGen = NULL;
 
 	// Clear all our pointers
-	gipsFile = NULL;
-	gipsHw = NULL;
-	gipsDTMF = NULL;
-	gipsNetwork = NULL;
-	gipsVolumeControl = NULL;
-	gipsVoiceQuality = NULL;
-	gipsVoice = NULL;
-	gipsBase = NULL;
-    gipsEncryption = NULL;
+	voeFile = NULL;
+	voeHw = NULL;
+	voeDTMF = NULL;
+	voeNetwork = NULL;
+	voeVolumeControl = NULL;
+	voeVoiceQuality = NULL;
+	voeVoice = NULL;
+	voeBase = NULL;
+    voeEncryption = NULL;
 
-	LOG_GIPS_INFO( logTag, "GipsAudioProvider::shutdown done");
+	LOG_GIPS_INFO( logTag, "VoEAudioProvider::shutdown done");
 }
 
 std::vector<std::string> GipsAudioProvider::getRecordingDevices()
 {
 	base::AutoLock lock(m_lock);
 	char name[128];
-	int nPlay = 0, nRec = 0;
+	char guid[128];
+	int  nRec = 0;
+	memset(name,0,128);
+	memset(guid,0,128);
 	std::vector<std::string> deviceList;
+    voeHw->GetNumOfRecordingDevices(nRec);
 
-	gipsHw->GIPSVE_GetNumOfSoundDevices( nPlay, nRec );
 	for ( int i = 0; i < nRec; i++ )
 	{
-		if ( gipsHw->GIPSVE_GetRecordingDeviceName( i, name, csf_countof(name) ) == 0 )
+		if ( voeHw->GetRecordingDeviceName( i, name, guid ) == 0 )
 			deviceList.push_back( name );
 	}
 	return deviceList;
@@ -280,13 +314,15 @@ std::vector<std::string> GipsAudioProvider::getPlayoutDevices()
 {
 	base::AutoLock lock(m_lock);
 	char name[128];
-	int nPlay = 0, nRec = 0;
+	char guid[128];
+	int nPlay = 0;
 	std::vector<std::string> deviceList;
-
-	gipsHw->GIPSVE_GetNumOfSoundDevices( nPlay, nRec );
+	memset(name,0,128);
+	memset(guid,0,128);
+	voeHw->GetNumOfPlayoutDevices( nPlay);
 	for ( int i = 0; i < nPlay; i++ )
 	{
-		if ( gipsHw->GIPSVE_GetPlayoutDeviceName( i, name, csf_countof(name) ) == 0 )
+		if ( voeHw->GetPlayoutDeviceName( i, name, guid ) == 0 )
 			deviceList.push_back( name );
 	}
 	return deviceList;
@@ -296,15 +332,18 @@ bool GipsAudioProvider::setRecordingDevice( const std::string& device )
 {
 	base::AutoLock lock(m_lock);
 	char name[128];
-	int nPlay = 0, nRec = 0;
+	char guid[128];
+	int nRec = 0, nPlay = 0;
 	int playoutIndex, recordingIndex;
-
-	gipsHw->GIPSVE_GetNumOfSoundDevices( nPlay, nRec );
+	memset(name,0,128);
+	memset(guid,0,128);
+	voeHw->GetNumOfRecordingDevices(  nRec );
+	voeHw->GetNumOfPlayoutDevices(  nPlay );
 
 	// find requested recording device
 	for ( recordingIndex = 0; recordingIndex < nRec; recordingIndex++ )
 	{
-		if ( gipsHw->GIPSVE_GetRecordingDeviceName( recordingIndex, name, csf_countof(name) ) == 0 )
+		if ( voeHw->GetRecordingDeviceName( recordingIndex, name, guid ) == 0 )
 		{
 			if ( device.compare( name ) == 0 ) break;
 		}
@@ -319,7 +358,7 @@ bool GipsAudioProvider::setRecordingDevice( const std::string& device )
 	name[0] = '\0';
 	for ( playoutIndex = nPlay - 1; playoutIndex >= -1; playoutIndex-- )
 	{
-		if ( gipsHw->GIPSVE_GetPlayoutDeviceName( playoutIndex, name, sizeof(name) ) == 0 )
+		if ( voeHw->GetPlayoutDeviceName( playoutIndex, name, guid ) == 0 )
 		{
 			if ( playoutDevice.compare( name ) == 0 ) break;
 		}
@@ -330,7 +369,8 @@ bool GipsAudioProvider::setRecordingDevice( const std::string& device )
 		playoutIndex = -1;
 	}
 
-	if ( gipsHw->GIPSVE_SetSoundDevices( recordingIndex, playoutIndex ) == 0 )
+	if ( voeHw->SetRecordingDevice( recordingIndex ) == 0 
+			&& voeHw->SetPlayoutDevice( playoutIndex) == 0 )
 	{
 		recordingDevice = device;
 		playoutDevice = name;	// the current name
@@ -343,15 +383,17 @@ bool GipsAudioProvider::setPlayoutDevice( const std::string& device )
 {
 	base::AutoLock lock(m_lock);
 	char name[128];
+	char guid[128];
 	int nPlay = 0, nRec = 0;
 	int playoutIndex, recordingIndex;
 
-	gipsHw->GIPSVE_GetNumOfSoundDevices( nPlay, nRec );
+	voeHw->GetNumOfRecordingDevices(  nRec );
+	voeHw->GetNumOfPlayoutDevices(  nPlay );
 
 	// find requested playout device
 	for ( playoutIndex = 0; playoutIndex < nPlay; playoutIndex++ )
 	{
-		if ( gipsHw->GIPSVE_GetPlayoutDeviceName( playoutIndex, name, sizeof(name) ) == 0 )
+		if ( voeHw->GetPlayoutDeviceName( playoutIndex, name, guid ) == 0 )
 		{
 			if ( device.compare( name ) == 0 ) break;
 		}
@@ -364,9 +406,10 @@ bool GipsAudioProvider::setPlayoutDevice( const std::string& device )
 	// find existing recording device, to preserve its index
 	// search downward until we reach the default device
 	name[0] = '\0';
+	guid[0] = '\0';
 	for ( recordingIndex = nRec - 1; recordingIndex >= -1; recordingIndex-- )
 	{
-		if ( gipsHw->GIPSVE_GetRecordingDeviceName( recordingIndex, name, sizeof(name) ) == 0 )
+		if ( voeHw->GetRecordingDeviceName( recordingIndex, name, guid ) == 0 )
 		{
 			if ( recordingDevice.compare( name ) == 0 ) break;
 		}
@@ -377,7 +420,8 @@ bool GipsAudioProvider::setPlayoutDevice( const std::string& device )
 		recordingIndex = -1;
 	}
 
-	if ( gipsHw->GIPSVE_SetSoundDevices( recordingIndex, playoutIndex ) == 0 )
+	if ( voeHw->SetRecordingDevice( recordingIndex ) == 0 &&
+			voeHw->SetPlayoutDevice( playoutIndex) == 0 )
 	{
 		playoutDevice = device;
 		recordingDevice = name;	// the current name
@@ -421,14 +465,15 @@ int GipsAudioProvider::rxAlloc( int groupId, int streamId, int requestedPort )
 {
 	base::AutoLock lock(m_lock);
 	LOG_GIPS_INFO( logTag, "rxAllocAudio: groupId=%d, streamId=%d, requestedPort=%d", groupId, streamId, requestedPort  );
-	int channel = gipsBase->GIPSVE_CreateChannel();
+	int channel = voeBase->CreateChannel();
 	if ( channel == -1 )
 	{
-		LOG_GIPS_ERROR( logTag, "rxAllocAudio: CreateChannel failed, error %d", gipsBase->GIPSVE_LastError() );
+		LOG_GIPS_ERROR( logTag, "rxAllocAudio: CreateChannel failed, error %d", voeBase->LastError() );
 		return 0;
 	}
 	LOG_GIPS_DEBUG( logTag, "rxAllocAudio: Created channel %d", channel );
-	gipsNetwork->GIPSVE_SetPeriodicDeadOrAliveStatus(channel, true);
+	voeNetwork->SetPeriodicDeadOrAliveStatus(channel, true);
+
 
 	int beginPort;		// where we started
 	int tryPort;		// where we are now
@@ -449,12 +494,13 @@ int GipsAudioProvider::rxAlloc( int groupId, int streamId, int requestedPort )
 
 	do
 	{
-		if ( gipsBase->GIPSVE_SetLocalReceiver( channel, tryPort, GIPS_DEFAULT, pLocalAddr ) == 0 )
+		if ( voeBase->SetLocalReceiver( channel, tryPort, webrtc::kVoEDefault, pLocalAddr ) == 0 )
 		{
 			int port, RTCPport;
-			char ipaddr[32];
+			char ipaddr[64];
+			ipaddr[0]='\0';
 			// retrieve local receiver settings for channel
-			gipsBase->GIPSVE_GetLocalReceiver(channel, port, RTCPport, ipaddr, 32);
+			voeBase->GetLocalReceiver(channel, port,RTCPport, ipaddr);
 			localIP = ipaddr;
 			LOG_GIPS_DEBUG( logTag, "rxAllocAudio: IPAddr: %d", ipaddr );
 			LOG_GIPS_DEBUG( logTag, "rxAllocAudio: Allocated port %d", tryPort );
@@ -467,7 +513,7 @@ int GipsAudioProvider::rxAlloc( int groupId, int streamId, int requestedPort )
 			return tryPort;
 		}
 
-		int errCode = gipsBase->GIPSVE_LastError();
+		int errCode = voeBase->LastError();
 		if ( errCode == VE_SOCKET_ERROR ||			
 			 errCode == VE_BINDING_SOCKET_TO_LOCAL_ADDRESS_FAILED ||
 			errCode == VE_RTCP_SOCKET_ERROR )	    
@@ -479,14 +525,14 @@ int GipsAudioProvider::rxAlloc( int groupId, int streamId, int requestedPort )
 		else
 		{
 			LOG_GIPS_ERROR( logTag, "rxAllocAudio: SetLocalReceiver returned error %d", errCode );
-			gipsBase->GIPSVE_DeleteChannel( channel );
+			voeBase->DeleteChannel( channel );
 			return 0;
 		}
 	}
 	while ( tryPort != beginPort );
 
 	LOG_GIPS_WARN( logTag, "rxAllocAudio: No ports available?" );
-	gipsBase->GIPSVE_DeleteChannel( channel );
+	voeBase->DeleteChannel( channel );
 	return 0;
 }
 
@@ -521,7 +567,7 @@ int GipsAudioProvider::rxStart( int groupId, int streamId, int payloadType, int 
 
 	    if (dynamicPayloadType != -1)
 	    {
-			GIPS_CodecInst codec;
+			webrtc::CodecInst codec;
 
 			if (codecSelector.select(payloadType, dynamicPayloadType, packPeriod, codec) != 0)
 			{
@@ -555,12 +601,12 @@ int GipsAudioProvider::rxStart( int groupId, int streamId, int payloadType, int 
                     return -1;
                 }
 
-                if(gipsEncryption->GIPSVE_EnableSRTPReceive(channel,
-                    CIPHER_AES_128_COUNTER_MODE,
+                if(voeEncryption->EnableSRTPReceive(channel,
+                    webrtc::kCipherAes128CounterMode,
                     GIPS_CIPHER_LENGTH,
-                    AUTH_NULL, 0, 0, ENCRYPTION, key) != 0)
+                    webrtc::kAuthNull, 0, 0, webrtc::kEncryption, key) != 0)
                 {
-                    LOG_GIPS_ERROR( logTag, "rxStartAudio: GIPSVE_EnableSRTPReceive on channel %d failed", channel );
+                    LOG_GIPS_ERROR( logTag, "rxStartAudio: voeVE_EnableSRTPReceive on channel %d failed", channel );
                     memset(key, 0x00, sizeof(key));
                     return -1;
                 }
@@ -571,18 +617,20 @@ int GipsAudioProvider::rxStart( int groupId, int streamId, int payloadType, int 
             }  
         }
 
-	    if (gipsBase->GIPSVE_StartListen( channel ) == -1)
+	    if (voeBase->StartReceive( channel ) == -1)
 	    {
 	    	LOG_GIPS_ERROR( logTag, "rxStartAudio: cannot start listen on channel %d", channel );
 	    	return -1;
 	    }
+	
+	
 
 	    LOG_GIPS_DEBUG( logTag, "rxStartAudio: Listening on channel %d", channel );
 
-		if (gipsBase->GIPSVE_StartPlayout( channel ) == -1)
+		if (voeBase->StartPlayout( channel ) == -1)
 		{
 			LOG_GIPS_ERROR( logTag, "rxStartAudio: cannot start playout on channel %d, stop listen", channel );
-			gipsBase->GIPSVE_StopListen( channel );
+			//voeBase->voeVE_StopListen( channel );
 		}
 
 		GipsAudioStreamPtr stream = getStream(streamId);
@@ -608,7 +656,7 @@ void GipsAudioProvider::rxClose( int groupId, int streamId )
 		GipsAudioStreamPtr stream = getStream(streamId);
 		if(stream != NULL)
 			stream->isRxStarted = false;
-		gipsBase->GIPSVE_StopPlayout( channel );
+		voeBase->StopPlayout( channel );
 		LOG_GIPS_DEBUG( logTag, "rxCloseAudio: Stop playout on channel %d", channel );
 	}
 }
@@ -620,8 +668,8 @@ void GipsAudioProvider::rxRelease( int groupId, int streamId, int port )
 	int channel = getChannelForStreamId( streamId );
 	if ( channel >= 0 )
 	{
-		gipsBase->GIPSVE_StopListen( channel );
-		gipsBase->GIPSVE_DeleteChannel( channel );
+		voeBase->StopReceive( channel );
+		voeBase->DeleteChannel( channel );
 		{
 			base::AutoLock lock(streamMapMutex);
 			streamMap.erase(streamId);
@@ -654,7 +702,7 @@ int GipsAudioProvider::txStart( int groupId, int streamId, int payloadType, int 
 	        payloadType = CLEAR_DYNAMIC_PAYLOAD_TYPE(payloadType);
 	    }
 
-	    GIPS_CodecInst codec;
+	    webrtc::CodecInst codec;
 
 		// select codec from payload type
 		if (codecSelector.select(payloadType, dynamicPayloadType, packPeriod, codec) != 0)
@@ -668,6 +716,8 @@ int GipsAudioProvider::txStart( int groupId, int streamId, int payloadType, int 
 		if (codecSelector.setSend(channel, codec,payloadType,vad) != 0)
 		{
 			LOG_GIPS_ERROR( logTag, "txStartAudio cannot set send codec on channel=%d", channel );
+			 LOG_GIPS_ERROR( logTag, "VoEAudioProvider: Error: %d", voeBase->LastError() );
+			
 			return -1;
 		}
 
@@ -689,12 +739,12 @@ int GipsAudioProvider::txStart( int groupId, int streamId, int payloadType, int 
                     return -1;
                 }
 
-                if(gipsEncryption->GIPSVE_EnableSRTPSend(channel,
-                    CIPHER_AES_128_COUNTER_MODE,
+                if(voeEncryption->EnableSRTPSend(channel,
+                    webrtc::kCipherAes128CounterMode,
                     GIPS_CIPHER_LENGTH,
-                    AUTH_NULL, 0, 0, ENCRYPTION, key) != 0)
+                    webrtc::kAuthNull, 0, 0, webrtc::kEncryption, key) != 0)
                 {
-                    LOG_GIPS_ERROR( logTag, "txStartAudio: GIPSVE_EnableSRTPSend on channel %d failed", channel );
+                    LOG_GIPS_ERROR( logTag, "txStartAudio:EnableSRTPSend on channel %d failed", channel );
                     memset(key, 0x00, sizeof(key));
                     return -1;
                 }
@@ -706,29 +756,29 @@ int GipsAudioProvider::txStart( int groupId, int streamId, int payloadType, int 
         }
 
         unsigned char dscpSixBit = DSCPValue>>2;
-		gipsBase->GIPSVE_SetSendDestination( channel, remotePort, remoteIpAddr );
+		voeBase->SetSendDestination( channel, remotePort, remoteIpAddr );
 #ifdef WIN32
 		if (IsVistaOrNewer())
 		{
 			LOG_GIPS_DEBUG( logTag, "Vista or later");
-			if(gipsNetwork->GIPSVE_SetSendTOS(channel, dscpSixBit, false )==-1)
+			if(voeNetwork->SetSendTOS(channel, dscpSixBit, false )==-1)
 			{
-				LOG_GIPS_DEBUG( logTag, "openIngressChannel():GIPSVE_SetSendTOS() returned error");
+				LOG_GIPS_DEBUG( logTag, "openIngressChannel():voeVE_SetSendTOS() returned error");
 			}
-			LOG_GIPS_DEBUG( logTag, " CGipsVeWrapper::openIngressChannel:- GIPSVE_SetSendTOS(), useSetSockOpt = false");
+			LOG_GIPS_DEBUG( logTag, " CvoeVeWrapper::openIngressChannel:- voeVE_SetSendTOS(), useSetSockOpt = false");
 		}
 		else
 		{
-			if(gipsNetwork->GIPSVE_SetSendTOS(channel, dscpSixBit, true )==-1)
+			if(voeNetwork->SetSendTOS(channel, dscpSixBit, true )==-1)
 			{
-				LOG_GIPS_DEBUG( logTag, "openIngressChannel():GIPSVE_SetSendTOS() returned error");
+				LOG_GIPS_DEBUG( logTag, "openIngressChannel():voeVE_SetSendTOS() returned error");
 			}
-			LOG_GIPS_DEBUG( logTag, "CGipsVeWrapper::openIngressChannel:- GIPSVE_SetSendTOS(), useSetSockOpt = true");
+			LOG_GIPS_DEBUG( logTag, "CvoeVeWrapper::openIngressChannel:- voeVE_SetSendTOS(), useSetSockOpt = true");
 		}
 #else
-		gipsNetwork->GIPSVE_SetSendTOS(channel, dscpSixBit, true );
+		voeNetwork->SetSendTOS(channel, dscpSixBit, -1, true );
 #endif
-		gipsBase->GIPSVE_StartSend( channel );
+		voeBase->StartSend( channel );
 		GipsAudioStreamPtr stream = getStream(streamId);
 		if(stream != NULL)
 			stream->isTxStarted = true;
@@ -753,7 +803,7 @@ void GipsAudioProvider::txClose( int groupId, int streamId )
 		GipsAudioStreamPtr stream = getStream(streamId);
 		if(stream != NULL)
 			stream->isTxStarted = false;
-		gipsBase->GIPSVE_StopSend( channel );
+		voeBase->StopSend( channel );
 		LOG_GIPS_DEBUG( logTag, "txCloseAudio: Stop transmit on channel %d", channel );
 	}
 	else
@@ -772,8 +822,8 @@ int GipsAudioProvider::toneStart( ToneType type, ToneDirection direction, int al
 		toneStop(type, groupId, streamId);
 	}
 	toneGen = new GipsToneGenerator( type );
-	gipsBase->GIPSVE_StartPlayout( localToneChannel );
-	gipsFile->GIPSVE_StartPlayingFileLocally( localToneChannel, toneGen, FILE_PCM_8KHZ );
+	voeBase->StartPlayout( localToneChannel );
+	voeFile->StartPlayingFileLocally( localToneChannel, toneGen, webrtc::kFileFormatPcm16kHzFile);
 	return 0;
 }
 
@@ -781,9 +831,9 @@ int GipsAudioProvider::toneStop( ToneType type, int groupId, int streamId )
 {
 	base::AutoLock lock(m_lock);
 	LOG_GIPS_INFO( logTag, "mediaToneStop: tone=%d, groupId=%d, streamId=%d", type, groupId, streamId );
-	if ( gipsFile->GIPSVE_IsPlayingFileLocally( localToneChannel ) == 1 )
-		gipsBase->GIPSVE_StopPlayout( localToneChannel );
-	//gipsFile->GIPSVE_StopPlayingFileLocally( localToneChannel );
+	if ( voeFile->IsPlayingFileLocally( localToneChannel ) == 1 )
+		voeBase->StopPlayout( localToneChannel );
+	//voeFile->voeVE_StopPlayingFileLocally( localToneChannel );
 	delete toneGen;
 	toneGen = NULL;
 	return 0;
@@ -802,8 +852,8 @@ int GipsAudioProvider::ringStart( int lineId, RingMode mode, bool once )
 	}
 	ringGen = new GipsRingGenerator( mode, once );
 	ringGen->SetScaleFactor(ringerVolume);
-	gipsBase->GIPSVE_StartPlayout( localRingChannel );
-	gipsFile->GIPSVE_StartPlayingFileLocally( localRingChannel, ringGen, FILE_PCM_8KHZ );
+	voeBase->StartPlayout( localRingChannel );
+	voeFile->StartPlayingFileLocally( localRingChannel, ringGen, webrtc::kFileFormatPcm8kHzFile);
 	return 0;
 }
 
@@ -811,9 +861,9 @@ int GipsAudioProvider::ringStop( int lineId )
 {
 	base::AutoLock lock(m_lock);
 	LOG_GIPS_INFO( logTag, "mediaRingStop: line=%d", lineId );
-	if ( gipsFile->GIPSVE_IsPlayingFileLocally( localRingChannel ) == 1 )
-		gipsBase->GIPSVE_StopPlayout( localRingChannel );
-	//gipsFile->GIPSVE_StopPlayingFileLocally( localToneChannel );
+	if ( voeFile->IsPlayingFileLocally( localRingChannel ) == 1 )
+		voeBase->StopPlayout( localRingChannel );
+	//voeFile->voeVE_StopPlayingFileLocally( localToneChannel );
 	delete ringGen;
 	ringGen = NULL;
 	return 0;
@@ -822,15 +872,16 @@ int GipsAudioProvider::ringStop( int lineId )
 int GipsAudioProvider::sendDtmf( int streamId, int digit)
 {
 	base::AutoLock lock(m_lock);
+	// TODO Get from config
 	int rfc2833Payload=101;
 	
     int channel = getChannelForStreamId( streamId );
 	
 	if(channel >= 0)
 	{
-		gipsDTMF->GIPSVE_SetDTMFFeedbackStatus(true);
-		gipsDTMF->GIPSVE_SetSendDTMFPayloadType(channel, rfc2833Payload); // Need to get rfc2833Payload
-		gipsDTMF->GIPSVE_SendDTMF(channel, digit);
+		voeDTMF->SetDtmfFeedbackStatus(true);
+		voeDTMF->SetSendTelephoneEventPayloadType(channel, rfc2833Payload); // Need to get rfc2833Payload
+		voeDTMF->SendTelephoneEvent(channel, digit);
 		return 0;
 	}
     else
@@ -851,13 +902,13 @@ bool GipsAudioProvider::mute( int streamId, bool mute )
 
     if ( channel >= 0 )
     {
-		if (gipsVolumeControl->GIPSVE_SetInputMute(channel, mute) != -1)
+		if (voeVolumeControl->SetInputMute(channel, mute) != -1)
 		{
 			returnVal= true;
 		}
 		else
 		{
-			LOG_GIPS_INFO( logTag, "GIPS returned failure from GIPSVE_SetInputMute");
+			LOG_GIPS_INFO( logTag, "voe returned failure from voeVE_SetInputMute");
 		}
     }
     else
@@ -872,7 +923,7 @@ bool GipsAudioProvider::isMuted( int streamId )
 	base::AutoLock lock(m_lock);
 	bool mute=false;
 
-	gipsVolumeControl->GIPSVE_GetInputMute(getChannelForStreamId(streamId), mute);
+	voeVolumeControl->GetInputMute(getChannelForStreamId(streamId), mute);
 	return mute;
 }
 
@@ -893,7 +944,7 @@ bool GipsAudioProvider::setRingerVolume( int volume )
 {
 	base::AutoLock lock(m_lock);
 	LOG_GIPS_INFO( logTag, "setRingerVolume: volume=%d", volume );
-	if (gipsVolumeControl->GIPSVE_SetChannelOutputVolumeScaling(localRingChannel, volume * 0.01f) != -1)
+	if (voeVolumeControl->SetChannelOutputVolumeScaling(localRingChannel, volume * 0.01f) != -1)
 	{
 		ringerVolume = volume;
 		if(ringGen != NULL)
@@ -904,7 +955,7 @@ bool GipsAudioProvider::setRingerVolume( int volume )
 	}
 	else
 	{
-		LOG_GIPS_INFO( logTag, "GIPS returned failure from GIPSVE_SetChannelOutputVolumeScaling");
+		LOG_GIPS_INFO( logTag, "voe returned failure from voeVE_SetChannelOutputVolumeScaling");
 		return false;
 	}
 }
@@ -917,20 +968,21 @@ int GipsAudioProvider::getRingerVolume()
 
 bool GipsAudioProvider::setVolume( int streamId, int volume )
 {
+	//Lock lock(&mutex);
 	LOG_GIPS_INFO( logTag, "setVolume: streamId=%d, volume=%d", streamId, volume );
 	int channel = getChannelForStreamId( streamId );
 	bool returnVal = false;
 
 	if ( channel >= 0 )
 	{
-		// Input is scaled 0-100.  GIPS scale is 0.0f - 1.0f.  (Larger values are allowable but liable to distortion)
-		if (gipsVolumeControl->GIPSVE_SetChannelOutputVolumeScaling(channel, volume * 0.01f) != -1)
+		// Input is scaled 0-100.  voe scale is 0.0f - 1.0f.  (Larger values are allowable but liable to distortion)
+		if (voeVolumeControl->SetChannelOutputVolumeScaling(channel, volume * 0.01f) != -1)
 		{
 			returnVal = true;
 		}
 		else
 		{
-			LOG_GIPS_INFO( logTag, "GIPS returned failure from GIPSVE_SetChannelOutputVolumeScaling");
+			LOG_GIPS_INFO( logTag, "voe returned failure from voeVE_SetChannelOutputVolumeScaling");
 		}
 	}
 	else
@@ -943,40 +995,32 @@ bool GipsAudioProvider::setVolume( int streamId, int volume )
 int  GipsAudioProvider::getVolume( int streamId )
 {
 	base::AutoLock lock(m_lock);
-	float gipsVolume = 0;
+	float voeVolume = 0;
 
-	if(gipsVolumeControl->GIPSVE_GetChannelOutputVolumeScaling(getChannelForStreamId(streamId), gipsVolume) != -1)
+	if(voeVolumeControl->GetChannelOutputVolumeScaling(getChannelForStreamId(streamId), voeVolume) != -1)
 	{
-		// Output is scaled 0-100.  GIPS scale is 0.0f - 1.0f.
-		float volume = gipsVolume * 100.0f; // Scale to 0-100 for presentation.
+		// Output is scaled 0-100.  voe scale is 0.0f - 1.0f.
+		float volume = voeVolume * 100.0f; // Scale to 0-100 for presentation.
 		return (int)(volume + 0.5f);		// And round neatly.
 	}
 	else
 	{
-		LOG_GIPS_INFO( logTag, "GIPS returned failure from GIPSVE_GetChannelOutputVolumeScaling");
+		LOG_GIPS_INFO( logTag, "voe returned failure from voeVE_GetChannelOutputVolumeScaling");
 		return -1;
 	}
 }
 
-// GIPSVoiceEngineObserver
-#if GIPS_VER < 3510
-void GipsAudioProvider::CallbackOnTrace(const GIPS::TraceLevel level, const char* message, const int length)
-{
-	if (strstr(message, "eventNumber=") != NULL || strstr(message, "DTMF event ") != NULL)
-		return;
-	//if ( length > 0 ) LOG_GIPS_INFO( logTag, "GIPS %2d: %s", level, message );
-}
-#else
-void GipsAudioProvider::Print(const GIPS::TraceLevel level, const char* message, const int length)
+// voeVoiceEngineObserver
+void GipsAudioProvider::Print(const webrtc::TraceLevel level, const char* message, const int length)
 {
 		if (strstr(message, "eventNumber=") != NULL || strstr(message, "DTMF event ") != NULL)
 			return;
-		//if ( length > 0 ) LOG_GIPS_INFO( logTag, "GIPS %s", message );
+		//if ( length > 0 ) LOG_GIPS_INFO( logTag, "voe %s", message );
 }
-#endif
+
 void GipsAudioProvider::CallbackOnError(const int errCode, const int channel)
 {
-	LOG_GIPS_ERROR( logTag, "GIPS ERROR %d on channel %d", errCode, channel );
+	LOG_GIPS_ERROR( logTag, "voe ERROR %d on channel %d", errCode, channel );
 }
 
 void GipsAudioProvider::OnPeriodicDeadOrAlive(int channel, bool isAlive)
@@ -986,7 +1030,7 @@ void GipsAudioProvider::OnPeriodicDeadOrAlive(int channel, bool isAlive)
 	{
 		if(stream->isAlive != isAlive)
 		{
-			LOG_GIPS_INFO( logTag, "GIPS channel %d is %s", channel, (isAlive ? "alive" : "dead") );
+			LOG_GIPS_INFO( logTag, "voe channel %d is %s", channel, (isAlive ? "alive" : "dead") );
 			stream->isAlive = isAlive;
 			// TODO should use postEvent and rely on Engine to drive dispatch.
 /*			Component::Event event;

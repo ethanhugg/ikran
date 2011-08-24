@@ -45,7 +45,7 @@
 #include <CSFVideoControl.h>
 #include <CSFVideoTermination.h>
 
-#include <GIPSVEEncryption.h>
+#include <voe_encryption.h>
 
 #ifdef WIN32
 #include <GIPSVideoEngineWindows.h>

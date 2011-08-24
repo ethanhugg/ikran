@@ -43,7 +43,7 @@
 #include "CSFGipsLogging.h"
 
 #include "CSFGipsAudioCodecSelector.h"
-#include "GIPSVECodec.h"
+#include "voe_codec.h"
 #include "csf_common.h"
 
 static const char* logTag = "AudioCodecSelector";
@@ -63,10 +63,6 @@ static CSFCodecMapping gipsMappingInfo[] =
     { AudioPayloadType_G711ALAW56K,       GipsAudioPayloadType_PCMA },
     { AudioPayloadType_G711ULAW64K,       GipsAudioPayloadType_PCMU },
     { AudioPayloadType_G711ULAW56K,       GipsAudioPayloadType_PCMU },
-    { AudioPayloadType_G729,              GipsAudioPayloadType_G729 },
-    { AudioPayloadType_G729ANNEXA,        GipsAudioPayloadType_G729 },
-    { AudioPayloadType_G729ANNEXB,        GipsAudioPayloadType_G729 },
-    { AudioPayloadType_G729ANNEXAWANNEXB, GipsAudioPayloadType_G729 },
     { AudioPayloadType_G722_56K,          GipsAudioPayloadType_G722 },
     { AudioPayloadType_G722_64K,          GipsAudioPayloadType_G722 },
     { AudioPayloadType_G722_48K,          GipsAudioPayloadType_G722 },
@@ -103,7 +99,7 @@ void CSFGipsAudioCodecSelector::release()
 
         gipsCodec = NULL;
 
-        std::map<int, GIPS_CodecInst*>::iterator iterGipsCodecs;
+        std::map<int, webrtc::CodecInst*>::iterator iterGipsCodecs;
         for( iterGipsCodecs = codecMap.begin(); iterGipsCodecs != codecMap.end(); ++iterGipsCodecs ) {
             delete iterGipsCodecs->second;
         }
@@ -112,11 +108,11 @@ void CSFGipsAudioCodecSelector::release()
     }
 }
 
-int CSFGipsAudioCodecSelector::init( GIPSVoiceEngine* gipsVoice, bool useLowBandwidthCodecOnly, bool advertiseG722Codec )
+int CSFGipsAudioCodecSelector::init( webrtc::VoiceEngine* gipsVoice, bool useLowBandwidthCodecOnly, bool advertiseG722Codec )
 {
     LOG_GIPS_INFO( logTag, "CSFGipsAudioCodecSelector::init useLowBandwidthCodecOnly=%d, advertiseG722Codec=%d", useLowBandwidthCodecOnly, advertiseG722Codec );
 
-    gipsCodec = GIPSVECodec::GetInterface( gipsVoice );
+    gipsCodec = webrtc::VoECodec::GetInterface( gipsVoice );
 
     if (gipsCodec == NULL)
     {
@@ -129,16 +125,16 @@ int CSFGipsAudioCodecSelector::init( GIPSVoiceEngine* gipsVoice, bool useLowBand
     codecMap.clear();
 
     // get the number of codecs supported by GIPS
-    int numOfSupportedCodecs = gipsCodec->GIPSVE_NumOfCodecs();
+    int numOfSupportedCodecs = gipsCodec->NumOfCodecs();
 
     LOG_GIPS_INFO( logTag, "CSFGipsAudioCodecSelector::init found %d supported codec(s)", numOfSupportedCodecs );
 
     // iterate over supported codecs
     for (int codecIndex = 0; codecIndex < numOfSupportedCodecs; codecIndex++)
     {
-        GIPS_CodecInst supportedCodec;
+        webrtc::CodecInst supportedCodec;
 
-        if (gipsCodec->GIPSVE_GetCodec(codecIndex, supportedCodec) == -1)
+        if (gipsCodec->GetCodec(codecIndex, supportedCodec) == -1)
         {
             LOG_GIPS_INFO( logTag, "CSFGipsAudioCodecSelector::init codecIndex=%d: cannot get supported codec information", codecIndex );
             continue;
@@ -167,13 +163,6 @@ int CSFGipsAudioCodecSelector::init( GIPSVoiceEngine* gipsVoice, bool useLowBand
                     {
                         addCodec = true;
                     }
-                    break;
-
-                case AudioPayloadType_G729:
-                case AudioPayloadType_G729ANNEXA:
-                case AudioPayloadType_G729ANNEXB:
-                case AudioPayloadType_G729ANNEXAWANNEXB:
-                    addCodec =  true;
                     break;
 
                 case AudioPayloadType_G722_56K:
@@ -212,8 +201,8 @@ int CSFGipsAudioCodecSelector::init( GIPSVoiceEngine* gipsVoice, bool useLowBand
                 if (addCodec)
                 {
                     // add to codec map
-                    GIPS_CodecInst* mappedCodec = new GIPS_CodecInst; // not sure when it should be deleted
-                    memcpy(mappedCodec, &supportedCodec, sizeof(GIPS_CodecInst));
+                    webrtc::CodecInst* mappedCodec = new webrtc::CodecInst; // not sure when it should be deleted
+                    memcpy(mappedCodec, &supportedCodec, sizeof(webrtc::CodecInst));
 
                     codecMap[csfPayload] = mappedCodec;
 
@@ -236,12 +225,10 @@ int CSFGipsAudioCodecSelector::init( GIPSVoiceEngine* gipsVoice, bool useLowBand
 
 int  CSFGipsAudioCodecSelector::advertiseCodecs( CodecRequestType requestType )
 {
-    return AudioCodecMask_G711  |
-           AudioCodecMask_G729A | AudioCodecMask_G729B |
-           AudioCodecMask_G722;
+    return AudioCodecMask_G711  |AudioCodecMask_G722;
 }
 
-int CSFGipsAudioCodecSelector::select( int payloadType, int dynamicPayloadType, int packPeriod, GIPS_CodecInst& selectedCodec )
+int CSFGipsAudioCodecSelector::select( int payloadType, int dynamicPayloadType, int packPeriod, webrtc::CodecInst& selectedCodec )
 {
     LOG_GIPS_INFO( logTag, "CSFGipsAudioCodecSelector::select payloadType=%d, dynamicPayloadType=%d, packPeriod=%d", payloadType, dynamicPayloadType, packPeriod );
 
@@ -249,7 +236,7 @@ int CSFGipsAudioCodecSelector::select( int payloadType, int dynamicPayloadType, 
     // packPeriod "represents the number of milliseconds of audio encoded in a single packet" ?
     int packetSize = packPeriod;
 
-    GIPS_CodecInst* supportedCodec = codecMap[payloadType];
+    webrtc::CodecInst* supportedCodec = codecMap[payloadType];
 
     if (supportedCodec == NULL)
     {
@@ -257,7 +244,7 @@ int CSFGipsAudioCodecSelector::select( int payloadType, int dynamicPayloadType, 
         return -1; // return failure
     }
 
-    memcpy(&selectedCodec, supportedCodec, sizeof(GIPS_CodecInst));
+    memcpy(&selectedCodec, supportedCodec, sizeof(webrtc::CodecInst));
 
     // adapt dynamic payload type if required
     if (dynamicPayloadType != -1)
@@ -302,21 +289,6 @@ int CSFGipsAudioCodecSelector::select( int payloadType, int dynamicPayloadType, 
         }
         break;
 
-    case AudioPayloadType_G729:
-    case AudioPayloadType_G729ANNEXA:
-    case AudioPayloadType_G729ANNEXB:
-    case AudioPayloadType_G729ANNEXAWANNEXB:
-        // GIPS allowed packet sizes for G.729: 10, 20, 30, 40, 50, 60 ms
-        // (or 80, 160, 240, 320, 400, 480 samples)
-        pacsize = ( 8 * packetSize );
-        if (( pacsize == 80 ) || ( pacsize == 160 ) ||
-            ( pacsize == 240) || ( pacsize == 320 ) ||
-            ( pacsize == 400) || ( pacsize == 480 ))
-        {
-            selectedCodec.pacsize = pacsize;
-        }
-        break;
-
     case AudioPayloadType_G722_56K:
     case AudioPayloadType_G722_64K:
         // GIPS allowed packet size for G.722: 20ms (or 320 samples).
@@ -338,9 +310,9 @@ int CSFGipsAudioCodecSelector::select( int payloadType, int dynamicPayloadType, 
     return 0;
 }
 
-int CSFGipsAudioCodecSelector::setSend(int channel, const GIPS_CodecInst& codec,int payloadType,bool vad)
+int CSFGipsAudioCodecSelector::setSend(int channel, const webrtc::CodecInst& codec,int payloadType,bool vad)
 {
-    GIPS_PayloadFrequencies freq;
+    webrtc::PayloadFrequencies freq;
     LOG_GIPS_INFO( logTag, "CSFGipsAudioCodecSelector::setSend channel=%d codec %s (payload=%d, packetSize=%d)",
             channel, codec.plname, codec.pltype, codec.pacsize);
 
@@ -350,13 +322,8 @@ int CSFGipsAudioCodecSelector::setSend(int channel, const GIPS_CodecInst& codec,
         return -1;
     }
     bool vadEnable=vad;
-    if ((payloadType== AudioPayloadType_G729) || (payloadType==AudioPayloadType_G729ANNEXA))
-    {
-        LOG_GIPS_INFO( logTag, "CSFGipsAudioCodecSelector::setSend disable VAD for G729 or G729A on %d ", channel );
-        vadEnable = false;
-    }
 
-    if (gipsCodec->GIPSVE_SetVADStatus( channel,  vadEnable,  VAD_CONVENTIONAL,false) != 0)
+    if (gipsCodec->SetVADStatus( channel,  vadEnable,  webrtc::kVadConventional,false) != 0)
     {
         LOG_GIPS_INFO( logTag, "CSFGipsAudioCodecSelector::GIPSVE_SetVADStatus cannot set VAD  to channel %d", channel );
         return -1;
@@ -366,32 +333,32 @@ int CSFGipsAudioCodecSelector::setSend(int channel, const GIPS_CodecInst& codec,
     switch (codec.plfreq)
     {
         case SamplingFreq8000Hz:
-            freq=FREQ_8000_HZ;
+            freq=webrtc::kFreq8000Hz;
         break;
         case SamplingFreq16000Hz:
-            freq=FREQ_16000_HZ;
+            freq=webrtc::kFreq16000Hz;
             break;
-#if GIPS_VER >= 3510    
+//#if GIPS_VER >= 3510    
     // GIPS 3.5 has  the FREQ_32000_HZ enum in GIPSVECodec.h whereas 3.4.8 does not.
     // Note the FREQ_32000_HZ enum is missing in the 3.5 docs 
     // This is only needed for ISAC which we don't support yet
     // I have logged a question with GIPS to see if it can be used with 3.4.8
         case SamplingFreq32000Hz:
-            freq=FREQ_32000_HZ;
+            freq=webrtc::kFreq32000Hz;
             break;            
-#endif
+//#endif
         default:
-            freq=FREQ_8000_HZ;
+            freq=webrtc::kFreq8000Hz;
 
     }
     
-    if (gipsCodec->GIPSVE_SetSendCNPayloadType(channel, ComfortNoisePayloadType,  freq) != 0)
+    if (gipsCodec->SetSendCNPayloadType(channel, ComfortNoisePayloadType,  freq) != 0)
     {
         LOG_GIPS_INFO( logTag, "GIPSVE_SetSendCNPayloadType cannot set CN payload type  to channel %d", channel );
-        return -1;
+        //return -1;
     }
     // apply the codec to the channel
-    if (gipsCodec->GIPSVE_SetSendCodec(channel, codec) != 0)
+    if (gipsCodec->SetSendCodec(channel, codec) != 0)
     {
         LOG_GIPS_ERROR( logTag, "CSFGipsAudioCodecSelector::setSend cannot set send codec to channel %d", channel );
         return -1;
@@ -405,7 +372,7 @@ int CSFGipsAudioCodecSelector::setSend(int channel, const GIPS_CodecInst& codec,
     return 0;
 }
 
-int CSFGipsAudioCodecSelector::setReceive(int channel, const GIPS_CodecInst& codec)
+int CSFGipsAudioCodecSelector::setReceive(int channel, const webrtc::CodecInst& codec)
 {
     LOG_GIPS_INFO( logTag, "CSFGipsAudioCodecSelector::setReceive channel=%d codec %s (payload=%d, packetSize=%d)",
             channel, codec.plname, codec.pltype, codec.pacsize);
@@ -416,7 +383,7 @@ int CSFGipsAudioCodecSelector::setReceive(int channel, const GIPS_CodecInst& cod
         return -1;
     }
 
-    if (gipsCodec->GIPSVE_SetRecPayloadType(channel, codec) != 0)
+    if (gipsCodec->SetRecPayloadType(channel, codec) != 0)
     {
         LOG_GIPS_ERROR( logTag, "CSFGipsAudioCodecSelector::setReceive cannot set receive codec to channel %d", channel );
         return -1;
