@@ -83,18 +83,12 @@ if sys.platform =='win32':
   if int(debug):
     libs += [
       'libcmtd.lib',
-      'libcurl_mtd.lib',
-      'libxml2_mtd.lib',
-      'libeay32_mtd.lib',
-      'ssleay32_mtd.lib'
+      'libxml2_mtd.lib'
     ]
   else:
     libs += [
       'libcmt.lib',
-      'libcurl_mt.lib'
-      'libxml2_mt.lib',
-      'libeay32_mt.lib',
-      'ssleay32_mt.lib'
+      'libxml2_mt.lib'
     ]
   env["LINKFLAGS"] = [
     '/DELAYLOAD:"avrt.dll"',
@@ -132,7 +126,6 @@ elif sys.platform == 'darwin':
     'apr-1',
     'aprutil-1',
     'z',
-    'curl', 
     'libxml2', 
     'iconv',
     'X11',
@@ -200,7 +193,6 @@ elif sys.platform=='linux2':
     'idn', 
     'dl', 
     'rt',
-    'curl',
     'xml2', 
     'asound',
     'Xext',
