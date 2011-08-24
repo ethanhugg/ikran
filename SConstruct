@@ -59,7 +59,6 @@ build_env["CPPDEFINES"] = [
   'LOG4CXX_STATIC', 
   '_NO_LOG4CXX', 
   'USE_SSLEAY', 
-  'CURL_STATICLIB', 
   'LIBXML_STATIC', 
   '_CPR_USE_EXTERNAL_LOGGER'
 ]
@@ -86,6 +85,7 @@ if sys.platform =='win32':
 elif sys.platform=='darwin':
   build_env["CPPFLAGS"] = [
     '-Werror',
+    '-Wunused-function',
     '-fexceptions',
     '-fno-common',
     '-fvisibility=hidden'
@@ -148,6 +148,7 @@ elif sys.platform=='darwin':
 elif sys.platform=='linux2':
   build_env["CPPFLAGS"] = [
     '-Werror',
+    '-Wall',
     '-fexceptions',
     '-fno-common',
   ]

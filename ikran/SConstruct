@@ -305,8 +305,9 @@ elif sys.platform=='linux2':
     '../third_party/lib',
     '/usr/include',
     '/usr/lib',
-	mozsdkpath + '/lib',
-    mozsdkpath + '/bin'
+    mozsdkpath + '/lib',
+    mozsdkpath + '/bin',
+    webrtcpath + '/out/Debug'
   ]
   libs += [
     componentName + suffixName, 
