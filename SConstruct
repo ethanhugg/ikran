@@ -22,7 +22,14 @@ if 'MOZSDKPATH' in os.environ:
 else:
   print 'Environment variable MOZSDKPATH must be set to your xulrunner-sdk path'
   exit(1)
-  
+
+if 'WEBRTCPATH' in os.environ:
+	webrtcpath = os.environ['WEBRTCPATH'].rstrip('/').rstrip('\\')	
+ 	print 'Using WEBRTCPATH ' + webrtcpath
+else:
+	print 'Environment variable WEBRTCPATH must be set to webrtc trunk path'
+	exit(1)
+ 
 if sys.platform =='win32':
   if 'MS_VC_PATH' in os.environ: 
     ms_vc_path=os.environ['MS_VC_PATH']
@@ -51,7 +58,8 @@ build_env = Environment()
 build_env["CPPDEFINES"] = [
   'LOG4CXX_STATIC', 
   '_NO_LOG4CXX', 
-  'USE_SSLEAY',  
+  'USE_SSLEAY', 
+  'CURL_STATICLIB', 
   'LIBXML_STATIC', 
   '_CPR_USE_EXTERNAL_LOGGER'
 ]
@@ -78,9 +86,9 @@ if sys.platform =='win32':
 elif sys.platform=='darwin':
   build_env["CPPFLAGS"] = [
     '-Werror',
-    '-Wunused-function',
     '-fexceptions',
-    '-fno-common'
+    '-fno-common',
+    '-fvisibility=hidden'
   ]
   
   if x64 == 'yes':
@@ -121,7 +129,8 @@ elif sys.platform=='darwin':
     '-framework',
     'OpenGL',
     '-framework',
-    'Carbon'
+    'Carbon',
+	#'-fvisibility=hidden'
   ]
 
   if x64 == 'yes':
@@ -139,7 +148,6 @@ elif sys.platform=='darwin':
 elif sys.platform=='linux2':
   build_env["CPPFLAGS"] = [
     '-Werror',
-    '-Wall',
     '-fexceptions',
     '-fno-common',
   ]
@@ -246,6 +254,7 @@ Export ('build_env')
 Export ('debug')
 Export ('x64')
 Export ('mozsdkpath')
+Export ('webrtcpath')
 
 Export ('suffixName')
 Export ('componentName')

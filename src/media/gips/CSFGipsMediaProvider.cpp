@@ -203,7 +203,7 @@ VideoControl* GipsMediaProvider::getVideoControl()
 #endif
 }
 
-GIPSVoiceEngine * GipsMediaProvider::getGipsVoiceEngine () {
+webrtc::VoiceEngine* GipsMediaProvider::getGipsVoiceEngine () {
     return ((pAudio != NULL) ? pAudio->getVoiceEngine() : NULL);
 }
 

@@ -43,19 +43,19 @@
 #ifndef _USE_CPVE
 
 #include <CSFAudioTermination.h>
-
+#include "voe_base.h"
+#include "voe_codec.h"
 #include <map>
 
 // forward declarations
-class GIPSVoiceEngine;
-class GIPSVECodec;
-struct GIPS_CodecInst;
+class webrtc::VoiceEngine;
+class webrtc::VoECodec;
+struct webrtc::CodecInst;
 
 typedef enum {
   GipsAudioPayloadType_PCMU = 0,
   GipsAudioPayloadType_PCMA = 8,
   GipsAudioPayloadType_G722 = 9,
-  GipsAudioPayloadType_G729 = 18,
   GipsAudioPayloadType_iLBC = 102,
   GipsAudioPayloadType_ISAC = 103,
   GipsAudioPayloadType_TELEPHONE_EVENT = 106,
@@ -64,12 +64,12 @@ typedef enum {
 
 } GipsAudioPayloadType;
 
-const int ComfortNoisePayloadType =13;
+const int ComfortNoisePayloadType = 13;
 const int SamplingFreq8000Hz =8000;
 const int SamplingFreq16000Hz =16000;
-#if GIPS_VER >= 3510
+///#if GIPS_VER >= 3510
 const int SamplingFreq32000Hz =32000;
-#endif
+//#endif
 namespace CSF
 {
 
@@ -83,7 +83,7 @@ public:
 	// the destructor
 	~CSFGipsAudioCodecSelector();
 
-	int init( GIPSVoiceEngine* gipsVoice, bool useLowBandwidthCodecOnly, bool advertiseG722Codec );
+	int init( webrtc::VoiceEngine* gipsVoice, bool useLowBandwidthCodecOnly, bool advertiseG722Codec );
 
 	void release();
 
@@ -92,21 +92,21 @@ public:
 
 	// select the GIPS codec according to payload type and packet size
 	// return 0 if a codec was selected
-	int select( int payloadType, int dynamicPayloadType, int packetSize, GIPS_CodecInst& selectedCoded );
+	int select( int payloadType, int dynamicPayloadType, int packetSize, webrtc::CodecInst& selectedCoded );
 
 	// apply a sending codec to the channel
 	// return 0 if codec could be applied
-	int setSend(int channel, const GIPS_CodecInst& codec,int payloadType,bool vad);
+	int setSend(int channel, const webrtc::CodecInst& codec,int payloadType,bool vad);
 
 	// apply a receiving codec to the channel
 	// return 0 if codec could be applied
-	int setReceive(int channel, const GIPS_CodecInst& codec);
+	int setReceive(int channel, const webrtc::CodecInst& codec);
 
 private:
 	// the reference to the GIPS Codec sub-interface
-	GIPSVECodec* gipsCodec;
+	webrtc::VoECodec* gipsCodec;
 
-	std::map<int, GIPS_CodecInst*> codecMap;
+	std::map<int, webrtc::CodecInst*> codecMap;
 };
 
 } // namespace CSF

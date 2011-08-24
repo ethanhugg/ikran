@@ -3,6 +3,7 @@ import sys
 
 Import('build_env')
 Import('debug')
+Import('webrtcpath')
 Import('x64')
 
 include_dirs = Split("""
@@ -25,6 +26,7 @@ include_dirs = Split("""
             """)
 
 if sys.platform =='win32':
+  include_dirs += ['../third_party/libcurl/include_win32']
   include_dirs += ['../third_party/libxml2/include']
 else:
   include_dirs += ['/usr/include/libxml2']
@@ -45,7 +47,10 @@ if (sys.platform =='win32'):
   # need to move to gips/gips3.4.8 for webphone parity
   include_dirs += ['../third_party/gips/gipsVideo3.4.8/include']
 elif (sys.platform=='darwin'):
-  include_dirs += ['../third_party/gips/gipsVideoMac341/include']
+  # changing to open source GIPS
+  include_dirs += [webrtcpath + '/src',
+                   webrtcpath + '/src/video_engine/main/interface',
+                   webrtcpath + '/src/voice_engine/main/interface' ]
 elif (sys.platform=='linux2'):
   include_dirs += ['../third_party/gips/gipsVideoLinux351/include']
 include_dirs += ['media/gips']

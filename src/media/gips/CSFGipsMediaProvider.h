@@ -43,10 +43,10 @@
 #ifndef _USE_CPVE
 
 #include <CSFMediaProvider.h>
-
+#include "voe_base.h"
 #include <string>
 
-class GIPSVoiceEngine;
+class webrtc::VoiceEngine;
 
 namespace CSF
 {
@@ -100,7 +100,7 @@ namespace CSF
 		GipsAudioProvider* pAudio;
 		GipsVideoProvider* pVideo;
 
-        GIPSVoiceEngine * getGipsVoiceEngine ();
+        webrtc::VoiceEngine * getGipsVoiceEngine ();
 	};
 
 } // namespace

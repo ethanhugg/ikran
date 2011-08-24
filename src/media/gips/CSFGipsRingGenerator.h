@@ -43,11 +43,11 @@
 #ifndef _USE_CPVE
 
 #include <CSFAudioTermination.h>
-#include <GIPSVECommon.h>
+#include "common_types.h"
 
 namespace CSF {
 
-	class GipsRingGenerator : public InStream
+	class GipsRingGenerator : public webrtc::InStream
 	{
 	public:
 		GipsRingGenerator( RingMode mode, bool once );

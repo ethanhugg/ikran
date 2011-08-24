@@ -45,12 +45,10 @@
 typedef enum
 {
     AudioCodecMask_G711 = 1,
-    AudioCodecMask_G729A = 2,
-    AudioCodecMask_G729B = 4,
-    AudioCodecMask_LINEAR = 8,
-    AudioCodecMask_G722 = 16,
-    AudioCodecMask_iLBC = 32,
-    AudioCodecMask_iSAC = 64
+    AudioCodecMask_LINEAR = 2,
+    AudioCodecMask_G722 = 4,
+    AudioCodecMask_iLBC = 16,
+    AudioCodecMask_iSAC = 32 
 
 } AudioCodecMask;
 
@@ -115,10 +113,6 @@ typedef enum
     AudioPayloadType_G722_64K = 6,
     AudioPayloadType_G722_56K = 7,
     AudioPayloadType_G722_48K = 8,
-    AudioPayloadType_G729 = 12,
-    AudioPayloadType_G729ANNEXA = 13,
-    AudioPayloadType_G729ANNEXB = 16,
-    AudioPayloadType_G729ANNEXAWANNEXB = 17,
     AudioPayloadType_RFC2833 = 38,
     AudioPayloadType_ILBC20 = 39,
     AudioPayloadType_ILBC30 = 40,

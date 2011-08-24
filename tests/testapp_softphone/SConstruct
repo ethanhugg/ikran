@@ -5,6 +5,8 @@ Import ('debug')
 Import ('x64')
 Import ('componentName')
 Import ('suffixName')
+Import('webrtcpath')
+
 
 ## Add Tests folders here
 # Temp using absolute paths
@@ -81,12 +83,18 @@ if sys.platform =='win32':
   if int(debug):
     libs += [
       'libcmtd.lib',
-      'libxml2_mtd.lib'
+      'libcurl_mtd.lib',
+      'libxml2_mtd.lib',
+      'libeay32_mtd.lib',
+      'ssleay32_mtd.lib'
     ]
   else:
     libs += [
       'libcmt.lib',
-      'libxml2_mt.lib'
+      'libcurl_mt.lib'
+      'libxml2_mt.lib',
+      'libeay32_mt.lib',
+      'ssleay32_mt.lib'
     ]
   env["LINKFLAGS"] = [
     '/DELAYLOAD:"avrt.dll"',
@@ -109,12 +117,13 @@ if sys.platform =='win32':
      ]
 elif sys.platform == 'darwin':
   env["CPPFLAGS"] += [
-    '-W'
+    '-W',
   ]
   libpath += [
     '../..',
     '../../third_party/chromium_base',
     '../../third_party/lib',
+    webrtcpath + '/xcodebuild/Debug',
   ]
   libs += [
     componentName + suffixName,
@@ -123,11 +132,50 @@ elif sys.platform == 'darwin':
     'apr-1',
     'aprutil-1',
     'z',
+    'curl', 
     'libxml2', 
     'iconv',
     'X11',
     'chromium',
-    'VideoEngine_mac_intel_gcc.a' 
+    'libaec.a',
+    'libaecm.a',
+	'libagc.a',
+    'libapm_util.a',
+    'libaudio_coding_module.a',
+    'libaudio_conference_mixer.a',
+    'libaudio_device.a',
+    'libaudio_processing.a',
+    'libCNG.a',
+    'libG711.a',
+    'libG722.a',
+    'libgenperf_libs.a',
+    'libiLBC.a',
+    'libiSAC.a',
+    'libiSACFix.a',
+    'libjpeg_turbo.a',
+    'libmedia_file.a',
+    'libNetEq.a',
+    'libns.a',
+    'libPCM16B.a',
+    'libresampler.a',
+    'librtp_rtcp.a',
+    'libspl.a',
+    'libprotobuf_lite.a',
+	'libsystem_wrappers.a',
+    'libudp_transport.a',
+	'libvad.a',
+    'libvideo_capture_module.a',
+    'libvideo_engine_core.a',
+    'libvideo_processing.a',
+	'libvideo_render_module.a',
+	'libvoice_engine_core.a',
+	'libvpx.a',
+	'libwebrtc_i420.a',
+	'libwebrtc_jpeg.a',
+	'libwebrtc_utility.a',
+	'libwebrtc_video_coding.a',
+	'libwebrtc_vp8.a',
+	'libwebrtc_vplib.a'
   ]
   env["LINKFLAGS"] += [
     '-framework',
@@ -152,6 +200,7 @@ elif sys.platform=='linux2':
     'idn', 
     'dl', 
     'rt',
+    'curl',
     'xml2', 
     'asound',
     'Xext',

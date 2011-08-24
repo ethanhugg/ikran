@@ -1156,13 +1156,11 @@ int vcmGetAudioCodecList(int request_type)
 
     retVal = VcmSIPCCBinding::getAudioTermination() ? VcmSIPCCBinding::getAudioTermination()->getCodecList( map_codec_request_type(request_type) ) : 0;
 
-    if ( retVal & AudioCodecMask_G711 )     codecMask |= cip_sipcc_CodecMask_DSP_RESOURCE_G711;
-    if ( retVal & AudioCodecMask_G729A )    codecMask |= cip_sipcc_CodecMask_DSP_RESOURCE_G729A;
-    if ( retVal & AudioCodecMask_G729B )    codecMask |= cip_sipcc_CodecMask_DSP_RESOURCE_G729B;
-    if ( retVal & AudioCodecMask_LINEAR )   codecMask |= cip_sipcc_CodecMask_DSP_RESOURCE_LINEAR;
-    if ( retVal & AudioCodecMask_G722 )     codecMask |= cip_sipcc_CodecMask_DSP_RESOURCE_G722;
-    if ( retVal & AudioCodecMask_iLBC )     codecMask |= cip_sipcc_CodecMask_DSP_RESOURCE_iLBC;
-    if ( retVal & AudioCodecMask_iSAC )     codecMask |= cip_sipcc_CodecMask_DSP_RESOURCE_iSAC;
+    if ( retVal & AudioCodecMask_G711 ) {    codecMask |= cip_sipcc_CodecMask_DSP_RESOURCE_G711; CSFLogDebug( logTag, "%s", " G711"); }
+    if ( retVal & AudioCodecMask_LINEAR ) {  codecMask |= cip_sipcc_CodecMask_DSP_RESOURCE_LINEAR; CSFLogDebug( logTag, "%s", " LINEAR" ); }
+    if ( retVal & AudioCodecMask_G722 ) {    codecMask |= cip_sipcc_CodecMask_DSP_RESOURCE_G722; CSFLogDebug( logTag, "%s", " G722"); }
+    if ( retVal & AudioCodecMask_iLBC )  {   codecMask |= cip_sipcc_CodecMask_DSP_RESOURCE_iLBC; CSFLogDebug( logTag, "%s", " iLBC"); }
+    if ( retVal & AudioCodecMask_iSAC )   {  codecMask |= cip_sipcc_CodecMask_DSP_RESOURCE_iSAC; CSFLogDebug( logTag, "%s", " iSAC "); }
 
     CSFLogDebug( logTag, "%s(codec_mask = %X)", fname, codecMask);
     return codecMask;
