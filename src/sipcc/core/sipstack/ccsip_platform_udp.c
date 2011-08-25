@@ -277,14 +277,14 @@ sip_platform_udp_channel_create (cpr_ip_mode_e ip_mode, cpr_socket_t *s,
     (void) sip_set_sockaddr(&sock_addr, af_family_connect, *remote_ipaddr, 
                             remote_port, &addr_len);
 
-    if (cprConnect(*s, (cpr_sockaddr_t *)&sock_addr, addr_len) == CPR_FAILURE) {
+ /*   if (cprConnect(*s, (cpr_sockaddr_t *)&sock_addr, addr_len) == CPR_FAILURE) {
         CCSIP_DEBUG_ERROR(get_debug_string(DEBUG_GENERAL_SYSTEMCALL_FAILED),
                           fname, "cprConnect", cpr_errno);
         (void) sipSocketClose(*s, FALSE);
         *s = INVALID_SOCKET;
           return SIP_ERROR;
     }
-
+*/
     // set IP tos/dscp value for SIP messaging
     config_get_value(CFGID_DSCP_FOR_CALL_CONTROL, (int *)&tos_dscp_val,
                      sizeof(tos_dscp_val));

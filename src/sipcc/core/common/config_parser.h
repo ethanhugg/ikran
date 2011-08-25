@@ -160,7 +160,7 @@ void config_parse_element (xmlNode *cur_node, char *  value, xmlDocPtr doc );
 /*
  * Set up configuration without XML config file.
  */
-void config_setup_elements ( const char *sipUser, const char *sipDomain);
+void config_setup_elements ( const char *sipUser, const char *sipPassword, const char *sipDomain);
 
 /**
 * config_minimum_check:
@@ -188,7 +188,7 @@ int config_parser_main( char *config, int complete_config);
 /*
  * Set up configuration without XML config file.
  */
-int config_setup_main( const char *sipUser, const char *sipDomain);
+int config_setup_main( const char *sipUser, const char *sipPassword, const char *sipDomain);
 
 
 #endif /* CONFIG_PARSER_H_ */

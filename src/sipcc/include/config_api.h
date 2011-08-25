@@ -97,7 +97,7 @@ void CCAPI_Config_response (int device_handle, const char *device_name,
 /**
  * When called this function should register with CUCM without prior device file download.
  */
-void CCAPI_Start_response(int device_handle, const char *device_name, const char *sipUser, const char *sipDomain);
+void CCAPI_Start_response(int device_handle, const char *device_name, const char *sipUser, const char *sipPassword, const char *sipDomain);
 
 /**
  *

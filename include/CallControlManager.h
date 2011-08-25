@@ -122,7 +122,7 @@ namespace CSF
          */
         virtual void setLocalIpAddressAndGateway(const std::string& localIpAddress, const std::string& defaultGW) = 0;
 
-        virtual bool registerUser( const std::string& deviceName, const std::string& user, const std::string& domain ) = 0;
+        virtual bool registerUser(const std::string& deviceName, const std::string& user, const std::string& password, const std::string& domain) = 0;
         virtual bool disconnect() = 0;
         virtual std::string getPreferredDeviceName() = 0;
         virtual std::string getPreferredLineDN() = 0;

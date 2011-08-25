@@ -58,7 +58,7 @@ extern int g_compl_cfg;
 extern boolean apply_config;
 extern cc_apply_config_result_t apply_config_result;
 cc_boolean parse_config_properties (int device_handle, const char *device_name, const char *cfg, int from_memory);
-cc_boolean parse_setup_properties (int device_handle, const char *device_name, const char *sipUser, const char *sipDomain);
+cc_boolean parse_setup_properties (int device_handle, const char *device_name, const char *sipUser, const char *sipPassword, const char *sipDomain);
 
 /**
  * 
@@ -96,7 +96,7 @@ void CCAPI_Config_response(int device_handle, const char *device_name, const cha
 }
 
 
-void CCAPI_Start_response(int device_handle, const char *device_name, const char *sipUser, const char *sipDomain) {
+void CCAPI_Start_response(int device_handle, const char *device_name, const char *sipUser, const char *sipPassword, const char *sipDomain) {
     static const char fname[] = "CCAPI_Start_response";
 
     if (is_empty_str((char*)sipUser) || is_empty_str((char*)sipDomain)) {
@@ -109,7 +109,7 @@ void CCAPI_Start_response(int device_handle, const char *device_name, const char
 
     if (is_phone_registered() == FALSE) {
 
-        if (parse_setup_properties(device_handle, device_name, sipUser, sipDomain)) {
+        if (parse_setup_properties(device_handle, device_name, sipUser, sipPassword, sipDomain)) {
             registration_processEvent(EV_CC_CONFIG_RECEIVED);
         }
         return;
@@ -132,12 +132,12 @@ cc_boolean parse_config_properties (int device_handle, const char *device_name, 
 }
 
 /*  New Function
-    Register without using cucm config file
+    Register without using config file downloaded from cucm
  */
-cc_boolean parse_setup_properties (int device_handle, const char *device_name, const char *sipUser, const char *sipDomain) {
+cc_boolean parse_setup_properties (int device_handle, const char *device_name, const char *sipUser, const char *sipPassword, const char *sipDomain) {
     CC_Config_setStringValue(CFGID_DEVICE_NAME, device_name);
 
-    config_setup_main(sipUser, sipDomain);
+    config_setup_main(sipUser, sipPassword, sipDomain);
 
     ccsnap_device_init();
     ccsnap_line_init();

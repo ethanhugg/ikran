@@ -102,6 +102,7 @@ protected:
 private:
 	char *m_user_device;
 	char *m_user;
+	char *m_credentials;
 	char *m_proxy_address;
 	char *m_dial_number;
 };

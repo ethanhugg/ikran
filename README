@@ -9,14 +9,14 @@
   
 Source tree strcture:
 <SOURCE> 
-tests - [Standalone test application and add-on]
+tests         [Standalone test application and add-on]
 	testapp_softphone
-	ikran
-third_party - [Third party dependencies ]
+ikran         [addon code and sample html]
+third_party   [Third party dependencies ]
 	chromium_base
-lib [GIPS libraries go here].
-src/sipcc - [SIP stack]
-src - [ECC - call control wrapper for SIP stack]
+lib           [GIPS libraries go here].
+src/sipcc     [SIP stack]
+src           [ECC - call control wrapper for SIP stack]
 
 --------------------
 1. Platform Support 
@@ -26,6 +26,7 @@ Required for all platforms:
   SCons (www.scons.org)
   MOZSDKPATH environment variable pointing to the Gecko2 SDK.
   WEBRTCPATH environment variable pointing to the webrtc source trunk
+
 Linux:
   Built regularly on Ubuntu 10.4 32bit and 64bit
   Third-Party Libraries
@@ -88,32 +89,33 @@ NOTES:
 --------------------------------
 6. Using the Test Application
 --------------------------------
-Use the test application to exercise the SIP stack.
+Use the command line test application to exercise the SIP stack.
 There are two ways to use the Test Application
 
  Run the Test Application from the command line with no parameters
-  ./tests/testapp_softphone/TestApp_SoftPhone
+   ./tests/testapp_softphone/TestApp_SoftPhone
   
-  Enter SIP Server IP address
-  Enter SIP Server Username (phone DN)
-  Enter device name
+   Enter SIP Server IP address
+   Enter SIP Server Username (phone DN for CUCM)
+   Enter Password (not required for CUCM)
+   Enter device name (only required for CUCM)
  
  
  Run the Test Application from the command line with a config file as a parameter
-  ./tests/testapp_softphone/TestApp_SoftPhone cfg.txt
-    - Sample cfg.txt  (create file named e.g. cfg.txt)
+   ./tests/testapp_softphone/TestApp_SoftPhone cfg.txt
+     - Sample cfg.txt  (create file named e.g. cfg.txt)
 
-       IP_ADDRESS=10.53.40.5
-       DEVICENAME=emannionsip1
-       LOGFILE=local.log
-       LOCALIP=10.53.50.187
-       SIPUSER=1010
+        IP_ADDRESS=10.53.40.5
+        DEVICENAME=emannionsip1
+        LOGFILE=local.log
+        SIPUSER=1010
+        CREDENTIALS=1234
 
 Notes
  IP_ADDRESS = SIP server IP address, used as part of SIP AOR
- DEVICENAME = name of device config file on SIP server
- LOCALIP = IP address of local network adapter
+ DEVICENAME = name of device config file on SIP server, onlr for CUCM
  SIPUSER = users DN configured on CUCM used as part of SIP AOR, i.e. SIPUSER@IP_ADDRESS
+ CREDENTIALS = secter configured for a SIP user on Asterisk
 
 TestApp Commands
  - ?           -- view commands available
@@ -160,3 +162,23 @@ Few Points to Note
  
 Please see content/ikran.html for sample usage of the API.
 
+-----------------------------------
+8. Configuring Asterisk SIP Server
+-----------------------------------
+
+1. Create a SIP user in /etc/asterisk/sip.conf
+
+  [bob]
+  type=friend
+  defaultuser=bob
+  secret=1234
+  host=dynamic
+  context=ikran
+
+2. Create a phone extension in /etc/asterisk/extensions.conf
+
+  [ikran]
+  extn => 1234,1,Dial(SIP/bob)
+  
+3. From the Asterisk CLI> sip reload  
+  
