@@ -1351,7 +1351,7 @@ void config_parse_element (xmlNode *cur_node, char *  value, xmlDocPtr doc )
  * Setup elements that once were downloaded from CUCM in an XML file.
  * Settings are stored in config.h
  */
-void config_setup_elements ( const char *sipUser, const char *sipDomain)
+void config_setup_elements (const char *sipUser, const char *sipPassword, const char *sipDomain)
 {
     unsigned int i;
     char buf[MAX_SIP_URL_LENGTH] = {'\0'};
@@ -1447,10 +1447,17 @@ void config_setup_elements ( const char *sipUser, const char *sipDomain)
     compare_or_set_int_value(CFGID_LINE_BUSY_TRIGGER + line, gBusyTrigger, (const unsigned char *) "busyTrigger");
     compare_or_set_byte_value(CFGID_LINE_AUTOANSWER_ENABLED + line, gAutoAnswerEnabled, (const unsigned char *) "autoAnswerEnabled");
     compare_or_set_byte_value(CFGID_LINE_CALL_WAITING + line, gCallWaiting, (const unsigned char *) "callWaiting");
+
+
+    compare_or_set_string_value(CFGID_LINE_AUTHNAME + line, sipUser, (const unsigned char *)"authName");
+    compare_or_set_string_value(CFGID_LINE_PASSWORD + line, sipPassword, (const unsigned char *)"authPassword");
+
+
     compare_or_set_int_value(CFGID_CCM1_SEC_LEVEL, gDeviceSecurityMode,(const unsigned char *)"deviceSecurityMode");
     compare_or_set_int_value(CFGID_CCM1_SIP_PORT, gCcm1_sip_port,(const unsigned char *)"ccm1_sip_port");
     compare_or_set_int_value(CFGID_CCM2_SIP_PORT, gCcm2_sip_port,(const unsigned char *)"ccm2_sip_port");
     compare_or_set_int_value(CFGID_CCM3_SIP_PORT, gCcm3_sip_port, (const unsigned char *)"ccm3_sip_port");
+
 
     isSecure = FALSE;
     sstrncpy(ip, "", MAX_SIP_URL_LENGTH);
@@ -1822,7 +1829,7 @@ config_parser_main( char *config, int complete_config)
 /**
  * Function called as part of registration without using cnf device file download.
  */
-int config_setup_main( const char *sipUser, const char *sipDomain)
+int config_setup_main( const char *sipUser, const char *sipPassword, const char *sipDomain)
 {
     // initialize the (global) values for dial template and fcp files
     strcpy (dialTemplateFile, "");
@@ -1831,7 +1838,7 @@ int config_setup_main( const char *sipUser, const char *sipDomain)
     /* initialize multi level config table */
     initMultiLevelConfigs();
     /*Get the elements in the xml doc */
-    config_setup_elements(sipUser, sipDomain);
+    config_setup_elements(sipUser, sipPassword, sipDomain);
 
     /* update multi level config values */
     compare_or_set_multi_level_config_value();

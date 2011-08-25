@@ -163,7 +163,7 @@ AuthenticationStatusEnum::AuthenticationStatus CallControlManagerImpl::getAuthen
     return authenticationStatus;
 }
 
-bool CallControlManagerImpl::registerUser( const std::string& deviceName, const std::string& user, const std::string& domain )
+bool CallControlManagerImpl::registerUser( const std::string& deviceName, const std::string& user, const std::string& password, const std::string& domain )
 {
 	setConnectionState(ConnectionStatusEnum::eRegistering);
 
@@ -186,7 +186,7 @@ bool CallControlManagerImpl::registerUser( const std::string& deviceName, const 
 
     softPhone = CC_SIPCCServicePtr(new CC_SIPCCService());
     phone = softPhone;
-    phone->init(user, domain, deviceName);
+    phone->init(user, password, domain, deviceName);
     softPhone->setLoggingMask(sipccLoggingMask);
     softPhone->setLocalAddressAndGateway(localIpAddress, defaultGW);
     phone->addCCObserver(this);

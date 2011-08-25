@@ -141,7 +141,8 @@ void configCtlFetchReq(int device_handle)
     	if (pPhone->bUseConfig == true)
     		CCAPI_Config_response(device_handle, pPhone->deviceName.c_str(), pPhone->xmlConfig.c_str(), true);
     	else
-    		CCAPI_Start_response(device_handle, pPhone->deviceName.c_str(), pPhone->sipUser.c_str(), pPhone->sipDomain.c_str());
+    		CCAPI_Start_response(device_handle, pPhone->deviceName.c_str(), pPhone->sipUser.c_str(),
+    							 	 pPhone->sipPassword.c_str(), pPhone->sipDomain.c_str());
     }
 }
 
@@ -470,13 +471,14 @@ CC_SIPCCService::~CC_SIPCCService()
     _self = NULL;
 }
 
-bool CC_SIPCCService::init(const std::string& user, const std::string& domain, const std::string& device)
+bool CC_SIPCCService::init(const std::string& user, const std::string& password, const std::string& domain, const std::string& device)
 {
 #if defined (_CPR_USE_EXTERNAL_LOGGER_)
     cprRegisterLogger(_SIPCCLoggerFunction);
 #endif
 
     sipUser = user;
+    sipPassword = password;
     sipDomain = domain;
     deviceName = device;
 

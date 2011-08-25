@@ -76,7 +76,7 @@ namespace CSF
 
         virtual AuthenticationStatusEnum::AuthenticationStatus getAuthenticationStatus();
 
-        virtual bool registerUser( const std::string& deviceName, const std::string& user, const std::string& domain );
+        virtual bool registerUser( const std::string& deviceName, const std::string& user, const std::string& password, const std::string& domain );
 
         virtual bool disconnect();
         virtual std::string getPreferredDeviceName();

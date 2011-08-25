@@ -59,7 +59,13 @@
             Re = true;
             regbut.value = "UnRegister !";
             msg.innerHTML = "Atempting 2 Register...";
-            Me.registerUser("emannionsip01", "1000", "10.99.10.75", onSessionStateChange);
+            
+            // Asterisk sample: param1 device name not required
+            Me.registerUser("", "1000", "1234", "10.99.10.75", onSessionStateChange);
+            
+            //cucm sample: param 3 password not required
+            //Me.registerUser("emannionsip01", "1000", "", "10.99.10.75", onSessionStateChange);
+            
             msg.innerHTML = "Registered...";
         }
     }

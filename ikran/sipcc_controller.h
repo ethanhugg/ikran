@@ -85,7 +85,7 @@ public:
 	static SipccController* GetInstance();
 
    	//Registration and Session Operations 
-	int Register(std::string device, std::string sipUser, std::string sipDomain);
+	int Register(std::string device, std::string sipUser, std::string sipCredentials, std::string sipDomain);
 	void UnRegister();
     void PlaceCall( std::string dial_number);
 	void EndCall();
@@ -132,6 +132,7 @@ private:
     std::string user_name_; 
     std::string device_;
     std::string sip_user_;
+    std::string sip_credentials_;
     std::string destination_url_; // destination sip-address or phone number to call
     std::string dial_number_;
 	//Controllers local database

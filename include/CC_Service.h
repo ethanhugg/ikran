@@ -68,8 +68,10 @@ namespace CSF
 
         /**
          * Use init() immediately on creating the service, and destroy() when finished with it.
+         * password is required for Asterisk not CUCM.
+         * deviceName is required for CUCM not Asterisk.
          */
-        virtual bool init(const std::string& user, const std::string& domain, const std::string& deviceName) = 0;
+        virtual bool init(const std::string& user, const std::string& password, const std::string& domain, const std::string& deviceName) = 0;
         virtual void destroy() = 0;
 
         /**
