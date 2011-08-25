@@ -90,7 +90,7 @@ bool SipccController::RegisterInternal() {
 	
 	Logger::Instance()->logIt("RegisterInternal");	
 
-	if(ccm_ptr_->registerUser(device_, sip_user_, sip_domain_) == false) {
+	if(ccm_ptr_->registerUser(device_, sip_user_, sip_credentials_, sip_domain_) == false) {
 		Logger::Instance()->logIt("RegisterInternal - FAILED ");
 		return false;
 	}
@@ -99,9 +99,10 @@ bool SipccController::RegisterInternal() {
 }
 
 // API Functions
-int SipccController::Register(std::string device, std::string sipUser, std::string sipDomain) {
+int SipccController::Register(std::string device, std::string sipUser, std::string sipCredentials, std::string sipDomain) {
 	int result = 0;	
 	sip_user_ = sipUser;
+	sip_credentials_ = sipCredentials;
     device_ = device;
     sip_domain_ = sipDomain;
     Logger::Instance()->logIt(sip_user_);

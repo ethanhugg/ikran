@@ -90,7 +90,7 @@ namespace CSF
 	    virtual void addCCObserver ( CC_Observer * observer );
 	    virtual void removeCCObserver ( CC_Observer * observer );
 
-	    virtual bool init(const std::string& user, const std::string& domain, const std::string& deviceName);
+	    virtual bool init(const std::string& user, const std::string& password, const std::string& domain, const std::string& deviceName);
 	    virtual void destroy();
 
 	    virtual void setConfig(const std::string& xmlConfig);
@@ -185,6 +185,7 @@ namespace CSF
 		// Santization work
 		bool bUseConfig;
 		std::string sipUser;
+		std::string sipPassword;
 		std::string sipDomain;
     };
 }

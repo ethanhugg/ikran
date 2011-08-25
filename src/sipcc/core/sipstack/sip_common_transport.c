@@ -479,7 +479,7 @@ sip_transport_setup_cc_conn (line_t dn, CCM_ID ccm_id)
         util_ntohl(&server_ipaddr, &server_ipaddr);
 
         //server_port = (uint16_t) CCM_Config_Table[dn - 1][ccm_id]->ti_common.port;
-        server_port = 5060;
+        server_port = gCcm1_sip_port;
 
         if (CCM_Config_Table[dn - 1][ccm_id]->ti_common.conn_type == CONN_UDP) {
             type = SOCK_DGRAM;

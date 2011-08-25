@@ -99,15 +99,19 @@ file to executable as a command line argument. If no command line arg is given t
 is looked for in the directory this app is running, and config data is taken from there.
 
 Configuration file format is quite simple. File has one assignment on each line for example
-IP_ADDRESS=10.53.40.5
-DEVICENAME=emannionsipdevice
 
+////////
+IP_ADDRESS=10.53.60.140
+DEVICENAME=emannionsipdevice
+LOGFILE=local.log
+SIPUSER=enda
+CREDENTIALS=1234
+////////
+
+DEVICENAME only required for CUCM
+CREDENTIALS only required for ASrerisk
 */
 
-#define CALL_ANSWER_DELAY_TIME_MS 2000
-#define TEST_USER_NAME  "1000"
-#define TEST_IP_ADDRESS "10.99.10.75"
-#define TEST_DEVICE_NAME "emannionsip01"
 
 #ifndef NOVIDEO
 VideoWindow vWnd;
@@ -119,10 +123,11 @@ Window hVideoWindow;
 #endif
 #endif
 
+const char* logTag = "TestApp";
+int CALL_ANSWER_DELAY_TIME_MS = 2000;
 static CallControlManagerPtr ccmPtr;
 static base::WaitableEvent _callCapsMayHaveChanged(true,false);
 base::Lock _userOpRequestMutex;
-static const char* logTag = "TestApp";
 
 static vector<UserOperationRequestDataPtr> _userOperationRequestVector;
 static base::WaitableEvent _userOperationRequestEvent(true,false);
@@ -1028,7 +1033,7 @@ static bool handleAllUserRequests (CallControlManagerPtr ccmPtr)
         case eIncomingCallReceived:
         	if(g_bAutoAnswer)
         	{
-        		CSFLogDebug(logTag, "Waiting for %d second(s) before trying to anwer incoming call...\n", (int) (CALL_ANSWER_DELAY_TIME_MS / 1000));
+        		CSFLogDebug(logTag, "Waiting for %d second(s) before trying to anwer incoming call...\n", (CALL_ANSWER_DELAY_TIME_MS / 1000));
 				base::PlatformThread::Sleep(CALL_ANSWER_DELAY_TIME_MS);
 				handlePickUpFirstCallWithAnswerCaps(ccmPtr);
         	}
@@ -1136,12 +1141,16 @@ static void processUserInput (CallControlManagerPtr ccmPtr)
 	input.setCallback(NULL);
 }
 
+#define TEST_USER_NAME   "1000"
+#define TEST_IP_ADDRESS  "10.99.10.75"
+#define TEST_DEVICE_NAME "emannionsip01"
 
 static string logDestination = "stdout";
 static string CUCMIPAddress = TEST_IP_ADDRESS;
 static string username = TEST_USER_NAME;
 static string deviceName = TEST_DEVICE_NAME;
 static string localIP = "";
+static string credentials = "";
 
 
 static void promptUserForInitialConfigInfo (const char * vxccCfgFilename)
@@ -1156,6 +1165,7 @@ static void promptUserForInitialConfigInfo (const char * vxccCfgFilename)
     paramMap.insert(StringStringPtrPair("DEVICENAME", &deviceName));
     paramMap.insert(StringStringPtrPair("LOGFILE", &logDestination));
     paramMap.insert(StringStringPtrPair("LOCALIP", &localIP));
+    paramMap.insert(StringStringPtrPair("CREDENTIALS", &credentials));
 
     ifstream myfile (vxccCfgFilename);
 
@@ -1195,7 +1205,7 @@ static void promptUserForInitialConfigInfo (const char * vxccCfgFilename)
             CUCMIPAddress = input;
         }
 
-        cout << "Enter SIP Server username (phone DN) [" << username << "]: ";
+        cout << "Enter SIP Server username (phone DN for CUCM) [" << username << "]: ";
         getline( cin, input, '\n');
 
         if (input.length() > 0)
@@ -1203,7 +1213,13 @@ static void promptUserForInitialConfigInfo (const char * vxccCfgFilename)
             username = input;
         }
 
-        cout << "Enter device name [" << deviceName << "]: ";
+        getPasswordFromConsole("Enter Password (not required for CUCM) [Enter]: ", input);
+        if (input.length() > 0)
+        {
+        	credentials = input;
+        }
+
+        cout << "\nEnter device name (only required for CUCM) [" << deviceName << "]: ";
         getline( cin, input, '\n');
 
         if (input.length() > 0)
@@ -1222,7 +1238,7 @@ static int performRegister ()
     int returnCode = 0;
     int tBeforeConnect = GetTimeNow();
 
-    if( ccmPtr->registerUser( deviceName, username, CUCMIPAddress ) == false)
+    if( ccmPtr->registerUser( deviceName, username, credentials, CUCMIPAddress ) == false)
     {
     	CSFLogDebugS(logTag, "Failed to connect.");
         returnCode = -1;
@@ -1398,6 +1414,5 @@ int main(int argc, char** argv)
 #ifdef LOOP
     }
 #endif
-
 
 }

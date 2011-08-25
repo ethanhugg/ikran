@@ -2351,17 +2351,56 @@ sip_regmgr_setup_cc_conns ()
                 }
             } else if (conn_status == CONN_FAILURE) {
                 /*
-                 * We get this return code when we have the address
-                 * configured and we are not able to setup the
-                 * connection to the ccm.
-                 * Candidate for fallback monitoring. Note it in the
-                 * ccm_config_table and add it to a fallback monitor
-                 * table.
+                 * We can  get this return code when connecting to
+                 * a server that uses UDP such as Asterisk. If that is the
+                 * case we then change the connection type to UDP and
+                 * attempt reconnection.
+                 *
                  */
-                CCSIP_DEBUG_ERROR("%s: Socket open failure: DN <%d> CCM <%d>\n",
-                                  fname, line, cc_index);
-                (void) sip_regmgr_create_fallback_ccb(cc_index, line);
-                ret_code = RET_START_FALLBACK;
+
+            	// change trans layer protocol to UDP
+            	CC_Config_setIntValue(CFGID_TRANSPORT_LAYER_PROT, 2);
+            	CCSIP_DEBUG_ERROR("%s: Attempting reconnection using UDP\n", fname);
+
+            	// attempt re-connection
+            	sipTransportInit();
+
+            	conn_status = sip_transport_setup_cc_conn(line, cc_index);
+                if (conn_status == CONN_SUCCESS) {
+                    if (active_fd == INVALID_SOCKET) {
+                        /*
+                         * Found Active fd and active_fd is not set
+                         * Save it for all lines.
+                         */
+                        active_fd = CCM_Config_Table[line - 1][cc_index]->ti_common.handle;
+                        set_active_ccm(CCM_Config_Table[line - 1][cc_index]);
+                    } else {
+                        /*
+                         * Found Standby fd. Save it in the local table.
+                         * and break out of loop.
+                         */
+                        standby_fd = CCM_Config_Table[line - 1]
+                            [cc_index]->ti_common.handle;
+                        CCM_Active_Standby_Table.standby_ccm_entry =
+                            CCM_Config_Table[line - 1][cc_index];
+                        break;
+                    }
+                } else if (conn_status == CONN_FAILURE) {
+
+                	/*
+                	 * We get this return code when we have the address
+                 	 * configured and we are not able to setup the
+                 	 * connection to the ccm.
+                 	 * Candidate for fallback monitoring. Note it in the
+                 	 * ccm_config_table and add it to a fallback monitor
+                 	 * table.
+                 	 *
+                	 */
+                	CCSIP_DEBUG_ERROR("%s: Socket open failure: DN <%d> CCM <%d>\n",
+                			fname, line, cc_index);
+                	(void) sip_regmgr_create_fallback_ccb(cc_index, line);
+                	ret_code = RET_START_FALLBACK;
+                }
             }
         }
         if (active_fd == INVALID_SOCKET) {

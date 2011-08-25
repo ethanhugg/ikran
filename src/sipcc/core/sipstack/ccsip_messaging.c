@@ -4669,7 +4669,7 @@ sipSPIGenerateAuthorizationResponse (sip_authen_t *sip_authen,
      */
 
     sip_author.str_start = NULL;
-    sip_author.user_pass = NULL; /* not used for digest authentication */
+    sip_author.user_pass = (char *) user_password;
     sip_author.d_username   = (char *) user_name;
     sip_author.unparsed_uri = (char *) uri;
     sip_author.scheme    = sip_authen->scheme;
