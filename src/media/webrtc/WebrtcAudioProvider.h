@@ -37,15 +37,15 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef CSFGIPSAUDIOMEDIAPROVIDER_H_
-#define CSFGIPSAUDIOMEDIAPROVIDER_H_
+#ifndef WebrtcAUDIOMEDIAPROVIDER_H_
+#define WebrtcAUDIOMEDIAPROVIDER_H_
 
 #ifndef _USE_CPVE
 
 #include "csf_common.h"
 #include "CSFAudioControl.h"
 #include "CSFAudioTermination.h"
-#include "CSFGipsAudioCodecSelector.h"
+#include "WebrtcAudioCodecSelector.h"
 
 #include "voe_base.h"
 #include "voe_file.h"
@@ -69,27 +69,27 @@ class VoEAudioProcessing;
 
 namespace CSF
 {
-    class GipsMediaProvider;
-    class GipsToneGenerator;
-    class GipsRingGenerator;
-    class GipsAudioStream;
-    class GipsVideoProvider;
-    DECLARE_PTR(GipsAudioStream);
+    class WebrtcMediaProvider;
+    class WebrtcToneGenerator;
+    class WebrtcRingGenerator;
+    class WebrtcAudioStream;
+    class WebrtcVideoProvider;
+    DECLARE_PTR(WebrtcAudioStream);
 
-    class GipsAudioProvider : public AudioControl, AudioTermination, webrtc::VoiceEngineObserver,
+    class WebrtcAudioProvider : public AudioControl, AudioTermination, webrtc::VoiceEngineObserver,
             webrtc::VoEConnectionObserver
             ,webrtc::TraceCallback
             {
-    friend class GipsVideoProvider;
+    friend class WebrtcVideoProvider;
 
     public:
 
-        GipsAudioProvider( GipsMediaProvider* provider );
+        WebrtcAudioProvider( WebrtcMediaProvider* provider );
 
         // destructor
-        ~GipsAudioProvider();
+        ~WebrtcAudioProvider();
 
-        // initialize members and GIPS API
+        // initialize members and Webrtc API
         // return 0 if initialzation succeeded
         int init();
 
@@ -145,18 +145,18 @@ namespace CSF
         webrtc::VoiceEngine* getVoiceEngine() { return voeVoice; }
 
     protected:
-        // GIPSVoiceEngineObserver
+        // WebrtcVoiceEngineObserver
         void CallbackOnError(const int errCode, const int channel);
         void Print(const webrtc::TraceLevel level, const char* message, const int length);
-        // GIPSVEConnectionObserver
+        // WebrtcVEConnectionObserver
         void OnPeriodicDeadOrAlive(int channel, bool alive);
 
         int getChannelForStreamId( int streamId );
-        GipsAudioStreamPtr getStream( int streamId );
-        GipsAudioStreamPtr getStreamByChannel( int channelId );
+        WebrtcAudioStreamPtr getStream( int streamId );
+        WebrtcAudioStreamPtr getStreamByChannel( int channelId );
 
     private:
-        GipsMediaProvider* provider;
+        WebrtcMediaProvider* provider;
         webrtc::VoiceEngine* voeVoice;
         webrtc::VoEBase* voeBase;
         webrtc::VoEFile* voeFile;
@@ -171,9 +171,9 @@ namespace CSF
         std::string recordingDevice;
         std::string playoutDevice;
         std::map<int, int> streamToChannel;
-        std::map<int, GipsAudioStreamPtr> streamMap;
-        GipsToneGenerator* toneGen;    // temporary, need to manage multiple tones
-        GipsRingGenerator* ringGen;    // temporary, need to use audio device directly
+        std::map<int, WebrtcAudioStreamPtr> streamMap;
+        WebrtcToneGenerator* toneGen;    // temporary, need to manage multiple tones
+        WebrtcRingGenerator* ringGen;    // temporary, need to use audio device directly
         std::string localIP;
         int startPort;
         int endPort;
@@ -182,10 +182,10 @@ namespace CSF
         int DSCPValue;
         bool VADEnabled;
 
-        CSFGipsAudioCodecSelector codecSelector;
+        WebrtcAudioCodecSelector codecSelector;
 
         // Synchronisation (to avoid data corruption and worse given that so many threads call the media provider)
-        // Never use this mutex in a callback from GIPS - high probability of deadlock.
+        // Never use this mutex in a callback from Webrtc - high probability of deadlock.
 
         base::Lock m_lock;
         // This mutex is to be held only for the narrowest possible scope while accessing the stream map
@@ -200,4 +200,4 @@ namespace CSF
 } // namespace
 
 #endif
-#endif /* CSFGIPSAUDIOMEDIAPROVIDER_H_ */
+#endif /* WebrtcAUDIOMEDIAPROVIDER_H_ */

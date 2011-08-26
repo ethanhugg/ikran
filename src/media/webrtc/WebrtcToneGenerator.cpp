@@ -22,7 +22,7 @@
  *  Enda Mannion <emannion@cisco.com>
  *  Suhas Nandakumar <snandaku@cisco.com>
  *  Ethan Hugg <ehugg@cisco.com>
- *
+ Webrtc*
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
  * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
@@ -40,7 +40,7 @@
 #ifndef _USE_CPVE
 
 #include <string.h>
-#include "CSFGipsToneGenerator.h"
+#include "WebrtcToneGenerator.h"
 #include "CSFToneDefinitions.h"
 
 namespace CSF {
@@ -251,7 +251,7 @@ static TONE_TABLE_TYPE ToneTable[] =
 };
 
 // ----------------------------------------------------------------------------
-GipsToneGenerator::GipsToneGenerator( ToneType type )
+WebrtcToneGenerator::WebrtcToneGenerator( ToneType type )
 {
 	TONE_TABLE_TYPE *tone = &ToneTable[type];
 
@@ -273,7 +273,7 @@ GipsToneGenerator::GipsToneGenerator( ToneType type )
 }
 
 // ----------------------------------------------------------------------------
-void GipsToneGenerator::ToneGen( PSINEWAVE param, short *dst, unsigned long length, unsigned long numTones )
+void WebrtcToneGenerator::ToneGen( PSINEWAVE param, short *dst, unsigned long length, unsigned long numTones )
 {
 	unsigned long j;
 	unsigned long i;
@@ -308,14 +308,14 @@ void GipsToneGenerator::ToneGen( PSINEWAVE param, short *dst, unsigned long leng
 	}
 }
 
-// GIPS InStream implementation
-int GipsToneGenerator::Read( void *buf, int len )
+// Webrtc InStream implementation
+int WebrtcToneGenerator::Read( void *buf, int len )
 {
 	return TGNGenerateTone( (short *)buf, (unsigned long)(len/sizeof(short)) ) ? len : 0;
 }
 
 // ----------------------------------------------------------------------------
-bool GipsToneGenerator::TGNGenerateTone( short *dst, unsigned long length )
+bool WebrtcToneGenerator::TGNGenerateTone( short *dst, unsigned long length )
 {
 	unsigned long numTone = 0;
 

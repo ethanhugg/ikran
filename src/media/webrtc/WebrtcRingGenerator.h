@@ -37,79 +37,38 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef CSFGIPSAUDIOCODECSELECTOR_H_
-#define CSFGIPSAUDIOCODECSELECTOR_H_
+#ifndef WebrtcRINGGENERATOR_H
+#define WebrtcRINGGENERATOR_H
 
 #ifndef _USE_CPVE
 
 #include <CSFAudioTermination.h>
-#include "voe_base.h"
-#include "voe_codec.h"
-#include <map>
+#include "common_types.h"
 
-// forward declarations
-class webrtc::VoiceEngine;
-class webrtc::VoECodec;
-struct webrtc::CodecInst;
+namespace CSF {
 
-typedef enum {
-  GipsAudioPayloadType_PCMU = 0,
-  GipsAudioPayloadType_PCMA = 8,
-  GipsAudioPayloadType_G722 = 9,
-  GipsAudioPayloadType_iLBC = 102,
-  GipsAudioPayloadType_ISAC = 103,
-  GipsAudioPayloadType_TELEPHONE_EVENT = 106,
-  GipsAudioPayloadType_ISACLC = 119,
-  GipsAudioPayloadType_DIM = -1
+	class WebrtcRingGenerator : public webrtc::InStream
+	{
+	public:
+		WebrtcRingGenerator( RingMode mode, bool once );
 
-} GipsAudioPayloadType;
+		// InStream interface
+		int Read( void *buf, int len );
+		void SetScaleFactor(int scaleFactor); // 0-100
 
-const int ComfortNoisePayloadType = 13;
-const int SamplingFreq8000Hz =8000;
-const int SamplingFreq16000Hz =16000;
-///#if GIPS_VER >= 3510
-const int SamplingFreq32000Hz =32000;
-//#endif
-namespace CSF
-{
+	private:
+		RingMode mode;
+		bool once;
+		int currentStep;
+		int timeRemaining;	// in current step
+		bool done;
+		int scaleFactor;
 
-// A class to select a GIPS audio codec
-class CSFGipsAudioCodecSelector
-{
-public:
-	// the constructor
-	CSFGipsAudioCodecSelector();
-
-	// the destructor
-	~CSFGipsAudioCodecSelector();
-
-	int init( webrtc::VoiceEngine* gipsVoice, bool useLowBandwidthCodecOnly, bool advertiseG722Codec );
-
-	void release();
-
-	// return a bit mask of the available codecs
-	int  advertiseCodecs( CodecRequestType requestType );
-
-	// select the GIPS codec according to payload type and packet size
-	// return 0 if a codec was selected
-	int select( int payloadType, int dynamicPayloadType, int packetSize, webrtc::CodecInst& selectedCoded );
-
-	// apply a sending codec to the channel
-	// return 0 if codec could be applied
-	int setSend(int channel, const webrtc::CodecInst& codec,int payloadType,bool vad);
-
-	// apply a receiving codec to the channel
-	// return 0 if codec could be applied
-	int setReceive(int channel, const webrtc::CodecInst& codec);
-
-private:
-	// the reference to the GIPS Codec sub-interface
-	webrtc::VoECodec* gipsCodec;
-
-	std::map<int, webrtc::CodecInst*> codecMap;
-};
+		int generateTone( short *buf, int numSamples );
+		void applyScaleFactor( short *buf, int numSamples );
+	};
 
 } // namespace CSF
 
 #endif
-#endif /* CSFGIPSAUDIOCODECSELECTOR_H_ */
+#endif // WEBRTCRINGGENERATOR_H

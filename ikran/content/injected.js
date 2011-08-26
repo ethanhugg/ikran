@@ -3,8 +3,8 @@ if (window && window.navigator) {
     if (!window.navigator.service)
         window.navigator.service = {};
     window.navigator.service.call= {
-        registerUser: function(user_device, user, proxy_address, sess_obs) {
-            return regUser(window.location, user_device, user, proxy_address, sess_obs);
+        registerUser: function(user_device, user, credential,proxy_address, sess_obs) {
+            return regUser(window.location, user_device, user, credential, proxy_address, sess_obs);
         },
         placeCall: function(dn, media_obs) {
             return callStart(window.location, dn, media_obs);
