@@ -37,8 +37,8 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef CSFGipsVideoProvider_H_
-#define CSFGipsVideoProvider_H_
+#ifndef WebrtcVideoProvider_H_
+#define WebrtcVideoProvider_H_
 
 #ifndef _USE_CPVE
 
@@ -196,4 +196,4 @@ namespace CSF
 
 
 #endif
-#endif /* CSFGipsVideoProvider_H_ */
+#endif /* WebrtcVideoProvider_H_ */

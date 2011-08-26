@@ -40,7 +40,7 @@
 #ifndef _USE_CPVE
 
 #include <string.h>
-#include "CSFGipsRingGenerator.h"
+#include "WebrtcRingGenerator.h"
 
 namespace CSF {
 
@@ -197,7 +197,7 @@ static RingCadence* CadenceTable[] =
 };
 
 // ----------------------------------------------------------------------------
-GipsRingGenerator::GipsRingGenerator( RingMode mode, bool once )
+WebrtcRingGenerator::WebrtcRingGenerator( RingMode mode, bool once )
 : mode(mode), once(once), currentStep(0), done(false), scaleFactor(100)
 {
 	timeRemaining = CadenceTable[mode]->stepDuration;
@@ -205,20 +205,20 @@ GipsRingGenerator::GipsRingGenerator( RingMode mode, bool once )
 	if ( timeRemaining == 0 ) done = true;
 }
 
-void GipsRingGenerator::SetScaleFactor(int scaleFactor)
+void WebrtcRingGenerator::SetScaleFactor(int scaleFactor)
 {
 	this->scaleFactor = scaleFactor;
 }
 
-// GIPS InStream implementation
-int GipsRingGenerator::Read( void *buf, int len /* bytes */ )
+// Webrtc InStream implementation
+int WebrtcRingGenerator::Read( void *buf, int len /* bytes */ )
 {
 	int result = generateTone( (short *)buf, len/sizeof(short) );
 	applyScaleFactor( (short *)buf, len/sizeof(short) );
 	return result;
 }
 
-int GipsRingGenerator::generateTone( short *buf, int numSamples )
+int WebrtcRingGenerator::generateTone( short *buf, int numSamples )
 {
 	RingCadence* cadence = CadenceTable[mode];
 	int samplesGenerated = 0;
@@ -268,7 +268,7 @@ int GipsRingGenerator::generateTone( short *buf, int numSamples )
 	return samplesGenerated * sizeof(short);
 }
 
-void GipsRingGenerator::applyScaleFactor( short *buf, int numSamples )
+void WebrtcRingGenerator::applyScaleFactor( short *buf, int numSamples )
 {
 	for(int i = 0; i < numSamples; i++)
 	{

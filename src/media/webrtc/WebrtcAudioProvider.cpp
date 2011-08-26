@@ -47,19 +47,19 @@
 #include <windows.h>
 #endif
 
-#include "CSFGipsMediaProvider.h"
-#include "CSFGipsAudioProvider.h"
-#include "CSFGipsToneGenerator.h"
-#include "CSFGipsRingGenerator.h"
+#include "WebrtcMediaProvider.h"
+#include "WebrtcAudioProvider.h"
+#include "WebrtcToneGenerator.h"
+#include "WebrtcRingGenerator.h"
 #include "voe_file.h"
 #include "voe_hardware.h"
 #include "voe_errors.h"
 #include "voe_network.h"
 #include "voe_audio_processing.h"
-#include "CSFGipsLogging.h"
+#include "WebrtcLogging.h"
 
 #include "CSFLog.h"
-static const char* logTag = "CSFGipsAudioProvider";
+static const char* logTag = "WebrtcAudioProvider";
 using namespace std;
 
 extern "C" void config_get_value (int id, void *buffer, int length);
@@ -77,10 +77,10 @@ bool IsUserAdmin();
 bool IsVistaOrNewer();
 #endif
 
-class GipsAudioStream
+class WebrtcAudioStream
 {
 public:
-	GipsAudioStream(int _streamId, int _channelId):
+	WebrtcAudioStream(int _streamId, int _channelId):
 		streamId(_streamId), channelId(_channelId),
 		isRxStarted(false), isTxStarted(false), isAlive(false)
 		{}
@@ -91,7 +91,7 @@ public:
 	bool isAlive;
 };
 
-GipsAudioProvider::GipsAudioProvider( GipsMediaProvider* provider )
+WebrtcAudioProvider::WebrtcAudioProvider( WebrtcMediaProvider* provider )
 : provider(provider), 
   voeVoice(NULL),
   voeBase(NULL), 
@@ -112,41 +112,41 @@ GipsAudioProvider::GipsAudioProvider( GipsMediaProvider* provider )
   VADEnabled(false),
   stopping(false)
 {
-	LOG_GIPS_INFO( logTag, "GipsAudioProvider::GipsAudioProvider");
+	LOG_WEBRTC_INFO( logTag, "WebrtcAudioProvider::WebrtcAudioProvider");
 }
 
-int GipsAudioProvider::init()
+int WebrtcAudioProvider::init()
 {
-	LOG_GIPS_INFO( logTag, "VoEAudioProvider::init");
+	LOG_WEBRTC_INFO( logTag, "VoEAudioProvider::init");
 
 	if (voeVoice != NULL)
 	{
-		LOG_GIPS_ERROR( logTag, "VoEAudioProvider::init : already initialized");
+		LOG_WEBRTC_ERROR( logTag, "VoEAudioProvider::init : already initialized");
 		return -1;
 	}
 
     voeVoice = webrtc::VoiceEngine::Create();
 	if (voeVoice== NULL)
 	{
-		LOG_GIPS_ERROR( logTag, "VoEAudioProvider():VoiceEngine::Create failed");
+		LOG_WEBRTC_ERROR( logTag, "VoEAudioProvider():VoiceEngine::Create failed");
 		return -1;
 	}
 
 	voeBase = webrtc::VoEBase::GetInterface( voeVoice );
 	if (voeBase== NULL)
 	{
-		LOG_GIPS_ERROR( logTag, "VoEAudioProvider(): VoEBase::GetInterface failed");
+		LOG_WEBRTC_ERROR( logTag, "VoEAudioProvider(): VoEBase::GetInterface failed");
 		return -1;
 	}
 
 	const int VERSIONBUFLEN=1024;
 	char versionbuf[VERSIONBUFLEN];
 	voeBase->GetVersion(versionbuf);
-	LOG_GIPS_INFO( logTag, "%s", versionbuf );
+	LOG_WEBRTC_INFO( logTag, "%s", versionbuf );
 //	voeBase->voeVE_SetObserver( *this );
 
-//#ifdef ENABLE_GIPS_AUDIO_TRACE
-	LOG_GIPS_ERROR( logTag, "VoEAudioProvider(): Enabling Trace ");
+//#ifdef ENABLE_WEBRTC_AUDIO_TRACE
+	LOG_WEBRTC_ERROR( logTag, "VoEAudioProvider(): Enabling Trace ");
 	voeVoice->SetTraceFilter(webrtc::kTraceAll);
 	voeVoice->SetTraceFile( "voeaudiotrace.out" );
 	voeVoice->SetTraceCallback(this);
@@ -161,7 +161,7 @@ int GipsAudioProvider::init()
 
 	if ((!voeDTMF) || (!voeFile) || (!voeHw) ||(!voeNetwork) || (!voeVolumeControl) || (!voeVoiceQuality) || (!voeEncryption)) 
 	{
-		LOG_GIPS_ERROR( logTag, "VoEAudioProvider(): voeVE_GetInterface failed voeDTMF=%p voeFile=%p voeHw=%p voeNetwork=%p voeVolumeControl=%p voeVoiceQuality=%p voeEncryption=%p",
+		LOG_WEBRTC_ERROR( logTag, "VoEAudioProvider(): voeVE_GetInterface failed voeDTMF=%p voeFile=%p voeHw=%p voeNetwork=%p voeVolumeControl=%p voeVoiceQuality=%p voeEncryption=%p",
 		voeDTMF,voeFile,voeHw,voeNetwork,voeVolumeControl,voeVoiceQuality,voeEncryption);
 		return -1;
 	}
@@ -176,21 +176,9 @@ int GipsAudioProvider::init()
 /*	
 	Set up Voice Quality Enhancement Parameters
 */
-//#if GI,PS_VER >= 3510
-//	Extra code for 3.5.X currently just used on the Mac
-// Should be enabled when we move to 3.5 on Windows
 	webrtc::AgcConfig webphone_agc_config = {3,9,1};
 	voeVoiceQuality->SetAgcConfig(webphone_agc_config); 
-//#endif
-
-//#if GIPS_VER >= 3510
 	voeVoiceQuality->SetAgcStatus(true, webrtc::kAgcFixedDigital);
-//#else
- //  	  LOG_GIPS_ERROR( logTag, "VoEAudioProvider():  UnSupported AGC Status for version < 3510");
-  //      return -1;
-	//voeVoiceQuality->SetAgcStatus(true, AGC_STANDALONE_DIGITAL);
-//#endif
-
 
 
 	voeVoiceQuality->SetNsStatus(true, webrtc::kNsModerateSuppression);
@@ -210,7 +198,7 @@ int GipsAudioProvider::init()
 		if(error == 0) {
 			recordingDevice = name;
 		} else {
-			LOG_GIPS_ERROR( logTag, "VoEAudioProvider: GetRecordingDeviceNamefailed: Error: %d", voeBase->LastError() );
+			LOG_WEBRTC_ERROR( logTag, "VoEAudioProvider: GetRecordingDeviceNamefailed: Error: %d", voeBase->LastError() );
 
 		}	
 	}
@@ -226,21 +214,21 @@ int GipsAudioProvider::init()
 		if ( voeHw->GetPlayoutDeviceName( i, pname, pguid ) == 0 ) {
 			playoutDevice = pname;
 		} else {
-				LOG_GIPS_ERROR( logTag, "VoEAudioProvider: GetlayoutDeviceNamefailed: Error: %d", voeBase->LastError() );
+				LOG_WEBRTC_ERROR( logTag, "VoEAudioProvider: GetlayoutDeviceNamefailed: Error: %d", voeBase->LastError() );
 		}
 	}
 	
 
-    LOG_GIPS_DEBUG( logTag, "local IP: \"%s\"", localIP.c_str());
-    LOG_GIPS_DEBUG( logTag, "RecordingDeviceName: \"%s\"", recordingDevice.c_str());
-    LOG_GIPS_DEBUG( logTag, "PlayoutDeviceName: \"%s\"", playoutDevice.c_str());
+    LOG_WEBRTC_DEBUG( logTag, "local IP: \"%s\"", localIP.c_str());
+    LOG_WEBRTC_DEBUG( logTag, "RecordingDeviceName: \"%s\"", recordingDevice.c_str());
+    LOG_WEBRTC_DEBUG( logTag, "PlayoutDeviceName: \"%s\"", playoutDevice.c_str());
 	// success
 	return 0;
 }
 
-GipsAudioProvider::~GipsAudioProvider()
+WebrtcAudioProvider::~WebrtcAudioProvider()
 {
-	LOG_GIPS_INFO( logTag, "VoEAudioProvider::~VoEAudioProvider");
+	LOG_WEBRTC_INFO( logTag, "VoEAudioProvider::~VoEAudioProvider");
 
 	int num_ifs=0;
 	stopping = true;
@@ -255,21 +243,21 @@ GipsAudioProvider::~GipsAudioProvider()
 
 	
 	if ((num_ifs=voeDTMF->Release())!=0)
-		LOG_GIPS_ERROR( logTag, "~VoEAudioProvider(): voeDTMF->Release failed, num_ifs left= %d",num_ifs);
+		LOG_WEBRTC_ERROR( logTag, "~VoEAudioProvider(): voeDTMF->Release failed, num_ifs left= %d",num_ifs);
 	if ((num_ifs=voeFile->Release())!=0)
-		LOG_GIPS_ERROR( logTag, "~VoEAudioProvider(): voeFile->Release failed, num_ifs left= %d ",num_ifs);
+		LOG_WEBRTC_ERROR( logTag, "~VoEAudioProvider(): voeFile->Release failed, num_ifs left= %d ",num_ifs);
 	if((num_ifs=voeHw->Release())!=0)
-		LOG_GIPS_ERROR( logTag, "~VoEAudioProvider(): voeHw->Release failed, num_ifs left= %d " ,num_ifs);
+		LOG_WEBRTC_ERROR( logTag, "~VoEAudioProvider(): voeHw->Release failed, num_ifs left= %d " ,num_ifs);
 	if((num_ifs=voeNetwork->Release())!=0)
-		LOG_GIPS_ERROR( logTag, "~VoEAudioProvider(): voeNetwork->Release() failed, num_ifs left= %d" ,num_ifs);
+		LOG_WEBRTC_ERROR( logTag, "~VoEAudioProvider(): voeNetwork->Release() failed, num_ifs left= %d" ,num_ifs);
 	if((num_ifs=voeVolumeControl->Release())!=0)
-		LOG_GIPS_ERROR( logTag, "~VoEAudioProvider(): voeVolumeControl->Release() failed, num_ifs left= %d" ,num_ifs);
+		LOG_WEBRTC_ERROR( logTag, "~VoEAudioProvider(): voeVolumeControl->Release() failed, num_ifs left= %d" ,num_ifs);
 	if((num_ifs=voeVoiceQuality->Release())!=0)
-		LOG_GIPS_ERROR( logTag, "~VoEAudioProvider(): voeVoiceQuality->Release() failed, num_ifs left= %d ",num_ifs );
+		LOG_WEBRTC_ERROR( logTag, "~VoEAudioProvider(): voeVoiceQuality->Release() failed, num_ifs left= %d ",num_ifs );
     if((num_ifs=voeEncryption->Release())!=0)
-        LOG_GIPS_ERROR( logTag, "~VoEAudioProvider(): voeEncryption->Release() failed, num_ifs left= %d ",num_ifs );
+        LOG_WEBRTC_ERROR( logTag, "~VoEAudioProvider(): voeEncryption->Release() failed, num_ifs left= %d ",num_ifs );
 	if(webrtc::VoiceEngine::Delete( voeVoice )==false)
-		LOG_GIPS_ERROR( logTag, "~VoEAudioProvider(): voeVoiceEngine::Delete failed" );
+		LOG_WEBRTC_ERROR( logTag, "~VoEAudioProvider(): voeVoiceEngine::Delete failed" );
 
 	delete toneGen;
 	toneGen = NULL;
@@ -288,10 +276,10 @@ GipsAudioProvider::~GipsAudioProvider()
 	voeBase = NULL;
     voeEncryption = NULL;
 
-	LOG_GIPS_INFO( logTag, "VoEAudioProvider::shutdown done");
+	LOG_WEBRTC_INFO( logTag, "VoEAudioProvider::shutdown done");
 }
 
-std::vector<std::string> GipsAudioProvider::getRecordingDevices()
+std::vector<std::string> WebrtcAudioProvider::getRecordingDevices()
 {
 	base::AutoLock lock(m_lock);
 	char name[128];
@@ -310,7 +298,7 @@ std::vector<std::string> GipsAudioProvider::getRecordingDevices()
 	return deviceList;
 }
 
-std::vector<std::string> GipsAudioProvider::getPlayoutDevices()
+std::vector<std::string> WebrtcAudioProvider::getPlayoutDevices()
 {
 	base::AutoLock lock(m_lock);
 	char name[128];
@@ -328,7 +316,7 @@ std::vector<std::string> GipsAudioProvider::getPlayoutDevices()
 	return deviceList;
 }
 
-bool GipsAudioProvider::setRecordingDevice( const std::string& device )
+bool WebrtcAudioProvider::setRecordingDevice( const std::string& device )
 {
 	base::AutoLock lock(m_lock);
 	char name[128];
@@ -379,7 +367,7 @@ bool GipsAudioProvider::setRecordingDevice( const std::string& device )
 	return false;
 }
 
-bool GipsAudioProvider::setPlayoutDevice( const std::string& device )
+bool WebrtcAudioProvider::setPlayoutDevice( const std::string& device )
 {
 	base::AutoLock lock(m_lock);
 	char name[128];
@@ -430,48 +418,48 @@ bool GipsAudioProvider::setPlayoutDevice( const std::string& device )
 	return false;
 }
 
-GipsAudioStreamPtr GipsAudioProvider::getStreamByChannel( int channel )
+WebrtcAudioStreamPtr WebrtcAudioProvider::getStreamByChannel( int channel )
 {
 	base::AutoLock lock(streamMapMutex);
-	for( std::map<int, GipsAudioStreamPtr>::const_iterator it = streamMap.begin(); it != streamMap.end(); it++ )
+	for( std::map<int, WebrtcAudioStreamPtr>::const_iterator it = streamMap.begin(); it != streamMap.end(); it++ )
 	{
-		GipsAudioStreamPtr stream = it->second;
+		WebrtcAudioStreamPtr stream = it->second;
 		if(stream->channelId == channel)
 			return stream;
 	}
-	return GipsAudioStreamPtr();
+	return WebrtcAudioStreamPtr();
 }
 
-GipsAudioStreamPtr GipsAudioProvider::getStream( int streamId )
+WebrtcAudioStreamPtr WebrtcAudioProvider::getStream( int streamId )
 {
 	base::AutoLock lock(streamMapMutex);
-	std::map<int, GipsAudioStreamPtr>::const_iterator it = streamMap.find( streamId );
-	return ( it != streamMap.end() ) ? it->second : GipsAudioStreamPtr();
+	std::map<int, WebrtcAudioStreamPtr>::const_iterator it = streamMap.find( streamId );
+	return ( it != streamMap.end() ) ? it->second : WebrtcAudioStreamPtr();
 }
 
-int GipsAudioProvider::getChannelForStreamId( int streamId )
+int WebrtcAudioProvider::getChannelForStreamId( int streamId )
 {
-	GipsAudioStreamPtr stream = getStream(streamId);
+	WebrtcAudioStreamPtr stream = getStream(streamId);
 	return ( stream != NULL ) ? stream->channelId : -1;
 }
 
-int GipsAudioProvider::getCodecList( CodecRequestType requestType )
+int WebrtcAudioProvider::getCodecList( CodecRequestType requestType )
 {
 	base::AutoLock lock(m_lock);
 	return codecSelector.advertiseCodecs(requestType);
 }
 
-int GipsAudioProvider::rxAlloc( int groupId, int streamId, int requestedPort )
+int WebrtcAudioProvider::rxAlloc( int groupId, int streamId, int requestedPort )
 {
 	base::AutoLock lock(m_lock);
-	LOG_GIPS_INFO( logTag, "rxAllocAudio: groupId=%d, streamId=%d, requestedPort=%d", groupId, streamId, requestedPort  );
+	LOG_WEBRTC_INFO( logTag, "rxAllocAudio: groupId=%d, streamId=%d, requestedPort=%d", groupId, streamId, requestedPort  );
 	int channel = voeBase->CreateChannel();
 	if ( channel == -1 )
 	{
-		LOG_GIPS_ERROR( logTag, "rxAllocAudio: CreateChannel failed, error %d", voeBase->LastError() );
+		LOG_WEBRTC_ERROR( logTag, "rxAllocAudio: CreateChannel failed, error %d", voeBase->LastError() );
 		return 0;
 	}
-	LOG_GIPS_DEBUG( logTag, "rxAllocAudio: Created channel %d", channel );
+	LOG_WEBRTC_DEBUG( logTag, "rxAllocAudio: Created channel %d", channel );
 	voeNetwork->SetPeriodicDeadOrAliveStatus(channel, true);
 
 
@@ -502,9 +490,9 @@ int GipsAudioProvider::rxAlloc( int groupId, int streamId, int requestedPort )
 			// retrieve local receiver settings for channel
 			voeBase->GetLocalReceiver(channel, port,RTCPport, ipaddr);
 			localIP = ipaddr;
-			LOG_GIPS_DEBUG( logTag, "rxAllocAudio: IPAddr: %d", ipaddr );
-			LOG_GIPS_DEBUG( logTag, "rxAllocAudio: Allocated port %d", tryPort );
-			GipsAudioStreamPtr stream(new GipsAudioStream(streamId, channel));
+			LOG_WEBRTC_DEBUG( logTag, "rxAllocAudio: IPAddr: %d", ipaddr );
+			LOG_WEBRTC_DEBUG( logTag, "rxAllocAudio: Allocated port %d", tryPort );
+			WebrtcAudioStreamPtr stream(new WebrtcAudioStream(streamId, channel));
 			{
 				base::AutoLock lock(streamMapMutex);
 				streamMap[streamId] = stream;
@@ -524,36 +512,36 @@ int GipsAudioProvider::rxAlloc( int groupId, int streamId, int requestedPort )
         }
 		else
 		{
-			LOG_GIPS_ERROR( logTag, "rxAllocAudio: SetLocalReceiver returned error %d", errCode );
+			LOG_WEBRTC_ERROR( logTag, "rxAllocAudio: SetLocalReceiver returned error %d", errCode );
 			voeBase->DeleteChannel( channel );
 			return 0;
 		}
 	}
 	while ( tryPort != beginPort );
 
-	LOG_GIPS_WARN( logTag, "rxAllocAudio: No ports available?" );
+	LOG_WEBRTC_WARN( logTag, "rxAllocAudio: No ports available?" );
 	voeBase->DeleteChannel( channel );
 	return 0;
 }
 
-int GipsAudioProvider::rxOpen( int groupId, int streamId, int requestedPort, int listenIp, bool isMulticast )
+int WebrtcAudioProvider::rxOpen( int groupId, int streamId, int requestedPort, int listenIp, bool isMulticast )
 {
 	base::AutoLock lock(m_lock);
-	LOG_GIPS_INFO( logTag, "rxOpenAudio: groupId=%d, streamId=%d", groupId, streamId );
+	LOG_WEBRTC_INFO( logTag, "rxOpenAudio: groupId=%d, streamId=%d", groupId, streamId );
 	int channel = getChannelForStreamId( streamId );
 	if ( channel >= 0 )
 	{
-		LOG_GIPS_DEBUG( logTag, "rxOpenAudio: return requestedPort=%d", requestedPort );
+		LOG_WEBRTC_DEBUG( logTag, "rxOpenAudio: return requestedPort=%d", requestedPort );
 		return requestedPort;
 	}
 	return 0;
 }
 
-int GipsAudioProvider::rxStart( int groupId, int streamId, int payloadType, int packPeriod, int localPort,
+int WebrtcAudioProvider::rxStart( int groupId, int streamId, int payloadType, int packPeriod, int localPort,
 		int rfc2833PayloadType, EncryptionAlgorithm algorithm, unsigned char* key, int keyLen, unsigned char* salt, int saltLen, int mode, int party )
 {
 	base::AutoLock lock(m_lock);
-	LOG_GIPS_INFO( logTag, "rxStartAudio: groupId=%d, streamId=%d", groupId, streamId );
+	LOG_WEBRTC_INFO( logTag, "rxStartAudio: groupId=%d, streamId=%d", groupId, streamId );
 	int channel = getChannelForStreamId( streamId );
 	if ( channel >= 0 )
 	{
@@ -571,14 +559,14 @@ int GipsAudioProvider::rxStart( int groupId, int streamId, int payloadType, int 
 
 			if (codecSelector.select(payloadType, dynamicPayloadType, packPeriod, codec) != 0)
 			{
-				LOG_GIPS_ERROR( logTag, "rxStartAudio cannot select codec (payloadType=%d, packPeriod=%d)",
+				LOG_WEBRTC_ERROR( logTag, "rxStartAudio cannot select codec (payloadType=%d, packPeriod=%d)",
 						payloadType, packPeriod );
 				return -1;
 			}
 
 			if (codecSelector.setReceive(channel, codec) != 0)
 			{
-				LOG_GIPS_ERROR( logTag, "rxStartAudio cannot set receive codec to channel=%d", channel );
+				LOG_WEBRTC_ERROR( logTag, "rxStartAudio cannot set receive codec to channel=%d", channel );
 				return -1;
 			}
 	    }
@@ -586,27 +574,27 @@ int GipsAudioProvider::rxStart( int groupId, int streamId, int payloadType, int 
         switch(algorithm)
         {
             case EncryptionAlgorithm_NONE:
-                LOG_GIPS_DEBUG( logTag, "rxStartAudio: using non-secure RTP for channel %d", channel);
+                LOG_WEBRTC_DEBUG( logTag, "rxStartAudio: using non-secure RTP for channel %d", channel);
                 break;
 
             case EncryptionAlgorithm_AES_128_COUNTER:
             {
-                unsigned char key[GIPS_KEY_LENGTH];
+                unsigned char key[WEBRTC_KEY_LENGTH];
 
-                LOG_GIPS_DEBUG( logTag, "rxStartAudio: using secure RTP for channel %d", channel);
+                LOG_WEBRTC_DEBUG( logTag, "rxStartAudio: using secure RTP for channel %d", channel);
 
                 if(!provider->getKey(key, keyLen, salt, saltLen, key, sizeof(key)))
                 {
-                    LOG_GIPS_ERROR( logTag, "rxStartAudio: failed to generate key on channel %d", channel );
+                    LOG_WEBRTC_ERROR( logTag, "rxStartAudio: failed to generate key on channel %d", channel );
                     return -1;
                 }
 
                 if(voeEncryption->EnableSRTPReceive(channel,
                     webrtc::kCipherAes128CounterMode,
-                    GIPS_CIPHER_LENGTH,
+                    WEBRTC_CIPHER_LENGTH,
                     webrtc::kAuthNull, 0, 0, webrtc::kEncryption, key) != 0)
                 {
-                    LOG_GIPS_ERROR( logTag, "rxStartAudio: voeVE_EnableSRTPReceive on channel %d failed", channel );
+                    LOG_WEBRTC_ERROR( logTag, "rxStartAudio: voeVE_EnableSRTPReceive on channel %d failed", channel );
                     memset(key, 0x00, sizeof(key));
                     return -1;
                 }
@@ -619,52 +607,52 @@ int GipsAudioProvider::rxStart( int groupId, int streamId, int payloadType, int 
 
 	    if (voeBase->StartReceive( channel ) == -1)
 	    {
-	    	LOG_GIPS_ERROR( logTag, "rxStartAudio: cannot start listen on channel %d", channel );
+	    	LOG_WEBRTC_ERROR( logTag, "rxStartAudio: cannot start listen on channel %d", channel );
 	    	return -1;
 	    }
 	
 	
 
-	    LOG_GIPS_DEBUG( logTag, "rxStartAudio: Listening on channel %d", channel );
+	    LOG_WEBRTC_DEBUG( logTag, "rxStartAudio: Listening on channel %d", channel );
 
 		if (voeBase->StartPlayout( channel ) == -1)
 		{
-			LOG_GIPS_ERROR( logTag, "rxStartAudio: cannot start playout on channel %d, stop listen", channel );
+			LOG_WEBRTC_ERROR( logTag, "rxStartAudio: cannot start playout on channel %d, stop listen", channel );
 			//voeBase->voeVE_StopListen( channel );
 		}
 
-		GipsAudioStreamPtr stream = getStream(streamId);
+		WebrtcAudioStreamPtr stream = getStream(streamId);
 		if(stream != NULL)
 			stream->isRxStarted = true;
-		LOG_GIPS_DEBUG( logTag, "rxStartAudio: Playing on channel %d", channel );
+		LOG_WEBRTC_DEBUG( logTag, "rxStartAudio: Playing on channel %d", channel );
 		return 0;
 	}
 	else
 	{
-		LOG_GIPS_ERROR( logTag, "rxStartAudio: getChannelForStreamId failed streamId %d",streamId );
+		LOG_WEBRTC_ERROR( logTag, "rxStartAudio: getChannelForStreamId failed streamId %d",streamId );
 	}
 	return -1;
 }
 
-void GipsAudioProvider::rxClose( int groupId, int streamId )
+void WebrtcAudioProvider::rxClose( int groupId, int streamId )
 {
 	base::AutoLock lock(m_lock);
-	LOG_GIPS_INFO( logTag, "rxCloseAudio: groupId=%d, streamId=%d", groupId, streamId );
+	LOG_WEBRTC_INFO( logTag, "rxCloseAudio: groupId=%d, streamId=%d", groupId, streamId );
 	int channel = getChannelForStreamId( streamId );
 	if ( channel >= 0 )
 	{
-		GipsAudioStreamPtr stream = getStream(streamId);
+		WebrtcAudioStreamPtr stream = getStream(streamId);
 		if(stream != NULL)
 			stream->isRxStarted = false;
 		voeBase->StopPlayout( channel );
-		LOG_GIPS_DEBUG( logTag, "rxCloseAudio: Stop playout on channel %d", channel );
+		LOG_WEBRTC_DEBUG( logTag, "rxCloseAudio: Stop playout on channel %d", channel );
 	}
 }
 
-void GipsAudioProvider::rxRelease( int groupId, int streamId, int port )
+void WebrtcAudioProvider::rxRelease( int groupId, int streamId, int port )
 {
 	base::AutoLock lock(m_lock);
-	LOG_GIPS_INFO( logTag, "rxReleaseAudio: groupId=%d, streamId=%d", groupId, streamId );
+	LOG_WEBRTC_INFO( logTag, "rxReleaseAudio: groupId=%d, streamId=%d", groupId, streamId );
 	int channel = getChannelForStreamId( streamId );
 	if ( channel >= 0 )
 	{
@@ -675,22 +663,22 @@ void GipsAudioProvider::rxRelease( int groupId, int streamId, int port )
 			streamMap.erase(streamId);
 		}
 
-		LOG_GIPS_DEBUG( logTag, "rxReleaseAudio: Delete channel %d, release port %d", channel, port);
+		LOG_WEBRTC_DEBUG( logTag, "rxReleaseAudio: Delete channel %d, release port %d", channel, port);
 	}
 	else
 	{
-		LOG_GIPS_ERROR( logTag, "rxReleaseAudio: getChannelForStreamId failed streamId %d",streamId );
+		LOG_WEBRTC_ERROR( logTag, "rxReleaseAudio: getChannelForStreamId failed streamId %d",streamId );
 	}
 }
 
 const unsigned char m_iGQOSServiceType =0x00000003;
 
-int GipsAudioProvider::txStart( int groupId, int streamId, int payloadType, int packPeriod, bool vad, short tos,
+int WebrtcAudioProvider::txStart( int groupId, int streamId, int payloadType, int packPeriod, bool vad, short tos,
 		char* remoteIpAddr, int remotePort, int rfc2833PayloadType, EncryptionAlgorithm algorithm, unsigned char* key, int keyLen,
 		unsigned char* salt, int saltLen, int mode, int party )
 {
 	base::AutoLock lock(m_lock);
-	LOG_GIPS_INFO( logTag, "txStartAudio: groupId=%d, streamId=%d", groupId, streamId);
+	LOG_WEBRTC_INFO( logTag, "txStartAudio: groupId=%d, streamId=%d", groupId, streamId);
 	int channel = getChannelForStreamId( streamId );
 	if ( channel >= 0 )
 	{
@@ -707,7 +695,7 @@ int GipsAudioProvider::txStart( int groupId, int streamId, int payloadType, int 
 		// select codec from payload type
 		if (codecSelector.select(payloadType, dynamicPayloadType, packPeriod, codec) != 0)
 		{
-			LOG_GIPS_ERROR( logTag, "txStartAudio cannot select codec (payloadType=%d, packPeriod=%d)",
+			LOG_WEBRTC_ERROR( logTag, "txStartAudio cannot select codec (payloadType=%d, packPeriod=%d)",
 					payloadType, packPeriod );
 			return -1;
 		}
@@ -715,8 +703,8 @@ int GipsAudioProvider::txStart( int groupId, int streamId, int payloadType, int 
 		// apply codec to channel
 		if (codecSelector.setSend(channel, codec,payloadType,vad) != 0)
 		{
-			LOG_GIPS_ERROR( logTag, "txStartAudio cannot set send codec on channel=%d", channel );
-			 LOG_GIPS_ERROR( logTag, "VoEAudioProvider: Error: %d", voeBase->LastError() );
+			LOG_WEBRTC_ERROR( logTag, "txStartAudio cannot set send codec on channel=%d", channel );
+			 LOG_WEBRTC_ERROR( logTag, "VoEAudioProvider: Error: %d", voeBase->LastError() );
 			
 			return -1;
 		}
@@ -724,27 +712,27 @@ int GipsAudioProvider::txStart( int groupId, int streamId, int payloadType, int 
         switch(algorithm)
         {
             case EncryptionAlgorithm_NONE:
-                LOG_GIPS_DEBUG( logTag, "txStartAudio: using non-secure RTP for channel %d", channel);
+                LOG_WEBRTC_DEBUG( logTag, "txStartAudio: using non-secure RTP for channel %d", channel);
                 break;
 
             case EncryptionAlgorithm_AES_128_COUNTER:
             {
-                unsigned char key[GIPS_KEY_LENGTH];
+                unsigned char key[WEBRTC_KEY_LENGTH];
 
-                LOG_GIPS_DEBUG( logTag, "txStartAudio: using secure RTP for channel %d", channel);
+                LOG_WEBRTC_DEBUG( logTag, "txStartAudio: using secure RTP for channel %d", channel);
 
                 if(!provider->getKey(key, keyLen, salt, saltLen, key, sizeof(key)))
                 {
-                    LOG_GIPS_ERROR( logTag, "txStartAudio: failed to generate key on channel %d", channel );
+                    LOG_WEBRTC_ERROR( logTag, "txStartAudio: failed to generate key on channel %d", channel );
                     return -1;
                 }
 
                 if(voeEncryption->EnableSRTPSend(channel,
                     webrtc::kCipherAes128CounterMode,
-                    GIPS_CIPHER_LENGTH,
+                    WEBRTC_CIPHER_LENGTH,
                     webrtc::kAuthNull, 0, 0, webrtc::kEncryption, key) != 0)
                 {
-                    LOG_GIPS_ERROR( logTag, "txStartAudio:EnableSRTPSend on channel %d failed", channel );
+                    LOG_WEBRTC_ERROR( logTag, "txStartAudio:EnableSRTPSend on channel %d failed", channel );
                     memset(key, 0x00, sizeof(key));
                     return -1;
                 }
@@ -760,116 +748,119 @@ int GipsAudioProvider::txStart( int groupId, int streamId, int payloadType, int 
 #ifdef WIN32
 		if (IsVistaOrNewer())
 		{
-			LOG_GIPS_DEBUG( logTag, "Vista or later");
+			LOG_WEBRTC_DEBUG( logTag, "Vista or later");
 			if(voeNetwork->SetSendTOS(channel, dscpSixBit, false )==-1)
 			{
-				LOG_GIPS_DEBUG( logTag, "openIngressChannel():voeVE_SetSendTOS() returned error");
+				LOG_WEBRTC_DEBUG( logTag, "openIngressChannel():voeVE_SetSendTOS() returned error");
 			}
-			LOG_GIPS_DEBUG( logTag, " CvoeVeWrapper::openIngressChannel:- voeVE_SetSendTOS(), useSetSockOpt = false");
+			LOG_WEBRTC_DEBUG( logTag, " Wrapper::openIngressChannel:- voeVE_SetSendTOS(), useSetSockOpt = false");
 		}
 		else
 		{
 			if(voeNetwork->SetSendTOS(channel, dscpSixBit, true )==-1)
 			{
-				LOG_GIPS_DEBUG( logTag, "openIngressChannel():voeVE_SetSendTOS() returned error");
+				LOG_WEBRTC_DEBUG( logTag, "openIngressChannel():voeVE_SetSendTOS() returned error");
 			}
-			LOG_GIPS_DEBUG( logTag, "CvoeVeWrapper::openIngressChannel:- voeVE_SetSendTOS(), useSetSockOpt = true");
+			LOG_WEBRTC_DEBUG( logTag, "Wrapper::openIngressChannel:- voeVE_SetSendTOS(), useSetSockOpt = true");
 		}
 #else
 		voeNetwork->SetSendTOS(channel, dscpSixBit, -1, true );
 #endif
 		voeBase->StartSend( channel );
-		GipsAudioStreamPtr stream = getStream(streamId);
+		WebrtcAudioStreamPtr stream = getStream(streamId);
 		if(stream != NULL)
 			stream->isTxStarted = true;
-		LOG_GIPS_DEBUG( logTag, "txStartAudio: Sending to %s:%d on channel %d", remoteIpAddr, remotePort, channel );
+		LOG_WEBRTC_DEBUG( logTag, "txStartAudio: Sending to %s:%d on channel %d", remoteIpAddr, remotePort, channel );
 		return 0;
 	}
 	else
 	{
-			LOG_GIPS_ERROR( logTag, "txStartAudio: getChannelForStreamId failed streamId %d",streamId );
+			LOG_WEBRTC_ERROR( logTag, "txStartAudio: getChannelForStreamId failed streamId %d",streamId );
 			return -1;
 	}
 
 }
 
-void GipsAudioProvider::txClose( int groupId, int streamId )
+void WebrtcAudioProvider::txClose( int groupId, int streamId )
 {
 	base::AutoLock lock(m_lock);
-	LOG_GIPS_INFO( logTag, "txCloseAudio: groupId=%d, streamId=%d", groupId, streamId);
+	LOG_WEBRTC_INFO( logTag, "txCloseAudio: groupId=%d, streamId=%d", groupId, streamId);
 	int channel = getChannelForStreamId( streamId );
 	if ( channel >= 0 )
 	{
-		GipsAudioStreamPtr stream = getStream(streamId);
+		WebrtcAudioStreamPtr stream = getStream(streamId);
 		if(stream != NULL)
 			stream->isTxStarted = false;
 		voeBase->StopSend( channel );
-		LOG_GIPS_DEBUG( logTag, "txCloseAudio: Stop transmit on channel %d", channel );
+		LOG_WEBRTC_DEBUG( logTag, "txCloseAudio: Stop transmit on channel %d", channel );
 	}
 	else
 	{
-		LOG_GIPS_ERROR( logTag, "txClose: getChannelForStreamId failed streanId %d",streamId );
+		LOG_WEBRTC_ERROR( logTag, "txClose: getChannelForStreamId failed streanId %d",streamId );
 
 	}
 }
-int GipsAudioProvider::toneStart( ToneType type, ToneDirection direction, int alertInfo, int groupId, int streamId, bool useBackup )
+int WebrtcAudioProvider::toneStart( ToneType type, ToneDirection direction, int alertInfo, int groupId, int streamId, bool useBackup )
 {
 	base::AutoLock lock(m_lock);
-	LOG_GIPS_INFO( logTag, "mediaToneStart: tone=%d, direction=%d, groupId=%d, streamId=%d", type, direction, groupId, streamId );
+	LOG_WEBRTC_INFO( logTag, "mediaToneStart: tone=%d, direction=%d, groupId=%d, streamId=%d", type, direction, groupId, streamId );
 	if(toneGen != NULL)
 	{
-		LOG_GIPS_INFO( logTag, "mediaToneStart: tone already in progress - stop current tone [using dodgy parameters] and replace it." );
+		LOG_WEBRTC_INFO( logTag, "mediaToneStart: tone already in progress - stop current tone [using dodgy parameters] and replace it." );
 		toneStop(type, groupId, streamId);
 	}
-	toneGen = new GipsToneGenerator( type );
+	toneGen = new WebrtcToneGenerator( type );
 	voeBase->StartPlayout( localToneChannel );
-	voeFile->StartPlayingFileLocally( localToneChannel, toneGen, webrtc::kFileFormatPcm16kHzFile);
+	voeFile->StartPlayingFileLocally( localToneChannel, toneGen, webrtc::kFileFormatPcm8kHzFile);
 	return 0;
 }
 
-int GipsAudioProvider::toneStop( ToneType type, int groupId, int streamId )
+int WebrtcAudioProvider::toneStop( ToneType type, int groupId, int streamId )
 {
 	base::AutoLock lock(m_lock);
-	LOG_GIPS_INFO( logTag, "mediaToneStop: tone=%d, groupId=%d, streamId=%d", type, groupId, streamId );
-	if ( voeFile->IsPlayingFileLocally( localToneChannel ) == 1 )
+	LOG_WEBRTC_INFO( logTag, "mediaToneStop: tone=%d, groupId=%d, streamId=%d", type, groupId, streamId );
+	if ( voeFile->IsPlayingFileLocally( localToneChannel ) == 1 ) {
 		voeBase->StopPlayout( localToneChannel );
-	//voeFile->voeVE_StopPlayingFileLocally( localToneChannel );
+		voeFile->StopPlayingFileLocally( localToneChannel );
+	}
 	delete toneGen;
 	toneGen = NULL;
 	return 0;
 }
 
-int GipsAudioProvider::ringStart( int lineId, RingMode mode, bool once )
+int WebrtcAudioProvider::ringStart( int lineId, RingMode mode, bool once )
 {
 	base::AutoLock lock(m_lock);
-	LOG_GIPS_INFO( logTag, "mediaRingStart: line=%d, mode=%d, once=%d", lineId, mode, once );
+	LOG_WEBRTC_INFO( logTag, "mediaRingStart: line=%d, mode=%d, once=%d", lineId, mode, once );
 	if(ringGen != NULL)
 	{
-		LOG_GIPS_INFO( logTag, "mediaRingStart: ringing already in progress - do nothing." );
+		LOG_WEBRTC_INFO( logTag, "mediaRingStart: ringing already in progress - do nothing." );
 		return 0;
 		//ringStop(lineId);  No longer stopping ringer here because of DE2412.
 		//                   Now we let the original ringer continue, and blame skittles for not stopping the ringer first.
 	}
-	ringGen = new GipsRingGenerator( mode, once );
+	ringGen = new WebrtcRingGenerator( mode, once );
 	ringGen->SetScaleFactor(ringerVolume);
 	voeBase->StartPlayout( localRingChannel );
 	voeFile->StartPlayingFileLocally( localRingChannel, ringGen, webrtc::kFileFormatPcm8kHzFile);
 	return 0;
 }
 
-int GipsAudioProvider::ringStop( int lineId )
+int WebrtcAudioProvider::ringStop( int lineId )
 {
 	base::AutoLock lock(m_lock);
-	LOG_GIPS_INFO( logTag, "mediaRingStop: line=%d", lineId );
+	LOG_WEBRTC_INFO( logTag, "mediaRingStop: line=%d", lineId );
 	if ( voeFile->IsPlayingFileLocally( localRingChannel ) == 1 )
+	{
 		voeBase->StopPlayout( localRingChannel );
-	//voeFile->voeVE_StopPlayingFileLocally( localToneChannel );
+		voeFile->StopPlayingFileLocally( localRingChannel );
+	}
 	delete ringGen;
 	ringGen = NULL;
 	return 0;
 }
 
-int GipsAudioProvider::sendDtmf( int streamId, int digit)
+int WebrtcAudioProvider::sendDtmf( int streamId, int digit)
 {
 	base::AutoLock lock(m_lock);
 	// TODO Get from config
@@ -886,17 +877,17 @@ int GipsAudioProvider::sendDtmf( int streamId, int digit)
 	}
     else
     {
-    	LOG_GIPS_INFO( logTag, "failed to map stream to channel");
+    	LOG_WEBRTC_INFO( logTag, "failed to map stream to channel");
     }
 
 	return -1;
 }
 
 // returns -1 on failure
-bool GipsAudioProvider::mute( int streamId, bool mute )
+bool WebrtcAudioProvider::mute( int streamId, bool mute )
 {
 	base::AutoLock lock(m_lock);
-    LOG_GIPS_INFO( logTag, "audio mute: streamId=%d, mute=%d", streamId, mute );
+    LOG_WEBRTC_INFO( logTag, "audio mute: streamId=%d, mute=%d", streamId, mute );
     int channel = getChannelForStreamId( streamId );
     bool returnVal = false;
 
@@ -908,17 +899,17 @@ bool GipsAudioProvider::mute( int streamId, bool mute )
 		}
 		else
 		{
-			LOG_GIPS_INFO( logTag, "voe returned failure from voeVE_SetInputMute");
+			LOG_WEBRTC_INFO( logTag, "VoE retuned failure from SetInputMute");
 		}
     }
     else
     {
-    	LOG_GIPS_INFO( logTag, "failed to map stream to channel");
+    	LOG_WEBRTC_INFO( logTag, "failed to map stream to channel");
     }
     return returnVal;
 }
 
-bool GipsAudioProvider::isMuted( int streamId )
+bool WebrtcAudioProvider::isMuted( int streamId )
 {
 	base::AutoLock lock(m_lock);
 	bool mute=false;
@@ -927,23 +918,23 @@ bool GipsAudioProvider::isMuted( int streamId )
 	return mute;
 }
 
-bool GipsAudioProvider::setDefaultVolume( int volume )
+bool WebrtcAudioProvider::setDefaultVolume( int volume )
 {
 	base::AutoLock lock(m_lock);
 	defaultVolume = volume;
     return true;
 }
 
-int GipsAudioProvider::getDefaultVolume()
+int WebrtcAudioProvider::getDefaultVolume()
 {
 	base::AutoLock lock(m_lock);
     return defaultVolume;
 }
 
-bool GipsAudioProvider::setRingerVolume( int volume )
+bool WebrtcAudioProvider::setRingerVolume( int volume )
 {
 	base::AutoLock lock(m_lock);
-	LOG_GIPS_INFO( logTag, "setRingerVolume: volume=%d", volume );
+	LOG_WEBRTC_INFO( logTag, "setRingerVolume: volume=%d", volume );
 	if (voeVolumeControl->SetChannelOutputVolumeScaling(localRingChannel, volume * 0.01f) != -1)
 	{
 		ringerVolume = volume;
@@ -955,21 +946,21 @@ bool GipsAudioProvider::setRingerVolume( int volume )
 	}
 	else
 	{
-		LOG_GIPS_INFO( logTag, "voe returned failure from voeVE_SetChannelOutputVolumeScaling");
+		LOG_WEBRTC_INFO( logTag, "VoE retuned failure from SetChannelOutputVolumeScaling");
 		return false;
 	}
 }
 
-int GipsAudioProvider::getRingerVolume()
+int WebrtcAudioProvider::getRingerVolume()
 {
 	base::AutoLock lock(m_lock);
     return ringerVolume;
 }
 
-bool GipsAudioProvider::setVolume( int streamId, int volume )
+bool WebrtcAudioProvider::setVolume( int streamId, int volume )
 {
 	//Lock lock(&mutex);
-	LOG_GIPS_INFO( logTag, "setVolume: streamId=%d, volume=%d", streamId, volume );
+	LOG_WEBRTC_INFO( logTag, "setVolume: streamId=%d, volume=%d", streamId, volume );
 	int channel = getChannelForStreamId( streamId );
 	bool returnVal = false;
 
@@ -982,17 +973,17 @@ bool GipsAudioProvider::setVolume( int streamId, int volume )
 		}
 		else
 		{
-			LOG_GIPS_INFO( logTag, "voe returned failure from voeVE_SetChannelOutputVolumeScaling");
+			LOG_WEBRTC_INFO( logTag, "VoE retuned failure from SetChannelOutputVolumeScaling");
 		}
 	}
 	else
 	{
-		LOG_GIPS_INFO( logTag, "failed to map stream to channel");
+		LOG_WEBRTC_INFO( logTag, "failed to map stream to channel");
 	}
 	return returnVal;
 }
 
-int  GipsAudioProvider::getVolume( int streamId )
+int  WebrtcAudioProvider::getVolume( int streamId )
 {
 	base::AutoLock lock(m_lock);
 	float voeVolume = 0;
@@ -1005,32 +996,32 @@ int  GipsAudioProvider::getVolume( int streamId )
 	}
 	else
 	{
-		LOG_GIPS_INFO( logTag, "voe returned failure from voeVE_GetChannelOutputVolumeScaling");
+		LOG_WEBRTC_INFO( logTag, "VoE retuned failure from GetChannelOutputVolumeScaling");
 		return -1;
 	}
 }
 
 // voeVoiceEngineObserver
-void GipsAudioProvider::Print(const webrtc::TraceLevel level, const char* message, const int length)
+void WebrtcAudioProvider::Print(const webrtc::TraceLevel level, const char* message, const int length)
 {
 		if (strstr(message, "eventNumber=") != NULL || strstr(message, "DTMF event ") != NULL)
 			return;
-		//if ( length > 0 ) LOG_GIPS_INFO( logTag, "voe %s", message );
+		//if ( length > 0 ) LOG_WEBRTC_INFO( logTag, "voe %s", message );
 }
 
-void GipsAudioProvider::CallbackOnError(const int errCode, const int channel)
+void WebrtcAudioProvider::CallbackOnError(const int errCode, const int channel)
 {
-	LOG_GIPS_ERROR( logTag, "voe ERROR %d on channel %d", errCode, channel );
+	LOG_WEBRTC_ERROR( logTag, "voe ERROR %d on channel %d", errCode, channel );
 }
 
-void GipsAudioProvider::OnPeriodicDeadOrAlive(int channel, bool isAlive)
+void WebrtcAudioProvider::OnPeriodicDeadOrAlive(int channel, bool isAlive)
 {
-	GipsAudioStreamPtr stream = getStreamByChannel(channel);
+	WebrtcAudioStreamPtr stream = getStreamByChannel(channel);
 	if(stream != NULL && (stream->isRxStarted || stream->isTxStarted))
 	{
 		if(stream->isAlive != isAlive)
 		{
-			LOG_GIPS_INFO( logTag, "voe channel %d is %s", channel, (isAlive ? "alive" : "dead") );
+			LOG_WEBRTC_INFO( logTag, "voe channel %d is %s", channel, (isAlive ? "alive" : "dead") );
 			stream->isAlive = isAlive;
 			// TODO should use postEvent and rely on Engine to drive dispatch.
 /*			Component::Event event;

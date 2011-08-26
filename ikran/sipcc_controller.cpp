@@ -89,7 +89,10 @@ void SipccController::InitInternal() {
 bool SipccController::RegisterInternal() {
 	
 	Logger::Instance()->logIt("RegisterInternal");	
-
+    Logger::Instance()->logIt(sip_user_);
+    Logger::Instance()->logIt(sip_credentials_);
+    Logger::Instance()->logIt(device_);
+    Logger::Instance()->logIt(sip_domain_); 
 	if(ccm_ptr_->registerUser(device_, sip_user_, sip_credentials_, sip_domain_) == false) {
 		Logger::Instance()->logIt("RegisterInternal - FAILED ");
 		return false;

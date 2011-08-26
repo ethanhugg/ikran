@@ -103,7 +103,7 @@ elif sys.platform=='darwin':
     ]    
     
   build_env["CPPDEFINES"] += [
-    'NO_GIPS_VIDEO',
+    'NO_WEBRTC_VIDEO',
     'SIP_OS_OSX', 
     'OSX', 
     'GIPS_VER=3410', 
