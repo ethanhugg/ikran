@@ -147,7 +147,7 @@ elif sys.platform=='darwin':
   
 elif sys.platform=='linux2':
   build_env["CPPFLAGS"] = [
-    '-Werror',
+    #'-Werror',
     '-Wall',
     '-fexceptions',
     '-fno-common',
@@ -162,6 +162,7 @@ elif sys.platform=='linux2':
       '-march=i486'
     ] 
   build_env["CPPDEFINES"] += [
+    'NO_WEBRTC_VIDEO',
     '_GNU_SOURCE', 
     'SIP_OS_LINUX', 
     'LINUX', 

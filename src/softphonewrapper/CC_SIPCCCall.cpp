@@ -423,7 +423,7 @@ void CC_SIPCCCall::addStream(int streamId, bool isVideo)
 	// At the moment the only candidate is the muted state
 	if (isVideo)
 	{
-#ifndef __APPLE__
+#ifndef  NO_WEBRTC_VIDEO
         VideoTermination * pVideo = VcmSIPCCBinding::getVideoTermination();
         
         // if there is a window for this call apply it to the stream
