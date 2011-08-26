@@ -33,7 +33,7 @@ elif sys.platform =='darwin':
   ]
 
 elif sys.platform =='linux2':
-  gipslib = 'third_party/lib/libVideoEngine_Linux_gcc.a'
+#  gipslib = 'third_party/lib/libVideoEngine_Linux_gcc.a'
   src_files = [
     'src/libcallcontrol.a',
     'src/sipcc/libsipcc.a',
@@ -47,8 +47,8 @@ if sys.platform =='win32':
   env.Install("./out/lib/", 'third_party\lib\ddraw.lib')
 else:
   env.Install("./out/lib/", "lib" + componentName + suffixName + ".a")
-  if sys.platform == 'linux2':
-    env.Install("./out/lib/", gipslib)
+ # if sys.platform == 'linux2':
+ #   env.Install("./out/lib/", gipslib)
       
       
 # function to help write the linux_export directory
