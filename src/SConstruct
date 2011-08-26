@@ -49,8 +49,8 @@ include_dirs += [
   webrtcpath + '/src/voice_engine/main/interface' 
 ]
 
-include_dirs += ['media/gips']
-src_files += Glob('media/gips/*.cpp')
+include_dirs += ['media/webrtc']
+src_files += Glob('media/webrtc/*.cpp')
 
 env = build_env.Clone(CPPPATH=include_dirs)
 

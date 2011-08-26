@@ -95,9 +95,9 @@ var IkranObserver = {
         );
         sandbox.window = subject.wrappedJSObject;
 
-        sandbox.importFunction(function(loc, user_device, user, proxy_address, sess_obs) {
+        sandbox.importFunction(function(loc, user_device, user,credential, proxy_address, sess_obs) {
             ikran._verifyPermission(window, loc, function(allowed) {
-                if (allowed) ikran.registerUser(user_device, user, proxy_address, sess_obs);
+                if (allowed) ikran.registerUser(user_device, user, credential,proxy_address, sess_obs);
                 else throw "Permission denied";
             });
         }, "regUser");

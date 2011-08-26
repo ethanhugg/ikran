@@ -38,17 +38,17 @@
  * ***** END LICENSE BLOCK ***** */
 
 #ifndef _USE_CPVE
-#ifndef NO_GIPS_VIDEO
+#ifndef NO_WEBRTC_VIDEO
 
 #include "CC_Common.h"
 #ifdef LINUX
 #include "X11/Xlib.h"
 #endif
 #include "VcmSIPCCBinding.h"
-#include "CSFGipsMediaProvider.h"
-#include "CSFGipsAudioProvider.h"
-#include "CSFGipsVideoProvider.h"
-#include "CSFGipsLogging.h"
+#include "WebrtcMediaProvider.h"
+#include "WebrtcAudioProvider.h"
+#include "WebrtcVideoProvider.h"
+#include "WebrtcLogging.h"
 #include "GIPSVEEncryption.h"
 
 #include "base/synchronization/lock.h"
@@ -70,7 +70,7 @@ using namespace std;
 
 extern "C" void config_get_value (int id, void *buffer, int length);
 
-static const char* logTag = "CSFGipsVideoProvider";
+static const char* logTag = "WebrtcVideoProvider";
 
 #ifdef LINUX
 static    clock_t currentTime, lastRequestTime;
@@ -817,5 +817,5 @@ void GipsVideoProvider:: setAudioStreamId(int streamId)
 
 } // namespace CSF
 
-#endif // NO_GIPS_VIDEO
+#endif // NO_WEBRTC_VIDEO
 #endif

@@ -140,7 +140,7 @@ The JS API offers support for
 window.navigator.service.call obtains handle to session-control 
 object. 
 
-<session-control>.registerUser(user_device, user, sip-proxy, sessObserver);
+<session-control>.registerUser(user_device, user, credential, sip-proxy, sessObserver);
 registers user to the sip-proxy. 
 
 'sessObserver' is a JS function that will be called whenever there is 

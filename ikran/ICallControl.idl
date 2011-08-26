@@ -66,6 +66,7 @@ interface ICallControl : nsISupports
 {
 	void registerUser(in string user_device,
 						in string user,
+						in string credentials,
 						in string proxy_address,
 						in nsISessionStateObserver sess_obs);
 	void unregisterUser();

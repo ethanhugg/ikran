@@ -5,7 +5,7 @@
  * 1.1 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
- *
+ *Webrtc
  * Software distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
  * for the specific language governing rights and limitations under the
@@ -37,38 +37,78 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef CSFGIPSRINGGENERATOR_H
-#define CSFGIPSRINGGENERATOR_H
+#ifndef WEBRTCAUDIOCODECSELECTOR_H_
+#define WEBRTCAUDIOCODECSELECTOR_H_
 
 #ifndef _USE_CPVE
 
 #include <CSFAudioTermination.h>
-#include "common_types.h"
+#include "voe_base.h"
+#include "voe_codec.h"
+#include <map>
 
-namespace CSF {
+// forward declarations
+class webrtc::VoiceEngine;
+class webrtc::VoECodec;
+struct webrtc::CodecInst;
 
-	class GipsRingGenerator : public webrtc::InStream
-	{
-	public:
-		GipsRingGenerator( RingMode mode, bool once );
+typedef enum {
+  WebrtcAudioPayloadType_PCMU = 0,
+  WebrtcAudioPayloadType_PCMA = 8,
+  WebrtcAudioPayloadType_G722 = 9,
+  WebrtcAudioPayloadType_iLBC = 102,
+  WebrtcAudioPayloadType_ISAC = 103,
+  WebrtcAudioPayloadType_TELEPHONE_EVENT = 106,
+  WebrtcAudioPayloadType_ISACLC = 119,
+  WebrtcAudioPayloadType_DIM = -1
 
-		// InStream interface
-		int Read( void *buf, int len );
-		void SetScaleFactor(int scaleFactor); // 0-100
+} WebrtcAudioPayloadType;
 
-	private:
-		RingMode mode;
-		bool once;
-		int currentStep;
-		int timeRemaining;	// in current step
-		bool done;
-		int scaleFactor;
+const int ComfortNoisePayloadType = 13;
+const int SamplingFreq8000Hz =8000;
+const int SamplingFreq16000Hz =16000;
+const int SamplingFreq32000Hz =32000;
 
-		int generateTone( short *buf, int numSamples );
-		void applyScaleFactor( short *buf, int numSamples );
-	};
+namespace CSF
+{
+
+// A class to select a VOE audio codec
+class WebrtcAudioCodecSelector
+{
+public:
+	// the constructor
+	WebrtcAudioCodecSelector();
+
+	// the destructor
+	~WebrtcAudioCodecSelector();
+
+	int init( webrtc::VoiceEngine* voeVoice, bool useLowBandwidthCodecOnly, bool advertiseG722Codec );
+
+	void release();
+
+	// return a bit mask of the available codecs
+	int  advertiseCodecs( CodecRequestType requestType );
+
+	// select the VOE codec according to payload type and packet size
+	// return 0 if a codec was selected
+	int select( int payloadType, int dynamicPayloadType, int packetSize, webrtc::CodecInst& selectedCoded );
+
+	// apply a sending codec to the channel
+	// return 0 if codec could be applied
+	int setSend(int channel, const webrtc::CodecInst& codec,int payloadType,bool vad);
+
+	// apply a receiving codec to the channel
+	// return 0 if codec could be applied
+	int setReceive(int channel, const webrtc::CodecInst& codec);
+
+private:
+	// the reference to the GIPS Codec sub-interface
+	webrtc::VoECodec* voeCodec;
+
+	std::map<int, webrtc::CodecInst*> codecMap;
+};
 
 } // namespace CSF
 
 #endif
-#endif // CSFGIPSRINGGENERATOR_H
+#endif /* WEBRTCAUDIOCODECSELECTOR_H_ */
