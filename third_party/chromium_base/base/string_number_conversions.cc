@@ -294,18 +294,18 @@ typedef BaseIteratorRangeToNumberTraits<std::string::const_iterator, int, 10>
     IteratorRangeToIntTraits;
 typedef BaseIteratorRangeToNumberTraits<string16::const_iterator, int, 10>
     WideIteratorRangeToIntTraits;
-typedef BaseIteratorRangeToNumberTraits<std::string::const_iterator, int64, 10>
+typedef BaseIteratorRangeToNumberTraits<std::string::const_iterator, i64Bit::int64, 10>
     IteratorRangeToInt64Traits;
-typedef BaseIteratorRangeToNumberTraits<string16::const_iterator, int64, 10>
+typedef BaseIteratorRangeToNumberTraits<string16::const_iterator, i64Bit::int64, 10>
     WideIteratorRangeToInt64Traits;
 
 typedef BaseIteratorRangeToNumberTraits<const char*, int, 10>
     CharBufferToIntTraits;
 typedef BaseIteratorRangeToNumberTraits<const char16*, int, 10>
     WideCharBufferToIntTraits;
-typedef BaseIteratorRangeToNumberTraits<const char*, int64, 10>
+typedef BaseIteratorRangeToNumberTraits<const char*, i64Bit::int64, 10>
     CharBufferToInt64Traits;
-typedef BaseIteratorRangeToNumberTraits<const char16*, int64, 10>
+typedef BaseIteratorRangeToNumberTraits<const char16*, i64Bit::int64, 10>
     WideCharBufferToInt64Traits;
 
 template<typename ITERATOR>
@@ -362,13 +362,13 @@ string16 UintToString16(unsigned int value) {
       IntToString(value);
 }
 
-std::string Int64ToString(int64 value) {
-  return IntToStringT<std::string, int64, i64Bit::uint64, true>::
+std::string Int64ToString(i64Bit::int64 value) {
+  return IntToStringT<std::string, i64Bit::int64, i64Bit::uint64, true>::
       IntToString(value);
 }
 
-string16 Int64ToString16(int64 value) {
-  return IntToStringT<string16, int64, i64Bit::uint64, true>::IntToString(value);
+string16 Int64ToString16(i64Bit::int64 value) {
+  return IntToStringT<string16, i64Bit::int64, i64Bit::uint64, true>::IntToString(value);
 }
 
 std::string Uint64ToString(i64Bit::uint64 value) {
@@ -427,39 +427,39 @@ bool StringToInt(const char16* begin, const char16* end, int* output) {
                                                                   output);
 }
 
-bool StringToInt64(const std::string& input, int64* output) {
+bool StringToInt64(const std::string& input, i64Bit::int64* output) {
   return IteratorRangeToNumber<IteratorRangeToInt64Traits>::Invoke(
     input.begin(), input.end(), output);
 }
 
 bool StringToInt64(std::string::const_iterator begin,
                  std::string::const_iterator end,
-                 int64* output) {
+                 i64Bit::int64* output) {
   return IteratorRangeToNumber<IteratorRangeToInt64Traits>::Invoke(begin,
                                                                  end,
                                                                  output);
 }
 
-bool StringToInt64(const char* begin, const char* end, int64* output) {
+bool StringToInt64(const char* begin, const char* end, i64Bit::int64* output) {
   return IteratorRangeToNumber<CharBufferToInt64Traits>::Invoke(begin,
                                                               end,
                                                               output);
 }
 
-bool StringToInt64(const string16& input, int64* output) {
+bool StringToInt64(const string16& input, i64Bit::int64* output) {
   return IteratorRangeToNumber<WideIteratorRangeToInt64Traits>::Invoke(
     input.begin(), input.end(), output);
 }
 
 bool StringToInt64(string16::const_iterator begin,
                  string16::const_iterator end,
-                 int64* output) {
+                 i64Bit::int64* output) {
   return IteratorRangeToNumber<WideIteratorRangeToInt64Traits>::Invoke(begin,
                                                                      end,
                                                                      output);
 }
 
-bool StringToInt64(const char16* begin, const char16* end, int64* output) {
+bool StringToInt64(const char16* begin, const char16* end, i64Bit::int64* output) {
   return IteratorRangeToNumber<WideCharBufferToInt64Traits>::Invoke(begin,
                                                                   end,
                                                                   output);

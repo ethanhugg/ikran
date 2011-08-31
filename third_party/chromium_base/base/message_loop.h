@@ -154,13 +154,13 @@ class MessageLoop : public base::MessagePump::Delegate {
       const tracked_objects::Location& from_here, Task* task);
 
   void PostDelayedTask(
-      const tracked_objects::Location& from_here, Task* task, int64 delay_ms);
+      const tracked_objects::Location& from_here, Task* task, i64Bit::int64 delay_ms);
 
   void PostNonNestableTask(
       const tracked_objects::Location& from_here, Task* task);
 
   void PostNonNestableDelayedTask(
-      const tracked_objects::Location& from_here, Task* task, int64 delay_ms);
+      const tracked_objects::Location& from_here, Task* task, i64Bit::int64 delay_ms);
 
   // A variant on PostTask that deletes the given object.  This is useful
   // if the object needs to live until the next run of the MessageLoop (for
@@ -417,7 +417,7 @@ class MessageLoop : public base::MessagePump::Delegate {
 
   // Post a task to our incomming queue.
   void PostTask_Helper(const tracked_objects::Location& from_here, Task* task,
-                       int64 delay_ms, bool nestable);
+                       i64Bit::int64 delay_ms, bool nestable);
 
   // Start recording histogram info about events and action IF it was enabled
   // and IF the statistics recorder can accept a registration of our histogram.

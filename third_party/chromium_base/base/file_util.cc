@@ -184,7 +184,7 @@ FILE* CreateAndOpenTemporaryFile(FilePath* path) {
   return CreateAndOpenTemporaryFileInDir(directory, path);
 }
 
-bool GetFileSize(const FilePath& file_path, int64* file_size) {
+bool GetFileSize(const FilePath& file_path, i64Bit::int64* file_size) {
   base::PlatformFileInfo info;
   if (!GetFileInfo(file_path, &info))
     return false;
@@ -273,8 +273,8 @@ bool ContainsPath(const FilePath &parent, const FilePath& child) {
   return true;
 }
 
-int64 ComputeDirectorySize(const FilePath& root_path) {
-  int64 running_size = 0;
+i64Bit::int64 ComputeDirectorySize(const FilePath& root_path) {
+  i64Bit::int64 running_size = 0;
   FileEnumerator file_iter(root_path, true, FileEnumerator::FILES);
   for (FilePath current = file_iter.Next(); !current.empty();
        current = file_iter.Next()) {
@@ -290,9 +290,9 @@ int64 ComputeDirectorySize(const FilePath& root_path) {
   return running_size;
 }
 
-int64 ComputeFilesSize(const FilePath& directory,
+i64Bit::int64 ComputeFilesSize(const FilePath& directory,
                        const FilePath::StringType& pattern) {
-  int64 running_size = 0;
+  i64Bit::int64 running_size = 0;
   FileEnumerator file_iter(directory, false, FileEnumerator::FILES, pattern);
   for (FilePath current = file_iter.Next(); !current.empty();
        current = file_iter.Next()) {

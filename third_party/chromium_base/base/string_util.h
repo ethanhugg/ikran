@@ -418,22 +418,22 @@ enum DataUnits {
 
 // Return the unit type that is appropriate for displaying the amount of bytes
 // passed in.
-DataUnits GetByteDisplayUnits(int64 bytes);
+DataUnits GetByteDisplayUnits(i64Bit::int64 bytes);
 
 // Return a byte string in human-readable format, displayed in units appropriate
 // specified by 'units', with an optional unit suffix.
 // Ex: FormatBytes(512, DATA_UNITS_KIBIBYTE, true) => "0.5 KB"
 // Ex: FormatBytes(10*1024, DATA_UNITS_MEBIBYTE, false) => "0.1"
-string16 FormatBytes(int64 bytes, DataUnits units, bool show_units);
+string16 FormatBytes(i64Bit::int64 bytes, DataUnits units, bool show_units);
 
 // As above, but with "/s" units.
 // Ex: FormatSpeed(512, DATA_UNITS_KIBIBYTE, true) => "0.5 KB/s"
 // Ex: FormatSpeed(10*1024, DATA_UNITS_MEBIBYTE, false) => "0.1"
-string16 FormatSpeed(int64 bytes, DataUnits units, bool show_units);
+string16 FormatSpeed(i64Bit::int64 bytes, DataUnits units, bool show_units);
 
 // Return a number formated with separators in the user's locale way.
 // Ex: FormatNumber(1234567) => 1,234,567
-string16 FormatNumber(int64 number);
+string16 FormatNumber(i64Bit::int64 number);
 
 // Starting at |start_offset| (usually 0), replace the first instance of
 // |find_this| with |replace_with|.
