@@ -495,7 +495,7 @@ static boolean sipSPISendPublish (ccsip_publish_cb_t *pcb_p, boolean authen)
     // Add Call-ID Header. 
     platform_get_wired_mac_address(mac_address);
     count++;
-    snprintf(pcb_p->hb.sipCallID, MAX_SIP_URL_LENGTH, "%.4x%.4x-%.4x%.4x-%.8x-%.8x@%s",
+    snprintf(pcb_p->hb.sipCallID, MAX_SIP_CALL_ID, "%.4x%.4x-%.4x%.4x-%.8x-%.8x@%s", // was MAX_SIP_URL_LENGTH
                  mac_address[0] * 256 + mac_address[1],
                  mac_address[2] * 256 + mac_address[3],
                  mac_address[4] * 256 + mac_address[5], count,

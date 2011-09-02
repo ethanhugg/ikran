@@ -202,7 +202,7 @@ static INLINE chunk_t *
 chunk_create_inline(uint32_t cfg_size, uint32_t cfg_max, uint32_t flags,
                     uint32_t alignment,
                     CHUNK_PRIVATE_MEMPOOL_ARG
-                    const char *name, uint32_t caller_pc);
+                    const char *name, void *caller_pc);
 
 
 /*-------------------------------------
@@ -418,7 +418,7 @@ data_to_chunk_hdr (chunk_header_t *p)
     cpr_assert_debug(p != NULL);
 
     return (chunk_header_t *)
-        ((uint32_t)p - FIELDOFFSET(chunk_header_t, data_area.data));
+        ((unsigned char *)p - FIELDOFFSET(chunk_header_t, data_area.data));
 }
 
 /**
@@ -520,14 +520,14 @@ chunk_populate_freelist (chunk_t *chunk, uint32_t real_size)
         if (alignment) {
             hdr = (chunk_header_t *)data;
             freehdr = hdr_to_free_chunk(hdr);
-            data_alignment = ((uint32_t)freehdr % alignment);
+            data_alignment = ((uintptr_t)freehdr % alignment);
             if (data_alignment) {
                 data_alignment = alignment - data_alignment;
                 /*
                  * Move the data at which the first chunk header starts to
                  * accommodate for chunk data match the requested alignment
                  */
-                data = (void *)((uint32_t)data + data_alignment);
+                data = (void *)((uintptr_t)data + data_alignment);
             }
         }
         hdr = (chunk_header_t *) data;
@@ -538,7 +538,7 @@ chunk_populate_freelist (chunk_t *chunk, uint32_t real_size)
         freehdr->last_deallocator = 0;
 
         hdr->root_chunk = chunk;
-        data = (void *) ((uint32_t)data + real_size);
+        data = (void *) ((uintptr_t)data + real_size);
     }
 }
 
@@ -568,7 +568,7 @@ static chunk_t *
 chunk_create_inline (uint32_t cfg_size, uint32_t cfg_max, uint32_t flags,
                      uint32_t alignment,
                      CHUNK_PRIVATE_MEMPOOL_ARG
-                     const char *name, uint32_t caller_pc)
+                     const char *name, void *caller_pc)
 {
     chunk_t *chunk;
     uint8_t *chunk_data;
@@ -582,7 +582,7 @@ chunk_create_inline (uint32_t cfg_size, uint32_t cfg_max, uint32_t flags,
     max_chunk_size = 0;
 
 #ifdef CPR_CHUNK_DEBUG
-    CHUNK_DEBUG("chunk_create(%u, %u, 0x%x, %u, %s, 0x%x)\n",
+    CHUNK_DEBUG("chunk_create(%u, %u, 0x%x, %u, %s, %p)\n",
                 cfg_size, cfg_max, flags, alignment, name, caller_pc);
 #endif
 
@@ -832,7 +832,7 @@ chunk_create (uint32_t cfg_size,
               const char *name)
 {
 
-    uint32_t caller_pc = (uint32_t) CHUNK_CALLER_PC;
+    void *caller_pc = CHUNK_CALLER_PC;
 
     if ((flags & CHUNK_FLAGS_DYNAMIC) &&
         (cfg_size > CHUNK_MEMBLOCK_MAXSIZE)) {
@@ -876,7 +876,7 @@ chunk_create_caller (uint32_t cfg_size,
                      uint32_t alignment,
                      CHUNK_PRIVATE_MEMPOOL_ARG
                      const char *name,
-                     uint32_t caller_pc)
+                     void *caller_pc)
 {
     if ((flags & CHUNK_FLAGS_DYNAMIC) &&
         (cfg_size > CHUNK_MEMBLOCK_MAXSIZE)) {
@@ -1103,7 +1103,7 @@ chunk_turn_not_empty (chunk_t *head_chunk, chunk_t *chunk)
  * @return TRUE or FALSE
  */
 boolean
-chunk_destroy_internal (chunk_t *chunk, uint32_t caller_pc, boolean force)
+chunk_destroy_internal (chunk_t *chunk, void *caller_pc, boolean force)
 {
     chunk_t *head_chunk = NULL;
 
@@ -1167,7 +1167,7 @@ chunk_destroy_internal (chunk_t *chunk, uint32_t caller_pc, boolean force)
     }
 
     CHUNK_DEBUG("Free chunk 0x%x, ", chunk);
-    CHUNK_DEBUG("caller_pc 0x%x\n", caller_pc);
+    CHUNK_DEBUG("caller_pc %p\n", caller_pc);
     FREE(chunk);
 
     return TRUE;
@@ -1183,7 +1183,7 @@ chunk_destroy_internal (chunk_t *chunk, uint32_t caller_pc, boolean force)
 boolean
 chunk_destroy (chunk_t *chunk)
 {
-    uint32_t caller_pc = (uint32_t) CHUNK_CALLER_PC;
+    void *caller_pc = CHUNK_CALLER_PC;
 
     if (chunk && chunk_is_resident(chunk) && !chunk_is_sibling(chunk) &&
         chunk->total_inuse == 0) {
@@ -1215,7 +1215,7 @@ chunk_destroy (chunk_t *chunk)
 boolean
 chunk_destroy_forced (chunk_t *chunk)
 {
-    uint32_t caller_pc = (uint32_t) CHUNK_CALLER_PC;
+    void *caller_pc = CHUNK_CALLER_PC;
 
     if (!chunk) {
         return FALSE;
@@ -1299,7 +1299,7 @@ chunk_prepare_data (void *data, chunk_t *chunk, chunk_t *head_chunk)
  *       crashdump will occur.
  */
 static void *
-chunk_malloc_inline (chunk_t *chunk, uint32_t caller_pc)
+chunk_malloc_inline (chunk_t *chunk, void *caller_pc)
 {
     int index;
     void *data;
@@ -1381,7 +1381,7 @@ chunk_malloc_inline (chunk_t *chunk, uint32_t caller_pc)
                 chunk_prepare_data(data, chunk, head_chunk);
 
                 CHUNK_DEBUG("Allocate chunk node: data = 0x%x\n", data);
-                CHUNK_DEBUG("Allocate chunk node: pc = 0x%x\n", caller_pc);
+                CHUNK_DEBUG("Allocate chunk node: pc = %p\n", caller_pc);
                 return data;
             }
 
@@ -1464,7 +1464,7 @@ chunk_malloc_inline (chunk_t *chunk, uint32_t caller_pc)
             chunk_prepare_data(data, new_chunk, head_chunk);
 
             CHUNK_DEBUG("Allocate chunk node: data = 0x%x\n", data);
-            CHUNK_DEBUG("Allocate chunk node: pc = 0x%x\n", caller_pc);
+            CHUNK_DEBUG("Allocate chunk node: pc = %p\n", caller_pc);
             chunk_siblings_created++;
             return data;
         }
@@ -1487,7 +1487,7 @@ chunk_malloc_inline (chunk_t *chunk, uint32_t caller_pc)
 void *
 chunk_malloc (chunk_t *chunk)
 {
-    uint32_t caller_pc = (uint32_t) CHUNK_CALLER_PC;
+    void *caller_pc = CHUNK_CALLER_PC;
 
     return chunk_malloc_inline(chunk, caller_pc);
 }
@@ -1503,7 +1503,7 @@ chunk_malloc (chunk_t *chunk)
  * @see cpr_malloc_inline
  */
 void *
-chunk_malloc_caller (chunk_t *chunk, uint32_t caller_pc)
+chunk_malloc_caller (chunk_t *chunk, void *caller_pc)
 {
     return chunk_malloc_inline(chunk, caller_pc);
 }
@@ -1557,7 +1557,7 @@ poison_chunk (chunk_t *chunk, void *data, uint32_t size)
     uint32_t i;
     uint32_t *data2;
 
-    data2 = (uint32_t *)((uint32_t)data + sizeof(free_chunk_t));
+    data2 = (uint32_t *)((uintptr_t)data + sizeof(free_chunk_t));
     size -= sizeof(free_chunk_t);
     if (size > MAX_CHUNK_POISON) {
         size = MAX_CHUNK_POISON;
@@ -1588,7 +1588,7 @@ poison_chunk (chunk_t *chunk, void *data, uint32_t size)
  */
 static boolean
 chunk_free_body (chunk_t *chunk, chunk_t *head_chunk, void *data,
-                 uint32_t caller_pc)
+                 void *caller_pc)
 {
     cpr_assert_debug(chunk != NULL);
     cpr_assert_debug(head_chunk != NULL);
@@ -1661,7 +1661,7 @@ chunk_free_body (chunk_t *chunk, chunk_t *head_chunk, void *data,
  *       pointer is bogus which results in chunk remaining NULL
  */
 static boolean
-chunk_free_inline (chunk_t *chunk, void *data, uint32_t caller_pc)
+chunk_free_inline (chunk_t *chunk, void *data, void *caller_pc)
 {
     chunk_t *head_chunk;
     chunk_header_t *hdr;
@@ -1731,7 +1731,7 @@ chunk_free_inline (chunk_t *chunk, void *data, uint32_t caller_pc)
 boolean
 chunk_free (chunk_t *chunk, void *data)
 {
-    uint32_t caller_pc = (uint32_t) CHUNK_CALLER_PC;
+    void *caller_pc = CHUNK_CALLER_PC;
 
     return chunk_free_inline(chunk, data, caller_pc);
 }
@@ -1748,7 +1748,7 @@ chunk_free (chunk_t *chunk, void *data)
  * @note Calls chunk_free_inline to do the work
  */
 boolean
-chunk_free_caller (chunk_t *chunk, void *data, uint32_t caller_pc)
+chunk_free_caller (chunk_t *chunk, void *data, void *caller_pc)
 {
     return chunk_free_inline(chunk, data, caller_pc);
 }

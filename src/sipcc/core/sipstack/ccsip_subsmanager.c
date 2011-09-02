@@ -4957,7 +4957,7 @@ sipSPISendSubNotify (ccsip_common_cb_t *cbp, boolean authen)
     }
     // The call-id used is the same as in the SCB
     if (cbp->sipCallID[0] == 0) {
-        snprintf(tcbp->hb.sipCallID, MAX_SIP_URL_LENGTH, "%.8x-%.8x@%s",
+        snprintf(tcbp->hb.sipCallID, sizeof(tcbp->hb.sipCallID), "%.8x-%.8x@%s", // was MAX_SIP_URL_LENGTH
                  (unsigned int) cpr_rand(),
                  (unsigned int) cpr_rand(),
                  src_addr_str);

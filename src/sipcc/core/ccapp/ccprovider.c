@@ -347,8 +347,9 @@ void CCAppInit()
     (void) cprAdjustRelativeThreadPriority(CCPROVIDER_THREAD_RELATIVE_PRIORITY);
 
   debug_bind_keyword("cclog", &g_CCLogDebug);
-  srvcState.cause = gCCApp.cause;
-  srvcState.mode = gCCApp.mode;
+  srvcState.cause = gCCApp.cause;  // XXX set but not used
+  srvcState.mode = gCCApp.mode;  // XXX set but not used
+  (void) srvcState;
 
   //Add listeners
   //CCProvider lister

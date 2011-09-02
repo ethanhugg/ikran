@@ -189,10 +189,10 @@ extern chunk_t *chunk_create(uint32_t cfg_size, uint32_t cfg_max,
 extern boolean chunk_destroy(chunk_t *chunk);
 extern boolean chunk_destroy_forced(chunk_t *chunk);
 extern void *chunk_malloc(chunk_t *chunk);
-extern void *chunk_malloc_caller(chunk_t *chunk, uint32_t caller_pc);
+extern void *chunk_malloc_caller(chunk_t *chunk, void *caller_pc);
 extern boolean chunk_free(chunk_t *chunk, void *data);
 extern boolean chunk_free_caller(chunk_t *chunk, void *data,
-                                 uint32_t caller_pc);
+                                 void *caller_pc);
 extern boolean chunk_is_destroyable(chunk_t *chunk);
 extern boolean chunk_did_malloc_fail(chunk_t *chunk);
 extern uint32_t get_chunk_size(void *data);

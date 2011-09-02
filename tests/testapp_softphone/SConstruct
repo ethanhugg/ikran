@@ -184,7 +184,16 @@ elif sys.platform=='linux2':
   libpath += [
     '../../third_party/chromium_base',
     '../../third_party/lib',
-    '/usr/lib',
+  ]
+  if x64 == 'yes':
+    libpath += [
+      '/usr/lib64'
+    ]
+  else:
+    libpath += [
+      '/usr/lib'
+    ]
+  libpath += [
      webrtcpath + '/out/Debug/obj.target/src/video_engine/main/source',
      webrtcpath + '/out/Debug/obj.target/src/voice_engine/main/source',
      webrtcpath + '/out/Debug/obj.target/src/modules/video_render/main/source',

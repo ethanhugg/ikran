@@ -664,7 +664,7 @@ cpr_realloc (void *mem, size_t size)
     cpr_mem = (cpr_mem_t *)((uint8_t *)mem - SIZE_OF_MEMORY_HEADER);
 
     /* Check if memory has already been freed */
-    if ((uint32_t)(cpr_mem->pc) == CPR_POISON) {
+    if ((uint32_t)((uintptr_t) cpr_mem->pc) == CPR_POISON) {
         CPR_ERROR("ERROR: attempt to realloc free memory, 0x%x\n", mem);
         return NULL;
     }
@@ -752,7 +752,7 @@ cpr_free (void *mem)
     cpr_mem = (cpr_mem_t *)((uint8_t *)mem - SIZE_OF_MEMORY_HEADER);
 
     /* Check if memory has already been freed */
-    if ((uint32_t)(cpr_mem->pc) == CPR_POISON) {
+    if ((uint32_t)((uintptr_t) cpr_mem->pc) == CPR_POISON) {
         CPR_ERROR("ERROR: attempt to double free memory, 0x%x\n", mem);
         return;
     }
@@ -1111,7 +1111,7 @@ cpr_check_redzone (cpr_mem_t *cpr_mem, size_t size)
                offsetof(cpr_mem_t, mem) + size - REDZONE_RECORD_SIZE/2,
                REDZONE_RECORD_SIZE);
 
-        CPR_ERROR("Red-zone failure: caller_pc = %x, size = %d, rz = %x\n",
+        CPR_ERROR("Red-zone failure: caller_pc = %p, size = %d, rz = %x\n",
                   cpr_mem->pc, size, redzone);
         memory_stats.redzone_violations++;
     }
@@ -1158,6 +1158,8 @@ cpr_poison_memory (cpr_mem_t *cpr_mem, size_t size)
         /* Poison memory header */
         WRITE_4BYTES_MEM_ALIGNED(&cpr_mem->u.node, 0);
         WRITE_4BYTES_MEM_ALIGNED(&cpr_mem->pc, CPR_POISON);
+        if (sizeof(cpr_mem->pc) >= 8)
+            WRITE_4BYTES_MEM_ALIGNED(((uintptr_t)&cpr_mem->pc) + 4, CPR_POISON);
 
         /* Determine start of memory */
         p = (uint32_t *) GET_USER_MEM_PTR(cpr_mem);
