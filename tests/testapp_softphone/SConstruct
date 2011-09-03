@@ -243,6 +243,7 @@ elif sys.platform=='linux2':
     'xml2', 
     'asound',
     'Xext',
+    'X11',
     'glib-2.0',
     'chromium',
     'libvideo_engine_core.a',
