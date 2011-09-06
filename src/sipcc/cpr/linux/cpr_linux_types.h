@@ -186,7 +186,7 @@ typedef uint8_t boolean;
  *
  * Macro to generate offset from a given field in a structure
  */
-#define FIELDOFFSET(struct_name, field_name) (uint32_t)(&(((struct_name *)0)->field_name))
+#define FIELDOFFSET(struct_name, field_name) (size_t)(&(((struct_name *)0)->field_name))
 
 
 #endif

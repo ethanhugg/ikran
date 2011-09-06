@@ -13,20 +13,6 @@ include_dirs = Split("""
             base/synchronization
             """)
 
-if sys.platform =='win32':
-	include_dirs += ['']
-elif sys.platform=='linux2':  
-	include_dirs += ['/usr/include/glib-2.0', '/usr/lib/glib-2.0/include']
-
-if sys.platform =='darwin':
-	include_dirs += ['']
-else:
-	include_dirs += ['']
-
-
-
-
-
 src_files = Split("""
 		base/ref_counted.cc
 		base/synchronization/lock.cc
@@ -142,6 +128,9 @@ elif sys.platform =='linux2':
 
 
 env = build_env.Clone(CPPPATH=include_dirs)
+
+if sys.platform =='linux2':
+        env.ParseConfig('pkg-config --cflags --libs glib-2.0')
 
 env.Library('chromium', src_files, LIBS=[], LIBPATH=[])
             

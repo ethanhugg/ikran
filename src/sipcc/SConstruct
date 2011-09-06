@@ -221,7 +221,10 @@ elif targetPlatform == 'linux2':
 
   CPP_FLAGS += [
     '-Werror',
-    '-Wall'
+    '-Wall',
+    '-Wno-enum-compare',
+    '-Wno-unused-but-set-variable',
+    '-fPIC'
   ] 
   if x64 == 'yes':
     CPP_FLAGS += [

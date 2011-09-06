@@ -829,6 +829,7 @@ void config_process_ccm_properties  (xmlNode *ccm_node, xmlDocPtr doc)
         compare_or_set_string_value(CFGID_CCM1_ADDRESS+0, ccm_name[0], (const unsigned char *) "ccm1_addr");
         compare_or_set_boolean_value(CFGID_CCM1_IS_VALID + 0, 1, (const unsigned char *)"ccm1_isvalid");
     }
+    (void) valid_ccm_found; // XXX set but not used
 }
 
 void process_ccm_config(xmlNode *ccm_node, xmlDocPtr doc,
@@ -1512,6 +1513,9 @@ void config_setup_elements (const char *sipUser, const char *sipPassword, const 
 
     CONFIG_DEBUG(CFG_F_PREFIX "%s \n", "config_parser_element", "externalNumberMask");
     compare_or_set_string_value(CFGID_CCM_EXTERNAL_NUMBER_MASK, gExternalNumberMask, (const unsigned char *) "externalNumberMask");
+
+    (void) isSecure; // XXX set but not used
+    (void) isValid; // XXX set but not used
 }
 
 /**

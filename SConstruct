@@ -151,6 +151,7 @@ elif sys.platform=='linux2':
     '-Wall',
     '-fexceptions',
     '-fno-common',
+    '-fPIC',
   ]
   if x64 == 'yes':
     build_env["CPPFLAGS"] += [
