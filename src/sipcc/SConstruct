@@ -221,9 +221,28 @@ elif targetPlatform == 'linux2':
 
   CPP_FLAGS += [
     '-Werror',
-    '-Wall',
-    '-Wno-enum-compare',
-    '-Wno-unused-but-set-variable',
+    '-Waddress',   
+    '-Wchar-subscripts',  
+    '-Wimplicit-int', 
+    '-Wimplicit-function-declaration', 
+    '-Wcomment',  
+    '-Wformat',   
+    '-Wmissing-braces',
+    '-Wnonnull',  
+    '-Wparentheses',  
+    '-Wpointer-sign',  
+    '-Wreturn-type',  
+    '-Wsequence-point',  
+    '-Wstrict-aliasing',  
+    '-Wstrict-overflow=1',  
+    '-Wswitch',  
+    '-Wtrigraphs',  
+    '-Wuninitialized',  
+    '-Wunknown-pragmas',  
+    '-Wunused-function',  
+    '-Wunused-label',     
+    '-Wunused-value',     
+    '-Wvolatile-register-var', 
     '-fPIC'
   ] 
   if x64 == 'yes':
