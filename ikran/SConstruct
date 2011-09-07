@@ -25,17 +25,23 @@ include_dirs = [
   mozsdkpath + '/include/content',
   mozsdkpath + '/include/dom',
   mozsdkpath + '/include/nspr',
-  mozsdkpath + '/sdk/include'
+  mozsdkpath + '/sdk/include',
+  webrtcpath + '/src',
+  webrtcpath + '/src/video_engine/main/interface',
+  webrtcpath + '/src/voice_engine/main/interface'
 ]
 
 ## Add test src files here
 #
 src_files = [
   'Logger.cpp',
+  'video_renderer.cpp',
+  'Convert.cpp',
   'sipcc_controller.cpp',
   'CallControl.cpp',
   'CallControlModule.cpp'
 ]
+
 libpath = ['../out/lib']
 libs = []
 

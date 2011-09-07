@@ -37,71 +37,46 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef WebrtcMEDIAPROVIDER_H_
-#define WebrtcMEDIAPROVIDER_H_
-
-#ifndef _USE_CPVE
-
-#include <CSFMediaProvider.h>
-#include "voe_base.h"
+#include "Logger.h"
 #include <string>
+#include <memory>
+#include <iostream>
+#include <fstream>
+
+bool enableLog = true;
+Logger* Logger::_instance = 0;
+string Logger::filename = "/tmp/addon-log.txt";
 
 
-namespace CSF
+Logger::Logger(void)
 {
-	enum	// Event ids
+	ofstream logfile;
+	logfile.open(filename.c_str(), ios::app);
+	logfile << " ==== New Session Started  === " << endl;
+	logfile.close();
+}
+
+
+Logger* Logger::Instance()
+{
+	if(_instance == 0)
 	{
-		eVideoModeChanged,
-		eKeyFrameRequest,
-		eMediaLost,
-		eMediaRestored
-	};
+		_instance = new Logger();
+	}
+	return _instance;
+}
 
-// Master key is 128 bits, master salt 112 bits.
-#define WEBRTC_MASTER_KEY_LENGTH      16
-#define WEBRTC_MASTER_SALT_LENGTH     14
-#define WEBRTC_KEY_LENGTH             (WEBRTC_MASTER_KEY_LENGTH + WEBRTC_MASTER_SALT_LENGTH)
-#define WEBRTC_CIPHER_LENGTH          WEBRTC_KEY_LENGTH
-
-	class WebrtcAudioProvider;
-	class WebrtcVideoProvider;
-
-	class WebrtcMediaProvider : public MediaProvider
+void Logger::logIt(string message)
+{
+	if(true == enableLog)
 	{
-		friend class MediaProvider;
-        friend class WebrtcVideoProvider;
-        friend class WebrtcAudioProvider;
+		
+		ofstream logfile;
+		logfile.open(filename.c_str(), ios::app);
+		logfile <<  message.c_str() << endl;
+		logfile.close();
+	}
 
-	protected:
-		WebrtcMediaProvider( );
-		~WebrtcMediaProvider();
+}
 
-		int init();
-		virtual void shutdown();
 
-		AudioControl* getAudioControl();
-		VideoControl* getVideoControl();
-		AudioTermination* getAudioTermination();
-		VideoTermination* getVideoTermination();
-		void addMediaProviderObserver( MediaProviderObserver* observer );
-
-        bool getKey(
-            const unsigned char* masterKey, 
-            int masterKeyLen, 
-            const unsigned char* masterSalt, 
-            int masterSaltLen,
-            unsigned char* key,
-            unsigned int keyLen
-            );
-
-	private:
-		WebrtcAudioProvider* pAudio;
-		WebrtcVideoProvider* pVideo;
-
-        webrtc::VoiceEngine * getWebrtcVoiceEngine ();
-	};
-
-} // namespace
-
-#endif
-#endif /* WebrtcMEDIAPROVIDER_H_ */

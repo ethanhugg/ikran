@@ -22,7 +22,17 @@ include_dirs = [
 
 ## Add test src files here
 #
-src_files = Glob('*.cpp')
+if sys.platform == 'darwin':
+	src_files = [
+		'Logger.cpp',
+		'sipcc_controller.cpp',
+		'test_mac_cocoa.cc',
+		'test_main.cc'
+		]
+else:
+   src_files = Glob('*.cpp')
+
+
 libpath = ['../../out/lib']
 libs = []
 
@@ -112,6 +122,9 @@ if sys.platform =='win32':
 elif sys.platform == 'darwin':
   env["CPPFLAGS"] += [
     '-W',
+    '-Wno-error',
+	'-x',
+	'objective-c++'
   ]
   libpath += [
     '../..',
@@ -178,7 +191,19 @@ elif sys.platform == 'darwin':
     '-framework',
     'CoreServices',
     '-framework',
-    'IOKit'
+    'IOKit',
+    '-framework',
+    'CoreVideo',
+    '-framework',
+    'Foundation',
+    '-framework',
+    'OpenGL',
+    '-framework',
+    'QuartzCore',
+    '-framework',
+    'QTKit',
+    '-framework',
+    'Cocoa'
   ]
 elif sys.platform=='linux2':
   libpath += [

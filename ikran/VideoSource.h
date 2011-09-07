@@ -11,17 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * The Original Code is the Cisco Systems SIP Stack.
+ * The Original Code is Rainbow.
  *
- * The Initial Developer of the Original Code is
- * Cisco Systems (CSCO).
- * Portions created by the Initial Developer are Copyright (C) 2002
+ * The Initial Developer of the Original Code is Mozilla Labs.
+ * Portions created by the Initial Developer are Copyright (C) 2010
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- *  Enda Mannion <emannion@cisco.com>
- *  Suhas Nandakumar <snandaku@cisco.com>
- *  Ethan Hugg <ehugg@cisco.com>
+ *   Anant Narayanan <anant@kix.in>
+ *   Brian Coleman <brianfcoleman@gmail.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -37,35 +35,43 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef CSFVIDEOMEDIATERMINATION_H_
-#define CSFVIDEOMEDIATERMINATION_H_
+#ifndef _VIDEOSOURCE_H
+#define _VIDEOSOURCE_H
+#include "Convert.h"
 
-#include <CSFMediaTermination.h>
-#include <CSFVideoControl.h>
+#include <prlog.h>
+#include <nsAutoPtr.h>
+#include <nsThreadUtils.h>
 
-typedef enum
-{
-	VideoCodecMask_H264 = 1,
-	VideoCodecMask_H263 = 2
+#include <nsIOutputStream.h>
+#include <nsIDOMCanvasRenderingContext2D.h>
 
-} VideoCodecMask;
+/* Rendering on Canvas happens on the main thread as this runnable.
+ * This is not very performant, we should move to rendering inside a <video>
+ * so that Gecko can use hardware acceleration.
+ */
+class CanvasRenderer : public nsRunnable {
+public:
+    CanvasRenderer(
+        nsIDOMCanvasRenderingContext2D *pCtx, PRUint32 width, PRUint32 height,
+        nsAutoArrayPtr<PRUint8> &pData, PRUint32 pDataSize)
+        :   m_pCtx(pCtx), m_width(width), m_height(height),
+            m_pData(pData), m_pDataSize(pDataSize) {}
 
-#if __cplusplus
+    NS_IMETHOD Run() {
+        return m_pCtx->PutImageData_explicit(
+            0, 0, m_width, m_height, m_pData.get(), m_pDataSize,
+            PR_TRUE, 0, 0, m_width, m_height
+        );
+    }
 
-namespace CSF
-{
-	class VideoTermination : public MediaTermination
-	{
-	public:
-		virtual void setRemoteWindow( int streamId, VideoWindowHandle window) = 0;
-		virtual int setExternalRenderer( int streamId, VideoFormat videoFormat, ExternalRendererHandle render) = 0;
-		virtual void sendIFrame	( int streamId ) = 0;
-		virtual bool  mute		( int streamId, bool mute ) = 0;
-		virtual void setAudioStreamId( int streamId) = 0;
-	};
+private:
+    nsIDOMCanvasRenderingContext2D *m_pCtx;
+    PRUint32 m_width;
+    PRUint32 m_height;
+    nsAutoArrayPtr<PRUint8> m_pData;
+    PRUint32 m_pDataSize;
 
-} // namespace
+};
 
-#endif // __cplusplus
-
-#endif /* CSFVIDEOMEDIATERMINATION_H_ */
+#endif
