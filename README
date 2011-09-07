@@ -149,7 +149,7 @@ a change in the session state such as "no-registrar","registering",
 "registered", "incoming-call" & "registration-failed".
 
 On successful registration, one can place call with the below API
-<session-control>.placeCall(dial-number, mediaObserver);
+<session-control>.placeCall(dial-number, canvas, mediaObserver);
 where dial-number is number to dial and mediaObserver reports 
 significant media state changes suhc as "call-connected",
 "call-terminated" as of today.
@@ -158,8 +158,7 @@ JS APIs unRegisterUser() and hangupCall() allows de-registration
 & end-call functionalities.
 
 Few Points to Note
-1. Only Audio is supported on OSX
-2. One user is suported as registered by instance
+1. One user is suported as registered by instance
  
 Please see content/ikran.html for sample usage of the API.
 

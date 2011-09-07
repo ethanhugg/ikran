@@ -68,6 +68,8 @@ namespace CSF
             bool audioMuteState, bool videoMuteState, int volume): remoteWindow(remoteWindow),
             audioMuteState(audioMuteState), videoMuteState(videoMuteState), volume(volume) {}
         VideoWindowHandle remoteWindow; 
+		ExternalRendererHandle extRenderer;
+		VideoFormat videoFormat;	
         base::Lock streamMapMutex;
         StreamMapType streamMap;
         bool audioMuteState;
@@ -96,6 +98,7 @@ namespace CSF
         };
 
         virtual void setRemoteWindow (VideoWindowHandle window);
+        virtual int setExternalRenderer(VideoFormat vFormat, ExternalRendererHandle renderer);
 		virtual void sendIFrame();
 
         virtual CC_CallInfoPtr getCallInfo ();

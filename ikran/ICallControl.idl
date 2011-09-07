@@ -40,6 +40,8 @@
 #include "nsILocalFile.idl"
 #include "nsIOutputStream.idl"
 #include "nsIBaseWindow.idl"
+#include "nsIPropertyBag2.idl"
+#include "nsIDOMCanvasRenderingContext2D.idl"
 
 %{C++
 #include "nsStringGlue.h"
@@ -71,7 +73,9 @@ interface ICallControl : nsISupports
 						in nsISessionStateObserver sess_obs);
 	void unregisterUser();
 	void placeCall(in string dn,
+					in nsIDOMCanvasRenderingContext2D ctx,
 					in nsIMediaStateObserver media_obs);
 	void hangupCall();
-	void answerCall(in nsIMediaStateObserver media_obs);
+	void answerCall(in nsIDOMCanvasRenderingContext2D ctx,
+					in nsIMediaStateObserver media_obs);
 };

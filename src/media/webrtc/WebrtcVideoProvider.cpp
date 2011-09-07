@@ -43,27 +43,17 @@
 #include "CC_Common.h"
 #ifdef LINUX
 #include "X11/Xlib.h"
+#elif defined __APPLE__
+#include <Carbon/Carbon.h>
 #endif
 #include "VcmSIPCCBinding.h"
 #include "WebrtcMediaProvider.h"
 #include "WebrtcAudioProvider.h"
 #include "WebrtcVideoProvider.h"
 #include "WebrtcLogging.h"
-#include "GIPSVEEncryption.h"
+#include "vie_encryption.h"
 
 #include "base/synchronization/lock.h"
-
-#ifdef WIN32
-typedef GipsVideoEngineWindows    GipsVideoEnginePlatform;
-#elif LINUX
-void DeleteGipsVideoEngine(GipsVideoEngine *videoEngine) {}
-typedef GipsVideoEngineLinux GipsVideoEnginePlatform;
-#else
-
-typedef GipsVideoEngineMacCarbon   GipsVideoEnginePlatform;
-// temporary
-void DeleteGipsVideoEngine(GipsVideoEngine *videoEngine) {}
-#endif
 
 using namespace std;
 #include "string.h"
@@ -77,105 +67,229 @@ static    clock_t currentTime, lastRequestTime;
 #endif
 
 namespace CSF {
+//H264 may not be possible now ..
+static webrtc::VideoCodec videoCodec;
 
-static GIPSVideo_CodecInst H264template;
-
-GipsVideoProvider::GipsVideoProvider( GipsMediaProvider* provider )
-: provider(provider), 
-  gipsEncryption(NULL),
+WebrtcVideoProvider::WebrtcVideoProvider( WebrtcMediaProvider* provider )
+: provider(provider),
+  vieVideo(NULL),
+  vieBase(NULL),
+  vieCapture(NULL),
+  vieRender(NULL),
+  vieNetwork(NULL),
+  vieEncryption(NULL),
+  vieRtpRtcp(NULL),
   videoMode(true), 
   startPort(1024), 
   endPort(65535), 
+  localRenderId(0),
+  webCaptureId(0),
+  vp8Idx(0),
   previewWindow(NULL), 
   DSCPValue(0)
 {
-    gipsVideo = &GetGipsVideoEngine();
-    gipsVideo->GIPSVideo_Init( provider->getGipsVoiceEngine() );
-    //gipsVideo->GIPSVideo_SetTraceCallback( this );
-#ifdef ENABLE_GIPS_VIDEO_TRACE
-    gipsVideo->GIPSVideo_SetTraceFileName( "GIPSvideotrace.out" );
-#endif
+	int error = 0;
+    vieVideo = webrtc::VideoEngine::Create();
+	if(vieVideo == NULL)
+	{
+		LOG_WEBRTC_ERROR( logTag, "WebrtcVideoProvider(): VieVideoEngine::Create() failed");
+		return;
+	}
+//#ifdef ENABLE_WEBRTC_VIDEO_TRACE
+	vieVideo->SetTraceFilter(webrtc::kTraceAll);
+    vieVideo->SetTraceFile( "Vievideotrace.out" );
+//#endif
+	
+	vieBase = webrtc::ViEBase::GetInterface(vieVideo);
+	if(vieBase == NULL)
+	{
+		LOG_WEBRTC_ERROR( logTag, "WebrtcVideoProvider(): VieBase::GetInterface() failed");
+		return;
+	}
+	
+    if(vieBase->Init() == -1)
+	{
+		LOG_WEBRTC_ERROR( logTag, "WebrtcVideoProvider(): VieBase::Init() failed");
+		return;
+	}
+	//set the voice engine
+	error = vieBase->SetVoiceEngine(provider->getWebrtcVoiceEngine());
+	if(error == -1)
+	{
+		LOG_WEBRTC_ERROR( logTag, "WebrtcVideoProvider(): Setting Voice Engine Failed ");
+		return;
+
+	}
+	
+	vieCodec = webrtc::ViECodec::GetInterface( vieVideo );
+	if(vieCodec == NULL) 
+	{
+		LOG_WEBRTC_ERROR( logTag, "WebrtcVideoProvider(): VieCodec::GetInterface() failed");
+		return;
+	}
+		
+	vieRender = webrtc::ViERender::GetInterface(vieVideo);
+	if(vieRender == NULL)
+	{	
+		LOG_WEBRTC_ERROR( logTag, "WebrtcVideoProvider(): VieRender::GetInterface() failed");
+		return;
+	}
+	
+	vieNetwork = webrtc::ViENetwork::GetInterface(vieVideo);
+	if(vieNetwork == NULL)
+	{
+		LOG_WEBRTC_ERROR( logTag, "WebrtcVideoProvider(): VieNetwork::GetInterface() failed");
+		return;
+	}
+
+	vieCapture = webrtc::ViECapture::GetInterface(vieVideo);
+	if(vieCapture == NULL)
+	{
+		LOG_WEBRTC_ERROR( logTag, "WebrtcVideoProvider(): VieCapture::GetInterface() failed");
+		return;
+	}
+
+	 vieRtpRtcp = webrtc::ViERTP_RTCP::GetInterface(vieVideo);
 
 #ifdef WIN32
     ((GipsVideoEngineWindows *)gipsVideo)->GIPSVideo_EnableDirectDraw( true );
 #endif
-
-    int nCodecs = gipsVideo->GIPSVideo_GetNofCodecs();
-    for ( int i = 0; i < nCodecs; i++ )
+	
+	
+	memset(&videoCodec, 0 , sizeof(webrtc::VideoCodec));
+    int nCodecs = vieCodec->NumberOfCodecs();
+	int codecIdx = 0;
+    for ( codecIdx = 0; codecIdx < nCodecs; codecIdx++ )
     {
-        gipsVideo->GIPSVideo_GetCodec( i, &H264template );
-        LOG_GIPS_DEBUG( logTag, "codec %d %s pltype %d level %d", i, H264template.plname, H264template.pltype, H264template.level );
-        if ( strcmp( H264template.plname, "H264" ) == 0 )
-        {
-            LOG_GIPS_DEBUG( logTag, "codec #%d is H.264", i );
-            break;
-        }
+        error = vieCodec->GetCodec( codecIdx, videoCodec);
+		if (error == -1)
+		{
+        	LOG_WEBRTC_ERROR( logTag, " VieCodec:GetCodec Filed Error: %d ", vieBase->LastError());
+			return;
+		}
+		if( strcmp(videoCodec.plName, "VP8") == 0 )
+		{
+			//defaulting to VP8 for now
+			vp8Idx = codecIdx;
+		}	
+        LOG_WEBRTC_INFO( logTag, "codec @ %d %s pltype %d ", codecIdx,  
+						           videoCodec.plName, videoCodec.plType );
+		LOG_WEBRTC_INFO( logTag, "startBitrate is %d", videoCodec.startBitrate );
+		LOG_WEBRTC_INFO( logTag, "maxBitrate is %d", videoCodec.maxBitrate );
+		LOG_WEBRTC_INFO( logTag, "minBitrate is %d", videoCodec.minBitrate );
+		LOG_WEBRTC_INFO( logTag, "maxFramerate is %d", videoCodec.maxFramerate );
+		LOG_WEBRTC_INFO( logTag, "width is %d", videoCodec.width );
+		LOG_WEBRTC_INFO( logTag, "height is %d", videoCodec.height );
+            //break;
     }
 #ifdef LINUX
     currentTime=lastRequestTime=clock();
 #endif
-    char name[64];
-    memset (name,0,64);
-    // for now just use first device, if any
-    if ( gipsVideo->GIPSVideo_GetCaptureDevice( 0, name, sizeof(name) ) == 0 )
+
+	const unsigned int kMaxDeviceNameLength = 128;
+	const unsigned int kMaxUniqueIdLength = 256;
+    char deviceName[kMaxDeviceNameLength];
+	char uniqueId[kMaxUniqueIdLength];
+    memset (deviceName,0,128);
+	memset(uniqueId,0,256);
+	int captureIdx = 0;
+	for(captureIdx = 0; 
+		captureIdx < vieCapture->NumberOfCaptureDevices();
+		captureIdx++)
+	{
+    	memset (deviceName,0,128);
+		memset(uniqueId,0,256);
+		error = vieCapture->GetCaptureDevice(captureIdx,deviceName,
+											kMaxDeviceNameLength, uniqueId,
+											kMaxUniqueIdLength);
+		if(error == -1)
+		{
+			LOG_WEBRTC_ERROR(logTag," VieCapture:GetCaptureDevice: Failed %d", 
+										 vieBase->LastError() );
+			return;
+		}	
+		LOG_WEBRTC_DEBUG(logTag,"  Capture Device Index %d, Name %s",
+									captureIdx, deviceName);
+	}
+	
+	webCaptureId = 0;
+   	memset (deviceName,0,128);
+	memset(uniqueId,0,256);
+
+    if ( vieCapture->GetCaptureDevice( 0, deviceName,kMaxDeviceNameLength, 
+										uniqueId, kMaxUniqueIdLength ) == 0 )
     {
-        LOG_GIPS_DEBUG( logTag, "Using capture device %s", name);
-        gipsVideo->GIPSVideo_SetCaptureDevice( name,  sizeof(name) );
-        GIPSCameraCapability cap;
-        for ( int j = 0; j<5; j++ )
+        LOG_WEBRTC_DEBUG( logTag, "Using capture device %s", deviceName);
+        error = vieCapture->AllocateCaptureDevice( uniqueId,
+										  kMaxUniqueIdLength, webCaptureId);
+		if(error == -1)
+		{
+			LOG_WEBRTC_DEBUG(logTag,"  VieCapture: Allocate Capture Device Failed");
+			return;
+		}
+		LOG_WEBRTC_DEBUG( logTag, "Capture Id to use is %d", webCaptureId);
+		webrtc::CaptureCapability cap;
+		int numCaps = vieCapture->NumberOfCapabilities(
+													   uniqueId,kMaxUniqueIdLength);
+		LOG_WEBRTC_DEBUG( logTag, "Number of Capabilities %d", numCaps);
+        for ( int j = 0; j<numCaps; j++ )
         {
-            if ( gipsVideo->GIPSVideo_GetCaptureCapabilities( j, &cap ) != 0 ) break;
-            LOG_GIPS_DEBUG( logTag, "type=%d width=%d height=%d maxFPS=%d", cap.type, cap.width, cap.height, cap.maxFPS );
+            if ( vieCapture->GetCaptureCapability(uniqueId,kMaxUniqueIdLength, j, cap ) != 0 ) break;
+            LOG_WEBRTC_DEBUG( logTag, "type=%d width=%d height=%d maxFPS=%d", cap.rawType, cap.width, cap.height, cap.maxFPS );
         }
     }
     else
     {
-        LOG_GIPS_WARN( logTag, "No camera found");
+        LOG_WEBRTC_WARN( logTag, "No camera found");
     }
+	
 
 }
 
-int GipsVideoProvider::init()
+int WebrtcVideoProvider::init()
 {
-    GIPSVoiceEngine* voiceEngine = provider->getGipsVoiceEngine();
+	webrtc::VoiceEngine* voiceEngine = provider->getWebrtcVoiceEngine();
     if(voiceEngine)
     {
-        gipsEncryption = GIPSVEEncryption::GetInterface(voiceEngine);
-        if (gipsEncryption == NULL)
+        vieEncryption = webrtc::ViEEncryption::GetInterface(vieVideo);
+        if (vieEncryption == NULL)
         {
-            LOG_GIPS_ERROR( logTag, "GipsVideoProvider(): GIPSVEEncryption::GetInterface failed");
+            LOG_WEBRTC_ERROR( logTag, "WebrtcVideoProvider(): VoEEncryption::GetInterface failed");
             return -1;
         }  
     }
     else
     {
-        LOG_GIPS_ERROR( logTag, "GipsVideoProvider(): No GIPS voice engine");
+        LOG_WEBRTC_ERROR( logTag, "WebrtcVideoProvider(): No VoE voice engine");
         return -1;
     }
 
     return 0;
 }
 
-GipsVideoProvider::~GipsVideoProvider()
+WebrtcVideoProvider::~WebrtcVideoProvider()
 {
-    if(gipsEncryption)
+    if(vieEncryption)
     {
-        gipsEncryption->Release();
-        gipsEncryption = NULL;
+        vieEncryption->Release();
+        vieEncryption = NULL;
     }
-
-    gipsVideo->GIPSVideo_Terminate();
-    DeleteGipsVideoEngine( gipsVideo );
+	vieCapture->StopCapture(webCaptureId);
+	vieCapture->ReleaseCaptureDevice(webCaptureId);
+	vieCapture->Release();
+	vieRender->Release();
+	vieBase->Release();
+	webrtc::VideoEngine::Delete(vieVideo);
 }
 
-void GipsVideoProvider::setVideoMode( bool enable )
+void WebrtcVideoProvider::setVideoMode( bool enable )
 {
     videoMode = enable;
 }
 
-void GipsVideoProvider::setRenderWindow( int streamId, GipsPlatformWindow window )
+void WebrtcVideoProvider::setRenderWindow( int streamId, WebrtcPlatformWindow window )
 {
-	LOG_GIPS_DEBUG( logTag, "setRenderWindow: streamId= %d, window=%p", streamId, window);
+	LOG_WEBRTC_DEBUG( logTag, "setRenderWindow: streamId= %d, window=%p", streamId, window);
 	base::AutoLock lock(streamMapMutex);
 	// we always want to erase the old one. If window is non-null, it will be replaced,
 	// otherwise passing in a null window value to this function leads to no mapping for this stream.
@@ -190,30 +304,27 @@ void GipsVideoProvider::setRenderWindow( int streamId, GipsPlatformWindow window
     }
     else
     {
-    	// for a null window we want to stop rendering. 
-    	gipsVideo->GIPSVideo_StopRender( getChannelForStreamId( streamId ) );
+    	// for a null window we want to stop rendering for a given channel
+    	vieRender->StopRender( getChannelForStreamId( streamId ) );
     }
+	LOG_WEBRTC_DEBUG( logTag, "setRenderWindow: Exiting successfully");
    
 }
 
-const GipsVideoProvider::RenderWindow* GipsVideoProvider::getRenderWindow( int streamId )
+const WebrtcVideoProvider::RenderWindow* WebrtcVideoProvider::getRenderWindow( int streamId )
 {
 	//base::AutoLock lock(streamMapMutex);
     std::map<int, RenderWindow>::const_iterator it = streamIdToWindow.find( streamId );
     return ( it != streamIdToWindow.end() ) ? &it->second : NULL;
 }
 
-void GipsVideoProvider::setPreviewWindow( void* window, int top, int left, int bottom, int right, RenderScaling style )
+void WebrtcVideoProvider::setPreviewWindow( void* window, int top, int left, int bottom, int right, RenderScaling style )
 {
 	base::AutoLock lock(m_lock);
 	if(this->previewWindow != NULL)
 	{
-#ifdef WIN32
-		//setRenderWindow( 0, (GipsPlatformWindow)window, top, left, bottom, right, style );
-		((GipsVideoEnginePlatform *)gipsVideo)->GIPSVideo_AddLocalRenderer( NULL, 0, 0.0f, 0.0f, 1.0f, 1.0f );
-#elif LINUX
-		((GipsVideoEnginePlatform *)gipsVideo)->GIPSVideo_AddLocalRenderer( NULL, 0.0f, 0.0f, 1.0f, 1.0f );
-#endif
+		//this is the local renderer
+		vieRender->AddRenderer(webCaptureId,NULL,0,0.0f, 0.0f, 1.0f, 1.0f);
 		delete this->previewWindow;
 		this->previewWindow = NULL;
 	}
@@ -223,82 +334,149 @@ void GipsVideoProvider::setPreviewWindow( void* window, int top, int left, int b
 		// Set new window.
 #ifdef WIN32
 		//setRenderWindow( 0, (GipsPlatformWindow)window, top, left, bottom, right, style );
-		((GipsVideoEnginePlatform *)gipsVideo)->GIPSVideo_AddLocalRenderer( (HWND)window, 0, 0.0f, 0.0f, 1.0f, 1.0f );
+		vieRender->AddRenderer(localRenderId, (HWND)window, 1, 0.0f, 0.0f, 1.0f, 1.0f );
 #elif LINUX
-		((GipsVideoEnginePlatform *)gipsVideo)->GIPSVideo_AddLocalRenderer( (Window)window, 0.0f, 0.0f, 1.0f, 1.0f );
+		vieRender->AddRenderer(webCaptureId, (Window*)window,1, 0.0f, 0.0f, 1.0f, 1.0f );
+#elif __APPLE__
+		LOG_WEBRTC_DEBUG(logTag, " Preview window: Adding Renderer ");
+		vieRender->AddRenderer(webCaptureId, window,0, 0.0f, 0.0f, 1.0f, 1.0f );
+		vieRender->StartRender(webCaptureId);	
 #endif
-
-		this->previewWindow = new RenderWindow( (GipsPlatformWindow)window);
+		this->previewWindow = new RenderWindow( (WebrtcPlatformWindow)window);
 	}
 }
 
-void GipsVideoProvider::setRemoteWindow( int streamId, VideoWindowHandle window)
+void WebrtcVideoProvider::setRemoteWindow( int streamId, VideoWindowHandle window)
 {
 	base::AutoLock lock(m_lock);
-    setRenderWindow( streamId, (GipsPlatformWindow)window);
+    setRenderWindow( streamId, (WebrtcPlatformWindow)window);
 }
 
-std::vector<std::string> GipsVideoProvider::getCaptureDevices()
+int WebrtcVideoProvider::setExternalRenderer(int streamId, VideoFormat videoFormat,
+												ExternalRendererHandle renderer)
 {
 	base::AutoLock lock(m_lock);
-    char name[128];
-    std::vector<std::string> deviceList;
+	int error = 0;
+	LOG_WEBRTC_DEBUG( logTag, "WebrtcVideoProvider:: SetExternalRenderer , streamId: %d", streamId);
+    int channel = getChannelForStreamId( streamId );
+	if(channel != -1)
+	{
+		
+		error = vieRender->AddRenderer(channel, (webrtc::RawVideoType)videoFormat, (webrtc::ExternalRenderer*) renderer); 
+		if(error == -1)
+		{
+			LOG_WEBRTC_DEBUG( logTag, "WebrtcVideoProvider:: SetExternalRenderer: Failed: Error %d ", vieBase->LastError() );
+		}
+		return error;
+	}	
+	return -1;	
+}
 
+std::vector<std::string> WebrtcVideoProvider::getCaptureDevices()
+{
+	base::AutoLock lock(m_lock);
+	const unsigned int kMaxDeviceNameLength = 128;
+	const unsigned int kMaxUniqueIdLength = 256;
+    char name[kMaxDeviceNameLength];
+	char uniqueId[kMaxUniqueIdLength];
+    std::vector<std::string> deviceList;
+	LOG_WEBRTC_DEBUG(logTag," WebrtcVideoProvider: getCaptureDevices() ");
     // '100' is an arbitrary maximum, to defend against an endless loop;
     // in practice, GetCaptureDevice() should return -1 well before that
     for ( int i = 0; i < 100; i++ )
-    {
-        if ( gipsVideo->GIPSVideo_GetCaptureDevice( i, name, sizeof(name) ) != 0 ) break;
+    {	
+        if ( vieCapture->GetCaptureDevice( 0, name,kMaxDeviceNameLength, uniqueId, kMaxUniqueIdLength ) != 0 ) break;
         deviceList.push_back( name );
     }
     return deviceList;
 }
 
-bool GipsVideoProvider::setCaptureDevice( const std::string& name )
+bool WebrtcVideoProvider::setCaptureDevice( const std::string& name )
 {
+	LOG_WEBRTC_DEBUG(logTag," WebrtcVideoProvider: setCaptureDevice(): %s",name.c_str());
+	
 	base::AutoLock lock(m_lock);
-    return ( gipsVideo->GIPSVideo_SetCaptureDevice( name.c_str(), (int) name.length() ) == 0 );
+	int error = 0;
+	const int kMaxDeviceNameLength = 128;
+	const int kMaxUniqueIdLength = 256;
+	char deviceName[kMaxDeviceNameLength];
+	char uniqueId[kMaxUniqueIdLength];
+	
+	
+	int captureIdx = 0;
+	for(captureIdx = 0;
+		captureIdx < vieCapture->NumberOfCaptureDevices();
+		captureIdx++)
+	{
+		memset (deviceName,0,128);
+		memset(uniqueId,0,256);
+		if (vieCapture->GetCaptureDevice( captureIdx, deviceName,kMaxDeviceNameLength, 
+										 uniqueId, kMaxUniqueIdLength ) == 0 )
+		{
+			if(strcmp(name.c_str(),deviceName) == 0)
+			{
+				webCaptureId = -1; //nullify
+				error = vieCapture->AllocateCaptureDevice( uniqueId,
+														  kMaxUniqueIdLength, webCaptureId);
+				if(error == -1)
+				{
+					LOG_WEBRTC_DEBUG(logTag,"  VieCapture: Allocate Capture Device Failed");
+					return false;
+				}
+				break;
+			}
+		}
+		else
+		{
+			LOG_WEBRTC_WARN( logTag, "No camera found");
+			return false;
+		}
+		
+	}
+	
+    return true;
+	
 }
 
-int GipsVideoProvider::getCodecList( CodecRequestType requestType )
+int WebrtcVideoProvider::getCodecList( CodecRequestType requestType )
 {
 	base::AutoLock lock(m_lock);
     return VideoCodecMask_H264;
 }
 
-GipsVideoStreamPtr GipsVideoProvider::getStreamByChannel( int channel )
+WebrtcVideoStreamPtr WebrtcVideoProvider::getStreamByChannel( int channel )
 {
 	//base::AutoLock lock(streamMapMutex);
-    for( std::map<int, GipsVideoStreamPtr>::const_iterator it = streamMap.begin(); it != streamMap.end(); it++ )
+    for( std::map<int, WebrtcVideoStreamPtr>::const_iterator it = streamMap.begin(); it != streamMap.end(); it++ )
     {
-        GipsVideoStreamPtr stream = it->second;
+        WebrtcVideoStreamPtr stream = it->second;
         if(stream->channelId == channel)
             return stream;
     }
-    return GipsVideoStreamPtr();
+    return WebrtcVideoStreamPtr();
 }
 
-int GipsVideoProvider::getChannelForStreamId( int streamId )
+int WebrtcVideoProvider::getChannelForStreamId( int streamId )
 {
-    for( std::map<int, GipsVideoStreamPtr>::const_iterator it = streamMap.begin(); it != streamMap.end(); it++ )
+    for( std::map<int, WebrtcVideoStreamPtr>::const_iterator it = streamMap.begin(); it != streamMap.end(); it++ )
     {
-    	GipsVideoStreamPtr stream = it->second;
+    	WebrtcVideoStreamPtr stream = it->second;
         if(stream->streamId == streamId)
             return stream->channelId;
     }
     return -1;
 }
 
-GipsVideoStreamPtr GipsVideoProvider::getStream( int streamId )
+WebrtcVideoStreamPtr WebrtcVideoProvider::getStream( int streamId )
 {
 	base::AutoLock lock(streamMapMutex);
-	std::map<int, GipsVideoStreamPtr>::const_iterator it = streamMap.find( streamId );
-	return ( it != streamMap.end() ) ? it->second : GipsVideoStreamPtr();
+	std::map<int, WebrtcVideoStreamPtr>::const_iterator it = streamMap.find( streamId );
+	return ( it != streamMap.end() ) ? it->second : WebrtcVideoStreamPtr();
 }
 
-void GipsVideoProvider::setMuteForStreamId( int streamId, bool muteVideo )
+void WebrtcVideoProvider::setMuteForStreamId( int streamId, bool muteVideo )
 {
-	GipsVideoStreamPtr stream = getStream(streamId);
+	WebrtcVideoStreamPtr stream = getStream(streamId);
 	if(muteVideo == true && stream != NULL)
 	{
 		stream->isMuted = true;
@@ -309,9 +487,9 @@ void GipsVideoProvider::setMuteForStreamId( int streamId, bool muteVideo )
 	}
 }
 
-void GipsVideoProvider::setTxInitiatedForStreamId( int streamId, bool txInitiatedValue )
+void WebrtcVideoProvider::setTxInitiatedForStreamId( int streamId, bool txInitiatedValue )
 {
-	GipsVideoStreamPtr stream = getStream(streamId);
+	WebrtcVideoStreamPtr stream = getStream(streamId);
 	if(txInitiatedValue == true && stream != NULL)
 	{
 		stream->txInitialised = true;
@@ -322,23 +500,45 @@ void GipsVideoProvider::setTxInitiatedForStreamId( int streamId, bool txInitiate
 	}
 }
 
-int GipsVideoProvider::rxAlloc( int groupId, int streamId, int requestedPort )
+int WebrtcVideoProvider::rxAlloc( int groupId, int streamId, int requestedPort )
 {
 	base::AutoLock lock(m_lock);
-    LOG_GIPS_INFO( logTag, "rxAllocVideo: groupId=%d, streamId=%d, requestedPort=%d", groupId, streamId, requestedPort  );
-    int channel = gipsVideo->GIPSVideo_CreateChannel();
-    if ( channel == -1 )
+    LOG_WEBRTC_INFO( logTag, "rxAllocVideo: groupId=%d, streamId=%d, requestedPort=%d", groupId, streamId, requestedPort  );
+	int channel = -1;
+    int error = vieBase->CreateChannel(channel);
+    if ( error == -1 )
     {
-        LOG_GIPS_DEBUG( logTag, "rxAllocVideo: CreateChannel failed, error %d", gipsVideo->GIPSVideo_GetLastError() );
-        return 0;
+        LOG_WEBRTC_DEBUG( logTag, "rxAllocVideo: CreateChannel failed, error %d", 
+							vieBase->LastError() );
+        return -1;
     }
-    if ( gipsVideo->GIPSVideo_SetChannelCallback( channel, this ) != 0 )
-    {
-        LOG_GIPS_DEBUG( logTag, "rxAllocVideo: SetChannelCallback failed on channel %d, error %d", channel, gipsVideo->GIPSVideo_GetLastError() );
-        return 0;
-    }
-    gipsVideo->GIPSVideo_EnableKeyFrameRequestCallback( true );
-
+	
+	
+	LOG_WEBRTC_DEBUG(logTag," Connecting Capture %d to Channel %d",
+									webCaptureId, channel);
+	error = vieCapture->ConnectCaptureDevice(webCaptureId, channel);
+	if( error == -1)
+	{
+        LOG_WEBRTC_DEBUG( logTag, "rxAllocVideo: Connect Capture Device failed, error %d", 
+							vieBase->LastError() );
+        return -1;
+	}
+	
+	LOG_WEBRTC_DEBUG(logTag," Starting the capture ");
+	error  = vieCapture->StartCapture(webCaptureId);
+	if( error == -1)
+	{
+        LOG_WEBRTC_DEBUG( logTag, "rxAllocVideo: Start Capture Device failed, error %d", 
+						 vieBase->LastError() );
+        return -1;
+	}
+	LOG_WEBRTC_DEBUG(logTag," CAPTURED ");
+	
+	//TODO: Suhas: Add code to enable key frame request
+	vieRtpRtcp->SetRTCPStatus(channel, webrtc::kRtcpCompound_RFC4585);
+	vieRtpRtcp->SetKeyFrameRequestMethod(
+				channel, webrtc::kViEKeyFrameRequestPliRtcp);
+	
     if ( previewWindow != NULL )
     {
 #ifdef WIN32    // temporary
@@ -349,7 +549,7 @@ int GipsVideoProvider::rxAlloc( int groupId, int streamId, int requestedPort )
         //((GipsVideoEnginePlatform *)gipsVideo)->GIPSVideo_AddLocalRenderer( previewWindow, 0, 0.0f, 0.0f, 1.0f, 1.0f );
 #endif
     }
-    LOG_GIPS_INFO( logTag, "rxAllocVideo: Created channel %d", channel );
+    LOG_WEBRTC_INFO( logTag, "rxAllocVideo: Created channel %d", channel );
 
     int beginPort;        // where we started
     int tryPort;        // where we are now
@@ -363,19 +563,19 @@ int GipsVideoProvider::rxAlloc( int groupId, int streamId, int requestedPort )
 
     do
     {
-        if ( gipsVideo->GIPSVideo_SetLocalReceiver( channel, tryPort, (char *)localIP.c_str() ) == 0 )
+        if ( vieNetwork->SetLocalReceiver( channel, tryPort, 0, (char *)localIP.c_str() ) == 0 )
         {
-            LOG_GIPS_DEBUG( logTag, "rxAllocVideo: Allocated port %d", tryPort );
-			GipsVideoStreamPtr stream(new GipsVideoStream(streamId, channel));
+            LOG_WEBRTC_DEBUG( logTag, "rxAllocVideo: Allocated port %d", tryPort );
+			WebrtcVideoStreamPtr stream(new WebrtcVideoStream(streamId, channel));
 			{
 				base::AutoLock lock(streamMapMutex);
 				streamMap[streamId] = stream;
-				LOG_GIPS_DEBUG( logTag, "rxAllocVideo: created stream" );
+				LOG_WEBRTC_DEBUG( logTag, "rxAllocVideo: created stream" );
 			}
             return tryPort;
         }
 
-        int errCode = gipsVideo->GIPSVideo_GetLastError();
+        int errCode = vieBase->LastError();
         if ( errCode == 12061 /* Can't bind socket */ )        
         {
             tryPort += 2;
@@ -384,22 +584,22 @@ int GipsVideoProvider::rxAlloc( int groupId, int streamId, int requestedPort )
         }
         else
         {
-            LOG_GIPS_ERROR( logTag, "rxAllocVideo: SetLocalReceiver returned error %d", errCode );
-            gipsVideo->GIPSVideo_DeleteChannel( channel );
+            LOG_WEBRTC_ERROR( logTag, "rxAllocVideo: SetLocalReceiver returned error %d", errCode );
+            vieBase->DeleteChannel( channel );
             return 0;
         }
     }
     while ( tryPort != beginPort );
 
-    LOG_GIPS_WARN( logTag, "rxAllocVideo: No ports available?" );
-    gipsVideo->GIPSVideo_DeleteChannel( channel );
+    LOG_WEBRTC_WARN( logTag, "rxAllocVideo: No ports available?" );
+    vieBase->DeleteChannel( channel );
     return 0;
 }
 
-int GipsVideoProvider::rxOpen( int groupId, int streamId, int requestedPort, int listenIp, bool isMulticast )
+int WebrtcVideoProvider::rxOpen( int groupId, int streamId, int requestedPort, int listenIp, bool isMulticast )
 {
 	base::AutoLock lock(m_lock);
-    LOG_GIPS_ERROR( logTag, "rxOpen: groupId=%d, streamId=%d", groupId, streamId);
+    LOG_WEBRTC_ERROR( logTag, "rxOpen: groupId=%d, streamId=%d", groupId, streamId);
 
     int channel = getChannelForStreamId( streamId );
     if ( channel >= 0 )
@@ -407,14 +607,14 @@ int GipsVideoProvider::rxOpen( int groupId, int streamId, int requestedPort, int
         int audioChannel = provider->pAudio->getChannelForStreamId(audioStreamId);
         if ( audioChannel >= 0 )
         {
-            if ( gipsVideo->GIPSVideo_SetAudioChannel( channel, audioChannel ) != 0 )    // for lip sync
+            if ( vieBase->ConnectAudioChannel( channel, audioChannel ) != 0 )    // for lip sync
             {
-                LOG_GIPS_ERROR( logTag, "rxOpen: SetAudioChannel failed on channel %d, error %d", channel, gipsVideo->GIPSVideo_GetLastError() );
+                LOG_WEBRTC_ERROR( logTag, "rxOpen: SetAudioChannel failed on channel %d, error %d", channel, vieBase->LastError() );
             }
         }
         else
         {
-            LOG_GIPS_ERROR( logTag, "rxOpen: getChannelForStreamId returned %d", audioChannel);
+            LOG_WEBRTC_ERROR( logTag, "rxOpen: getChannelForStreamId returned %d", audioChannel);
         }
         return requestedPort;
     }
@@ -422,69 +622,110 @@ int GipsVideoProvider::rxOpen( int groupId, int streamId, int requestedPort, int
     return 0;
 }
 
-int GipsVideoProvider::rxStart ( int groupId, int streamId, int payloadType, int packPeriod, int localPort, int rfc2833PayloadType,
+int WebrtcVideoProvider::rxStart ( int groupId, int streamId, int payloadType, int packPeriod, int localPort, int rfc2833PayloadType,
                                  EncryptionAlgorithm algorithm, unsigned char* key, int keyLen, unsigned char* salt, int saltLen, int mode, int party )
 {
 	base::AutoLock lock(m_lock);
-    LOG_GIPS_INFO( logTag, "rxStartVideo: groupId=%d, streamId=%d, pt=%d", groupId, streamId, payloadType );
+    LOG_WEBRTC_INFO( logTag, "rxStartVideo: groupId=%d, streamId=%d, pt=%d", groupId, streamId, payloadType );
+
+	int error = 0;
     int channel = getChannelForStreamId( streamId );
     if ( channel >= 0 )
     {
-        GIPSVideo_CodecInst h264 = H264template;
-        h264.pltype = payloadType;
-        h264.maxBitRate = 500;
-		h264.minBitRate = 300;
-		h264.bitRate = 300;
-		h264.frameRate = 15;
-		h264.level = 12;
-        h264.codecSpecific = 0;    
-        h264.quality = GIPS_QUALITY_DEFAULT;
+		//Let's set the recieve code to all supported by webrtc today
+#if defined __H264__
+		webrtc::VideoCodec videoCodec = H264template;
+		webrtc::VideoCodecUnion codecSpec;
+		codecSpec.H264.level = 12;
+		codecSpec.H264.quality= 0;
 
-        if ( gipsVideo->GIPSVideo_SetReceiveCodec( channel, &h264 ) != 0 )
-        {
-            LOG_GIPS_ERROR( logTag, "rxStartVideo: SetReceiveCodec on channel %d failed, error %d", channel, gipsVideo->GIPSVideo_GetLastError() );
-        }
-        if ( gipsVideo->GIPSVideo_SetSendCodec( channel, &h264, true ) != 0 )
+		h264.codecType = webrtc::kVideoCodecH264;
+        h264.plType = payloadType;
+        h264.maxBitrate = 500;
+		h264.minBitrate = 300;
+		h264.startBitrate = 300;
+		h264.maxFramerate = 15;
+        h264.codecSpecific = codecSpec;    
+#endif
+
+		memset(&videoCodec, 0 , sizeof(webrtc::VideoCodec));
+		int codecIdx = 0;
+		for(codecIdx = 0; codecIdx < vieCodec->NumberOfCodecs(); codecIdx++)
+		{
+			error = vieCodec->GetCodec(codecIdx, videoCodec);
+			if(error == -1)
+			{
+				 LOG_WEBRTC_ERROR(logTag, "rxStart: Vie::GetCodec: failed: %d", 
+									vieBase->LastError());	
+				return -1;
+			}
+		  	// try to keep the test frame size small when I420
+        	if (videoCodec.codecType == webrtc::kVideoCodecI420)
+        	{
+           		 videoCodec.width = 176;
+           		 videoCodec.height = 144;
+        	}
+
+        	error = vieCodec->SetReceiveCodec(channel, videoCodec);
+        	if (error == -1)
+       		 {
+				 LOG_WEBRTC_ERROR(logTag, "rxStart: Vie::SetReceiveCodec: failed: %d", 
+									vieBase->LastError());	
+       		     return -1;
+        	}
+		}//end for
+
+		//Let's Set VP8 + VGA Frame Size for now as send codec- which happens to be codec0
+		error = vieCodec->GetCodec(vp8Idx, videoCodec);
+		if(error == -1)
+		{
+			 LOG_WEBRTC_ERROR(logTag, "rxStart: Vie::GetCodec for send failed: %d", 
+								vieBase->LastError());	
+       		  return -1;
+		}
+		videoCodec.width = 640;
+		videoCodec.height = 480;
+        if ( vieCodec->SetSendCodec( channel, videoCodec) != 0 )
         {
  
-            LOG_GIPS_ERROR( logTag, "txStartVideo: GIPSVideo_SetSendCodec on channel %d failed, error %d", channel, gipsVideo->GIPSVideo_GetLastError() );
+            LOG_WEBRTC_ERROR( logTag, "txStartVideo: ViE::SendCodec on channel %d failed, error %d", 
+										channel, vieBase->LastError() );
         }
 #ifdef LINUX
         // There's a problem with setting certain cameras e.g Cisco VT2 to 15 fps on Linux
         // If we fail then retrying seems to fix it
         else
         {
-    		h264.frameRate = 15;
-            if (gipsVideo->GIPSVideo_SetSendCodec( channel, &h264, true ) != 0 )
+            if (vieCodec->SetSendCodec( channel, videoCodec ) != 0 )
             {
-                LOG_GIPS_ERROR( logTag, "txStartVideo: GIPSVideo_SetSendCodec at 30 fps on channel %d failed, error %d", channel, gipsVideo->GIPSVideo_GetLastError() );
+                LOG_WEBRTC_ERROR( logTag, "txStartVideo: ViECodec:SetSendCodec at 30 fps on channel %d failed, error %d", channel, vieBase->LastError() );
             }
         }
 #endif
         switch(algorithm)
         {
             case EncryptionAlgorithm_NONE:
-                LOG_GIPS_DEBUG( logTag, "rxStartVideo: using non-secure RTP for channel %d", channel);
+                LOG_WEBRTC_DEBUG( logTag, "rxStartVideo: using non-secure RTP for channel %d", channel);
                 break;
 
             case EncryptionAlgorithm_AES_128_COUNTER:
             {
-                unsigned char key[GIPS_KEY_LENGTH];
+                unsigned char key[WEBRTC_KEY_LENGTH];
 
-                LOG_GIPS_DEBUG( logTag, "rxStartVideo: using secure RTP for channel %d", channel);
+                LOG_WEBRTC_DEBUG( logTag, "rxStartVideo: using secure RTP for channel %d", channel);
 
                 if(!provider->getKey(key, keyLen, salt, saltLen, key, sizeof(key)))
                 {
-                    LOG_GIPS_ERROR( logTag, "rxStartVideo: failed to generate key on channel %d", channel );
+                    LOG_WEBRTC_ERROR( logTag, "rxStartVideo: failed to generate key on channel %d", channel );
                     return -1;
                 }
 
-                if(gipsEncryption->GIPSVE_EnableSRTPReceive(channel,
-                    CIPHER_AES_128_COUNTER_MODE,
-                    GIPS_CIPHER_LENGTH,
-                    AUTH_NULL, 0, 0, ENCRYPTION, key) != 0)
+                if(vieEncryption->EnableSRTPReceive(channel,
+                    webrtc::kCipherAes128CounterMode,
+                    WEBRTC_CIPHER_LENGTH,
+                    webrtc::kAuthNull, 0, 0, webrtc::kEncryption, key) != 0)
                 {
-                    LOG_GIPS_ERROR( logTag, "rxStartVideo: GIPSVE_EnableSRTPReceive on channel %d failed, error %d", channel, gipsVideo->GIPSVideo_GetLastError() );
+                    LOG_WEBRTC_ERROR( logTag, "rxStartVideo: GIPSVE_EnableSRTPReceive on channel %d failed, error %d", channel, vieBase->LastError() );
                     memset(key, 0x00, sizeof(key));
                     return -1;
                 }
@@ -494,134 +735,119 @@ int GipsVideoProvider::rxStart ( int groupId, int streamId, int payloadType, int
                 break;
             }  
         }
-		//setRenderWindowForStreamIdFromMap(streamId);
-        if ( gipsVideo->GIPSVideo_StartRender( channel ) != 0 )
-        {
-            LOG_GIPS_ERROR( logTag, "rxStartVideo: StartRender on channel %d failed, error %d", channel, gipsVideo->GIPSVideo_GetLastError() );
-        }
-        else 
-        {
-        	LOG_GIPS_DEBUG( logTag, "rxStartVideo: Rendering on channel %d", channel );
-        }
-        gipsVideo->GIPSVideo_Run();
+		
+		//Start the Reciever Engine
+		vieBase->StartReceive( channel );
 
         return 0;
     }
     return -1;
 }
 
-void GipsVideoProvider::setRenderWindowForStreamIdFromMap(int streamId)
+void WebrtcVideoProvider::setRenderWindowForStreamIdFromMap(int streamId)
 {
-	LOG_GIPS_DEBUG( logTag, "setRenderWindowForStreamIdFromMap, streamId: %d", streamId);
+	LOG_WEBRTC_DEBUG( logTag, "setRenderWindowForStreamIdFromMap, streamId: %d", streamId);
 	int channel = getChannelForStreamId( streamId );
     const RenderWindow* remote = getRenderWindow(streamId );
     if ( remote != NULL )
     {
 #ifdef WIN32    // temporary
         // TODO: implement render scaling
-        if ( ((GipsVideoEnginePlatform *)gipsVideo)->GIPSVideo_AddRemoteRenderer( channel, remote->window, 1, 0.0f, 0.0f, 1.0f, 1.0f ) != 0 )
+        if ( ( vieRender->AddRenderer( channel, remote->window, 1, 0.0f, 0.0f, 1.0f, 1.0f ) != 0 )
         {
-            LOG_GIPS_ERROR( logTag, "setRenderWindowForStreamIdFromMap: AddRemoteRenderer on channel %d failed, error %d", channel, gipsVideo->GIPSVideo_GetLastError() );
+            LOG_WEBRTC_ERROR( logTag, "setRenderWindowForStreamIdFromMap: Addenderer on channel %d failed, error %d", 
+								channel, vieBase->LastError() );
         }
 #endif
 #ifdef LINUX
         // TODO: implement render scaling
-        if ( ((GipsVideoEnginePlatform *)gipsVideo)->GIPSVideo_AddRemoteRenderer( channel, (Window)remote->window, 0.0f, 0.0f, 1.0f, 1.0f ) != 0 )
+        if ( vieRender->AddRenderer( channel, (Window*)remote->window,1, 0.0f, 0.0f, 1.0f, 1.0f ) != 0 )
         {
-            LOG_GIPS_ERROR( logTag, "setRenderWindowForStreamIdFromMap: AddRemoteRenderer on channel %d failed, error %d", channel, gipsVideo->GIPSVideo_GetLastError() );
+            LOG_WEBRTC_ERROR( logTag, "setRenderWindowForStreamIdFromMap: AddRenderer on channel %d failed, error %d",
+								channel, vieBase->LastError() );
         }
 #endif
 #ifdef __APPLE__
-                                                     //GIPSVideo_AddRemoteRenderer(int channel, WindowRef remoteWindow, int zOrder, float left, float top, float right, float bottom)
-        if ( ((GipsVideoEnginePlatform *)gipsVideo)->GIPSVideo_AddRemoteRenderer( channel, (WindowRef)remote->window, 1, 0.0f, 0.0f, 1.0f, 1.0f ) != 0 )
+		LOG_WEBRTC_DEBUG(logTag, "AddRenderer for the channell %d", channel);
+		if ( vieRender->AddRenderer( channel, (WindowRef*)remote->window, 1, 0.0f, 0.0f, 1.0f, 1.0f ) != 0 )
         {
-            LOG_GIPS_ERROR( logTag, "setRenderWindowForStreamIdFromMap: AddRemoteRenderer on channel %d failed, error %d", channel, gipsVideo->GIPSVideo_GetLastError() );
+            LOG_WEBRTC_ERROR( logTag, "setRenderWindowForStreamIdFromMap: AddRenderer on channel %d failed, error %d",
+								 channel, vieBase->LastError() );
         }
 #endif
     }
     else
     {
-    	LOG_GIPS_ERROR( logTag, "Remote window is NULL" );
+    	LOG_WEBRTC_ERROR( logTag, "Remote window is NULL" );
     }
 }
 
-void GipsVideoProvider::rxClose( int groupId, int streamId)
+void WebrtcVideoProvider::rxClose( int groupId, int streamId)
 {
 	base::AutoLock lock(m_lock);
-    LOG_GIPS_INFO( logTag, "rxCloseVideo: groupId=%d, streamId=%d", groupId, streamId);
+    LOG_WEBRTC_INFO( logTag, "rxCloseVideo: groupId=%d, streamId=%d", groupId, streamId);
     int channel = getChannelForStreamId( streamId );
     if ( channel >= 0 )
     {
-        gipsVideo->GIPSVideo_StopRender( channel );
-        LOG_GIPS_INFO( logTag, "rxCloseVideo: Stop render on channel %d", channel );
-//        gipsVideo->GIPSVideo_Stop();
+        vieRender->StopRender( channel );
+        LOG_WEBRTC_INFO( logTag, "rxCloseVideo: Stop render on channel %d", channel );
+		
     }
 }
 
-void GipsVideoProvider::rxRelease( int groupId, int streamId, int port )
+void WebrtcVideoProvider::rxRelease( int groupId, int streamId, int port )
 {
 	base::AutoLock lock(m_lock);
-    LOG_GIPS_INFO( logTag, "rxReleaseVideo: groupId=%d, streamId=%d", groupId, streamId);
+    LOG_WEBRTC_INFO( logTag, "rxReleaseVideo: groupId=%d, streamId=%d", groupId, streamId);
     int channel = getChannelForStreamId( streamId );
     if ( channel >= 0 )
     {
-        gipsVideo->GIPSVideo_DeleteChannel( channel );
+		vieBase->DisconnectAudioChannel( channel );
+		vieBase->StopReceive(channel);
+		vieRender->RemoveRenderer(channel);
+        vieBase->DeleteChannel( channel );
         {
         	base::AutoLock lock(streamMapMutex);
         	streamMap.erase(streamId);
         }
-        LOG_GIPS_DEBUG( logTag, "rxReleaseVideo: Delete channel %d, release port %d", channel, port);
+        LOG_WEBRTC_DEBUG( logTag, "rxReleaseVideo: Delete channel %d, release port %d", channel, port);
     }
 }
 
-int GipsVideoProvider::txStart( int groupId, int streamId, int payloadType, int packPeriod, bool vad, short tos,
+int WebrtcVideoProvider::txStart( int groupId, int streamId, int payloadType, int packPeriod, bool vad, short tos,
                                 char* remoteIpAddr, int remotePort, int rfc2833PayloadType, EncryptionAlgorithm algorithm,
                                 unsigned char* key, int keyLen, unsigned char* salt, int saltLen, int mode, int party  )
 {
 	base::AutoLock lock(m_lock);
-    LOG_GIPS_INFO( logTag, "txStartVideo: groupId=%d, streamId=%d, pt=%d", groupId, streamId, payloadType );
+    LOG_WEBRTC_INFO( logTag, "txStartVideo: groupId=%d, streamId=%d, pt=%d", groupId, streamId, payloadType );
     int channel = getChannelForStreamId( streamId );
+	
     if ( channel >= 0 )
     {
-/*        GIPSVideo_CodecInst h264 = H264template;
-        h264.pltype =  payloadType;
-        h264.maxBitRate = 1700;
-		h264.minBitRate = 1000;
-		h264.bitRate = 1000;
- 		h264.level = 20;
-        h264.codecSpecific = 0;    
-        h264.quality = GIPS_QUALITY_DEFAULT;
-
-        if ( gipsVideo->GIPSVideo_SetSendCodec( channel, &h264, true ) != 0 )
-        {
- 
-            LOG_GIPS_ERROR( logTag, "txStartVideo: GIPSVideo_SetSendCodec on channel %d failed, error %d", channel, gipsVideo->GIPSVideo_GetLastError() );
-        }
-*/
         switch(algorithm)
         {
             case EncryptionAlgorithm_NONE:
-                LOG_GIPS_DEBUG( logTag, "txStartVideo: using non-secure RTP for channel %d", channel);
+                LOG_WEBRTC_DEBUG( logTag, "txStartVideo: using non-secure RTP for channel %d", channel);
                 break;
 
             case EncryptionAlgorithm_AES_128_COUNTER:
             {
-                unsigned char key[GIPS_KEY_LENGTH];
+                unsigned char key[WEBRTC_KEY_LENGTH];
 
-                LOG_GIPS_DEBUG( logTag, "txStartVideo: using secure RTP for channel %d", channel);
+                LOG_WEBRTC_DEBUG( logTag, "txStartVideo: using secure RTP for channel %d", channel);
 
                 if(!provider->getKey(key, keyLen, salt, saltLen, key, sizeof(key)))
                 {
-                    LOG_GIPS_ERROR( logTag, "txStartVideo: failed to generate key on channel %d", channel );
+                    LOG_WEBRTC_ERROR( logTag, "txStartVideo: failed to generate key on channel %d", channel );
                     return -1;
                 }
 
-                if(gipsEncryption->GIPSVE_EnableSRTPSend(channel,
-                    CIPHER_AES_128_COUNTER_MODE,
-                    GIPS_CIPHER_LENGTH,
-                    AUTH_NULL, 0, 0, ENCRYPTION, key) != 0)
+                if(vieEncryption->EnableSRTPSend(channel,
+                    webrtc::kCipherAes128CounterMode,
+                    WEBRTC_CIPHER_LENGTH,
+                    webrtc::kAuthNull, 0, 0, webrtc::kEncryption, key) != 0)
                 {
-                    LOG_GIPS_ERROR( logTag, "txStartVideo: GIPSVE_EnableSRTPSend on channel %d failed, error %d", channel, gipsVideo->GIPSVideo_GetLastError() );
+                    LOG_WEBRTC_ERROR( logTag, "txStartVideo: EnableSRTPSend on channel %d failed, error %d", channel, vieBase->LastError() );
                     memset(key, 0x00, sizeof(key));
                     return -1;
                 }
@@ -632,40 +858,57 @@ int GipsVideoProvider::txStart( int groupId, int streamId, int payloadType, int 
             }  
         }
 
-        gipsVideo->GIPSVideo_SetSendDestination( channel, remotePort, remoteIpAddr );
+        vieNetwork->SetSendDestination( channel, remoteIpAddr, remotePort );
         // We might be muted - for example in the case where the call is being resumed, so respect that setting
-		GipsVideoStreamPtr stream = getStream(streamId);
+		WebrtcVideoStreamPtr stream = getStream(streamId);
+		
 		if (stream != NULL && ! stream->isMuted)
     	{
-    		gipsVideo->GIPSVideo_StartSend( channel );
+			LOG_WEBRTC_DEBUG(logTag," Starting the send: Suhas ");	
+    		vieBase->StartSend( channel );
     	}
         setTxInitiatedForStreamId(streamId, true);
-        LOG_GIPS_DEBUG( logTag, "txStartVideo: Sending to %s:%d on channel %d", remoteIpAddr, remotePort, channel );
-        return 0;
+        LOG_WEBRTC_DEBUG( logTag, "txStartVideo: Sending to %s:%d on channel %d", remoteIpAddr, remotePort, channel );
+		
+		
+		int channel = getChannelForStreamId( streamId );
+		if ( vieRender->StartRender( channel ) != 0 )
+        {
+            LOG_WEBRTC_ERROR( logTag, "TxStartVideo: StartRender on channel %d failed, error %d", channel, vieBase->LastError() );
+        }
+        else
+        {
+            LOG_WEBRTC_DEBUG( logTag, "TxStartVideo: Rendering on channel %d", channel );
+        }
+
+		        return 0;
     }
     return -1;
 }
 
-void GipsVideoProvider::txClose( int groupId, int streamId )
+void WebrtcVideoProvider::txClose( int groupId, int streamId )
 {
 	base::AutoLock lock(m_lock);
-    LOG_GIPS_INFO( logTag, "txCloseVideo: groupId=%d, streamId=%d", groupId, streamId );
+    LOG_WEBRTC_INFO( logTag, "txCloseVideo: groupId=%d, streamId=%d", groupId, streamId );
     int channel = getChannelForStreamId( streamId );
     if ( channel >= 0 )
     {
-        gipsVideo->GIPSVideo_StopSend( channel );
-        LOG_GIPS_DEBUG( logTag, "txCloseVideo: Stop transmit on channel %d", channel );
+        vieBase->StopSend( channel );
+        LOG_WEBRTC_DEBUG( logTag, "txCloseVideo: Stop transmit on channel %d", channel );
         setTxInitiatedForStreamId(streamId, false);
+		//let's stop the capture
+		vieCapture->StopCapture(webCaptureId);
+		vieCapture->DisconnectCaptureDevice(channel);
     }
 }
 
-bool GipsVideoProvider::mute(int streamId, bool muteVideo)
+bool WebrtcVideoProvider::mute(int streamId, bool muteVideo)
 {
 	base::AutoLock lock(m_lock);
     int channel = getChannelForStreamId( streamId );
     bool returnVal = false;
-	GipsVideoStreamPtr stream = getStream(streamId);
-    LOG_GIPS_INFO( logTag, "mute: streamId=%d, mute=%d", streamId, muteVideo );
+	WebrtcVideoStreamPtr stream = getStream(streamId);
+    LOG_WEBRTC_INFO( logTag, "mute: streamId=%d, mute=%d, channel=%d", streamId, muteVideo, channel );
     	
     if ( channel >= 0 )
     {
@@ -673,13 +916,13 @@ bool GipsVideoProvider::mute(int streamId, bool muteVideo)
     	{
 			if (stream->txInitialised)
 			{
-    			if (gipsVideo->GIPSVideo_StopSend( channel ) != -1)
+    			if (vieBase->StopSend( channel ) != -1)
     			{
     				returnVal= true;
     			}
     			else
     			{
-    				LOG_GIPS_ERROR( logTag, "GIPS returned failure from GIPSVideo_StopSend");
+    				LOG_WEBRTC_ERROR( logTag, "GIPS returned failure from GIPSVideo_StopSend");
     			}
 			}
 			else
@@ -691,13 +934,13 @@ bool GipsVideoProvider::mute(int streamId, bool muteVideo)
         {
 			if (stream->txInitialised)
 			{
-				if (gipsVideo->GIPSVideo_StartSend( channel ) != -1)
+				if (vieBase->StartSend( channel ) != -1)
     			{
     				returnVal= true;
     			}
     			else
     			{
-    				LOG_GIPS_ERROR( logTag, "GIPS returned failure from GIPSVideo_StartSend");
+    				LOG_WEBRTC_ERROR( logTag, "GIPS returned failure from GIPSVideo_StartSend");
     			}
 			}
 			else
@@ -713,10 +956,10 @@ bool GipsVideoProvider::mute(int streamId, bool muteVideo)
     return returnVal;
 }
 
-bool GipsVideoProvider::isMuted(int streamId)
+bool WebrtcVideoProvider::isMuted(int streamId)
 {
 	base::AutoLock lock(m_lock);
-	GipsVideoStreamPtr stream = getStream(streamId);
+	WebrtcVideoStreamPtr stream = getStream(streamId);
 	bool returnVal = false;
 
 	if ((stream != NULL) && (stream->isMuted == true))
@@ -727,7 +970,7 @@ bool GipsVideoProvider::isMuted(int streamId)
 	return returnVal;
 }
 
-bool GipsVideoProvider::setFullScreen(int streamId, bool fullScreen)
+bool WebrtcVideoProvider::setFullScreen(int streamId, bool fullScreen)
 {
 	base::AutoLock lock(m_lock);
 	int returnVal = -1;
@@ -749,22 +992,22 @@ bool GipsVideoProvider::setFullScreen(int streamId, bool fullScreen)
 	return (returnVal == 0) ? true : false;
 }
 
-void GipsVideoProvider::sendIFrame( int streamId )
+void WebrtcVideoProvider::sendIFrame( int streamId )
 {
 	base::AutoLock lock(m_lock);
-    LOG_GIPS_INFO( logTag, "Remote end requested I-frame %d: " ,streamId );
+    LOG_WEBRTC_INFO( logTag, "Remote end requested I-frame %d: " ,streamId );
     int channel = getChannelForStreamId( streamId );
     if ( channel >= 0 )
     {
-        gipsVideo->GIPSVideo_SendKeyFrame( channel );
+        vieCodec->SendKeyFrame( channel );
     }
     else
     {
-    	LOG_GIPS_INFO( logTag, "sendIFrame: getChannelForStreamId returned %d", channel );
+    	LOG_WEBRTC_INFO( logTag, "sendIFrame: getChannelForStreamId returned %d", channel );
     }
 }
 
-void GipsVideoProvider::RequestNewKeyFrame		(int channel)
+void WebrtcVideoProvider::RequestNewKeyFrame		(int channel)
 {
 #ifdef LINUX
 
@@ -775,13 +1018,13 @@ void GipsVideoProvider::RequestNewKeyFrame		(int channel)
     // If last request was sent less than a second ago we debounce
     if (elapsed <=1)
     {
-        LOG_GIPS_INFO(logTag, "Last request was sent less than a second ago - do nothing" );
+        LOG_WEBRTC_INFO(logTag, "Last request was sent less than a second ago - do nothing" );
         return;
     }
 #endif
 
-    LOG_GIPS_INFO(logTag, "Send Request for I-frame to originator" );
-    GipsVideoStreamPtr stream= getStreamByChannel(channel);
+    LOG_WEBRTC_INFO(logTag, "Send Request for I-frame to originator" );
+    WebrtcVideoStreamPtr stream= getStreamByChannel(channel);
     MediaProviderObserver *mpobs = VcmSIPCCBinding::getMediaProviderObserver();
     if (mpobs != NULL)
         mpobs->onKeyFrameRequested(stream->streamId);
@@ -790,27 +1033,33 @@ void GipsVideoProvider::RequestNewKeyFrame		(int channel)
 #endif
 }
 
-void GipsVideoProvider::IncomingRate(int channel, int frameRate, int bitrate)
+void WebrtcVideoProvider::IncomingRate(int channel, unsigned int frameRate, unsigned int bitrate)
 {
-    //LOG_GIPS_INFO( logTag, "IncomingRate channel %d, frameRate %d, bitrate %d", channel, frameRate, bitrate );
+    //LOG_WEBRTC_INFO( logTag, "IncomingRate channel %d, frameRate %d, bitrate %d", channel, frameRate, bitrate );
 }
 
-void GipsVideoProvider::IncomingCodecChanged(int channel, int payloadType, int width, int height)
+void WebrtcVideoProvider::IncomingCodecChanged(int channel, const webrtc::VideoCodec& videoCodec)
 {
-    LOG_GIPS_INFO( logTag, "IncomingCodecChanged channel %d, payloadType %d, width %d, height %d", channel, payloadType, width, height );
+    LOG_WEBRTC_INFO( logTag, "IncomingCodecChanged channel %d, payloadType %d, width %d, height %d", channel, videoCodec.plType, videoCodec.width, videoCodec.height );
 }
 
-void GipsVideoProvider::IncomingCSRCChanged(int channel, unsigned int csrc, bool added)
+void WebrtcVideoProvider::IncomingCSRCChanged(int channel, unsigned int csrc, bool added)
 {
-//    LOG_GIPS_INFO( logTag, "IncomingRate channel %d, csrc %d, added %d", channel, csrc, added );
+//    LOG_WEBRTC_INFO( logTag, "IncomingRate channel %d, csrc %d, added %d", channel, csrc, added );
 }
 
-void GipsVideoProvider::SendRate(int channel, int frameRate, int bitrate)
+void WebrtcVideoProvider::IncomingSSRCChanged(int channel, unsigned int ssrc)
 {
-//    LOG_GIPS_INFO( logTag, "SendRate channel %d, frameRate %d, bitrate %d", channel, frameRate, bitrate );
+	//    LOG_WEBRTC_INFO( logTag, "IncomingRate channel %d, csrc %d, added %d", channel, csrc, added );
+}
+			
+			
+void WebrtcVideoProvider::OutgoingRate(int channel, unsigned int frameRate, unsigned int bitrate)
+{
+//    LOG_WEBRTC_INFO( logTag, "SendRate channel %d, frameRate %d, bitrate %d", channel, frameRate, bitrate );
 }
 
-void GipsVideoProvider:: setAudioStreamId(int streamId)
+void WebrtcVideoProvider:: setAudioStreamId(int streamId)
 {
     audioStreamId=streamId;
 }

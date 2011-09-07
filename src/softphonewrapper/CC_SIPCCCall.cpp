@@ -117,6 +117,31 @@ void CC_SIPCCCall::setRemoteWindow (VideoWindowHandle window)
     CSFLogInfoS( logTag, "setRemoteWindow:no video stream found in call " << callHandle );
 }
 
+int CC_SIPCCCall::setExternalRenderer(VideoFormat vFormat, ExternalRendererHandle renderer)
+{
+    VideoTermination * pVideo = VcmSIPCCBinding::getVideoTermination();
+     pMediaData->extRenderer = renderer;
+     pMediaData->videoFormat = vFormat;
+
+    if (!pVideo)
+    {
+        CSFLogWarnS( logTag, "setExternalRenderer: no video provider found");
+        return -1;
+    }
+           
+    for (StreamMapType::iterator entry =  pMediaData->streamMap.begin(); entry !=  pMediaData->streamMap.end(); entry++)
+    {
+        if (entry->second.isVideo)
+        {
+            // first video stream found
+            int streamId = entry->first;
+            return pVideo->setExternalRenderer(streamId,  pMediaData->videoFormat, pMediaData->extRenderer); 
+        }
+    }
+    CSFLogInfoS( logTag, "setExternalRenderer:no video stream found in call " << callHandle );
+	return -1;
+}
+
 void CC_SIPCCCall::sendIFrame()
 {
     VideoTermination * pVideo = VcmSIPCCBinding::getVideoTermination();
@@ -423,7 +448,7 @@ void CC_SIPCCCall::addStream(int streamId, bool isVideo)
 	// At the moment the only candidate is the muted state
 	if (isVideo)
 	{
-#ifndef  NO_WEBRTC_VIDEO
+#ifndef NO_WEBRTC_VIDEO
         VideoTermination * pVideo = VcmSIPCCBinding::getVideoTermination();
         
         // if there is a window for this call apply it to the stream
@@ -435,6 +460,17 @@ void CC_SIPCCCall::addStream(int streamId, bool isVideo)
         {
             CSFLogInfoS( logTag, "addStream: remoteWindow is NULL");
         }
+
+		if(pMediaData->extRenderer != NULL)
+		{
+			pVideo->setExternalRenderer(streamId, pMediaData->videoFormat, pMediaData->extRenderer);
+		} 
+		else
+		{
+            CSFLogInfoS( logTag, "addStream: externalRenderer is NULL");
+
+		}
+
         for (StreamMapType::iterator entry =  pMediaData->streamMap.begin(); entry !=  pMediaData->streamMap.end(); entry++)
         {
     		if (entry->second.isVideo == false)
@@ -446,6 +482,10 @@ void CC_SIPCCCall::addStream(int streamId, bool isVideo)
 		if (!pVideo->mute(streamId,  pMediaData->videoMuteState))
 		{
 			CSFLogErrorS( logTag, "setting video mute state failed for new stream: " << streamId);
+		} else
+		{
+			CSFLogErrorS( logTag, "setting video mute state SUCCEEDED for new stream: " << streamId);
+
 		}
 #endif
 	}

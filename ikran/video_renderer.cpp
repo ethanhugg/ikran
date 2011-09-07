@@ -11,17 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * The Original Code is the Cisco Systems SIP Stack.
+ * The Original Code is Rainbow.
  *
- * The Initial Developer of the Original Code is
- * Cisco Systems (CSCO).
- * Portions created by the Initial Developer are Copyright (C) 2002
+ * The Initial Developer of the Original Code is Mozilla Labs.
+ * Portions created by the Initial Developer are Copyright (C) 2010
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- *  Enda Mannion <emannion@cisco.com>
- *  Suhas Nandakumar <snandaku@cisco.com>
- *  Ethan Hugg <ehugg@cisco.com>
+ *   Anant Narayanan <anant@kix.in>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -37,35 +34,53 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef CSFVIDEOMEDIATERMINATION_H_
-#define CSFVIDEOMEDIATERMINATION_H_
+#include "video_renderer.h"
+#include "Logger.h"
+#define MICROSECONDS 1000000
 
-#include <CSFMediaTermination.h>
-#include <CSFVideoControl.h>
-
-typedef enum
+VideoRenderer::VideoRenderer(int w, int h,nsIDOMCanvasRenderingContext2D *ctx) :width(w),
+										    height(h),
+											vCanvas(ctx)
 {
-	VideoCodecMask_H264 = 1,
-	VideoCodecMask_H263 = 2
+	Logger::Instance()->logIt(" VideoRenderer Created for Canvas");
+}
 
-} VideoCodecMask;
-
-#if __cplusplus
-
-namespace CSF
+VideoRenderer::~VideoRenderer()
 {
-	class VideoTermination : public MediaTermination
-	{
-	public:
-		virtual void setRemoteWindow( int streamId, VideoWindowHandle window) = 0;
-		virtual int setExternalRenderer( int streamId, VideoFormat videoFormat, ExternalRendererHandle render) = 0;
-		virtual void sendIFrame	( int streamId ) = 0;
-		virtual bool  mute		( int streamId, bool mute ) = 0;
-		virtual void setAudioStreamId( int streamId) = 0;
-	};
+	Logger::Instance()->logIt(" VideoRenderer Destroyed" );
+}
 
-} // namespace
+int
+VideoRenderer::FrameSizeChange(
+    unsigned int width, unsigned int height, unsigned int numberOfStreams)
+{
+    // XXX: Hmm?
+	Logger::Instance()->logIt(" VideoRenderer: FrameSizeChange() ");
+    return -1;
+}
 
-#endif // __cplusplus
+int
+VideoRenderer::DeliverFrame(unsigned char* buffer, int bufferSize)
+{
+    nsresult rv;
 
-#endif /* CSFVIDEOMEDIATERMINATION_H_ */
+    PRTime epoch_c = PR_Now();
+    PRFloat64 epoch = (PRFloat64)(epoch_c / MICROSECONDS);
+    epoch += ((PRFloat64)(epoch_c % MICROSECONDS)) / MICROSECONDS;
+
+    int fsize = width * height * 4;
+    if (vCanvas) {
+        /* Convert i420 to RGB32 to write on canvas */
+        nsAutoArrayPtr<PRUint8> rgb32(new PRUint8[fsize]);
+        I420toRGB32(width, height,
+            (const char *)buffer, (char *)rgb32.get()
+        );
+
+        nsCOMPtr<nsIRunnable> render = new CanvasRenderer(
+            vCanvas, width, height, rgb32, fsize
+        );
+        rv = NS_DispatchToMainThread(render);
+    }
+
+    return 0;
+}

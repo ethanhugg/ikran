@@ -91,10 +91,6 @@ public:
 	void EndCall();
 	void AnswerCall();
 	
-	void SetExternalRenderer(void* renderer) {
-		ext_renderer = renderer;
-	}
-
 	void SetVideoWindow(void* videoWin) {
 		video_window =  videoWin;
 	}
@@ -153,10 +149,6 @@ private:
 
 	//video window handle
 	void* video_window;
-	
-	//external webrtc renderer
-	void* ext_renderer;
-
     //CallControlManager
 	CallControlManagerPtr ccm_ptr_; 
 	

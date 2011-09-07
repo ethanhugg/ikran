@@ -59,8 +59,11 @@
 #include <nsComponentManagerUtils.h>
 #include <nsAutoPtr.h>
 #include <nsThreadUtils.h>
+#include "video_renderer.h"
 
 
+//#include "VideoRenderer.h" //<-- External Webrtc Renderer
+//#include "VideoSourceCanvas.h"
 #include "sipcc_controller.h"
 
 #define CALL_CONTROL_CONTRACTID "@cto.cisco.com/call/control;1"
@@ -84,7 +87,8 @@ public:
  	virtual void OnRegisterStateChange(std::string registrationState);
  	virtual void OnCallTerminated(); 
 	virtual void OnCallConnected();
-		
+	
+	void ParseProperties(nsIPropertyBag2* prop);
 
 protected:
 
@@ -98,6 +102,10 @@ protected:
 
 	static CallControl *gCallControlService;
 
+	//for webrtc video rendering support
+	//TBD: can be moved into more design centric code later
+	nsIDOMCanvasRenderingContext2D *vCanvas;
+	VideoRenderer *vSource;
 
 private:
 	char *m_user_device;

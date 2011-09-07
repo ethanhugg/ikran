@@ -48,6 +48,9 @@
 #include <X11/Xos.h>
 #endif
 
+
+
+
 #define WT_NORMAL 		1
 #define WT_CHILD		2
 #define WT_FRAME		4
@@ -100,5 +103,6 @@ private:
 #endif
 
 };
+
 
 #endif

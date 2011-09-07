@@ -40,17 +40,6 @@
 #include "CallControl.h"
 #include "assert.h"
 #include "Logger.h"
-//we need this for drawing window
-#ifdef IKRAN_LINUX
-#include <gtk/gtk.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/Xos.h>
-#include <gdk/gdkx.h>
-
-GtkWidget* video_widget;
-unsigned long win_handle;
-#endif
 
 
 NS_IMPL_ISUPPORTS1(CallControl, ICallControl)
@@ -125,6 +114,7 @@ CallControl::Init()
 {
     m_session = PR_FALSE;
 	m_registered = PR_FALSE;
+	vSource = 0;
     return NS_OK;
 }
 
@@ -168,10 +158,6 @@ void CallControl::OnRegisterStateChange(std::string registrationState)
 void CallControl::OnCallTerminated()
 {
 	gCallControlService->m_session = PR_FALSE;
-#ifdef IKRAN_LINUX
-	gtk_widget_hide(video_widget);
-#endif
-	
 	NS_DispatchToMainThread(new MediaCallback(
         mediaObserver, "call-terminated", ""
     ));
@@ -253,9 +239,11 @@ CallControl::UnregisterUser()
  */
 NS_IMETHODIMP
 CallControl::PlaceCall(const char* dn,
+						nsIDOMCanvasRenderingContext2D *ctx,
 						nsIMediaStateObserver* obs)
 {
 	mediaObserver = obs;
+	vCanvas = ctx;
 	if(m_session) {
 		Logger::Instance()->logIt("Place Call: call is in progress");
         NS_DispatchToMainThread(new MediaCallback(
@@ -264,18 +252,13 @@ CallControl::PlaceCall(const char* dn,
         return NS_ERROR_FAILURE;
 	}
 	m_dial_number = const_cast<char*>(dn);
-#ifdef IKRAN_LINUX
-	if(!video_widget)
+	if(vSource == 0)
 	{
-		gtk_init(0,0);
-    	video_widget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    	gtk_widget_set_size_request(video_widget, 640, 480);
+		//hardcoding the width and height for now	
+		vSource = new VideoRenderer(640,480, vCanvas);
+	 	Logger::Instance()->logIt("Vsource is null in PlaceCall");
 	}
-    gtk_widget_show(video_widget);
-    win_handle = GDK_WINDOW_XWINDOW(GTK_WIDGET(video_widget)->window);
-	SipccController::GetInstance()->SetVideoWindow(win_handle);
-#endif
-
+	SipccController::GetInstance()->SetExternalRenderer(vSource);
 	SipccController::GetInstance()->PlaceCall(m_dial_number);
 	m_session = PR_TRUE;
 	return NS_OK;
@@ -295,11 +278,6 @@ CallControl::HangupCall()
         return NS_ERROR_FAILURE;
 	}
 	SipccController::GetInstance()->EndCall();
-
-#ifdef IKRAN_LINUX
-	//lets desty our window
-	gtk_widget_hide(video_widget);
-#endif
 	m_session = PR_FALSE;	
     return NS_OK;
 }
@@ -310,28 +288,27 @@ CallControl::HangupCall()
  */
 
 NS_IMETHODIMP
-CallControl::AnswerCall(nsIMediaStateObserver* obs)
+CallControl::AnswerCall(nsIDOMCanvasRenderingContext2D *ctx,
+				nsIMediaStateObserver* obs)
 {
 	mediaObserver = obs;
-        if(m_session) {
+	vCanvas = ctx;
+    if(m_session) {
 		Logger::Instance()->logIt("AnswerCall: no call is in progress");
         NS_DispatchToMainThread(new MediaCallback(
             mediaObserver, "error", " Call is in progress"
         ));
         return NS_ERROR_FAILURE;
-        }
-#ifdef IKRAN_LINUX
-	  if(!video_widget)
-    	{
-       	 	gtk_init(0,0);
-        	video_widget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-        	gtk_widget_set_size_request(video_widget, 640, 480);
-    	}
-    	gtk_widget_show(video_widget);
-    	win_handle = GDK_WINDOW_XWINDOW(GTK_WIDGET(video_widget)->window);
-    	SipccController::GetInstance()->SetVideoWindow(win_handle);
-#endif
+     }
 
+	if(vSource == 0)
+	{
+	   Logger::Instance()->logIt("Vsource is null in AnswerCall");
+	   vSource = new VideoRenderer(640,480, vCanvas);
+	}
+	if(vCanvas == 0 || vCanvas == nsnull)
+		Logger::Instance()->logIt(" CANVAS IS NULL MAN");
+	SipccController::GetInstance()->SetExternalRenderer(vSource);
         SipccController::GetInstance()->AnswerCall();
         m_session = PR_TRUE;
     return NS_OK;

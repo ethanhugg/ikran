@@ -42,7 +42,6 @@
 #include <sstream>
 #include <fstream>
 
-
 using namespace std;
 
 #ifdef WIN32
@@ -206,6 +205,7 @@ int VideoWindow::InitWindow()
     XMapWindow(_display, _window);
     XFlush(_display);
     _rWindow = (void *)_window; // not sure why we have 2 seperate values (NDM)
+
 #endif
 
     return 0;
@@ -247,7 +247,7 @@ void VideoWindow::CloseWindow()
     DestroyWindow((HWND)_rWindow);
     UnRegisterWindowClass(_hInstance);
     _rWindow = NULL;
-#else
+#else 
     XDestroyWindow(_display, _window);
 #endif
 }
@@ -354,4 +354,6 @@ void VideoWindow::MessagePump()
         }
     }
 }
+
+
 #endif

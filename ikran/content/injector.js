@@ -101,9 +101,9 @@ var IkranObserver = {
                 else throw "Permission denied";
             });
         }, "regUser");
-        sandbox.importFunction(function(loc, dn, media_obs) {
+        sandbox.importFunction(function(loc, dn, ctx, media_obs) {
             ikran._verifyPermission(window, loc, function(allowed) {
-                if (allowed) ikran.placeCall(dn, media_obs);
+                if (allowed) ikran.placeCall(dn,ctx, media_obs);
                 else throw "Permission denied";
             });
         }, "callStart");
@@ -115,10 +115,10 @@ var IkranObserver = {
             });
             return ret;
         }, "callStop");
-        sandbox.importFunction(function(loc, media_obs) {
+        sandbox.importFunction(function(loc, ctx, media_obs) {
             let ret;
             ikran._verifyPermission(window, loc, function(allowed) {
-                if (allowed) ret = ikran.answerCall(media_obs);
+                if (allowed) ret = ikran.answerCall(ctx,media_obs);
                 else throw "Permission denied";
             });
             return ret;
