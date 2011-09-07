@@ -167,13 +167,13 @@ Ikran.prototype = {
         this._session = true;
     },
     
-    placeCall: function(dn, obs) {
+    placeCall: function(dn, ctx, obs) {
             
         // Make sure observer is setup correctly, if none provided, ignore
         if (obs) this._media_observer = obs;
         else this._media_observer = function() {};
 
-        this._ikran.placeCall(dn, this._media_observer);
+        this._ikran.placeCall(dn, ctx, this._media_observer);
     },
     
     hangupCall: function() {
@@ -186,12 +186,12 @@ Ikran.prototype = {
         this._ikran.unregisterUser();
     },
 
-    answerCall: function(obs) {
+    answerCall: function(ctx, obs) {
 
         // Make sure observer is setup correctly, if none provided, ignore
         if (obs) this._media_observer = obs;
         else this._media_observer = function() {};
-        this._ikran.answerCall(obs);
+        this._ikran.answerCall(ctx,obs);
 	}
 
 	

@@ -80,7 +80,6 @@ void SipccController::InitInternal() {
 	ccm_ptr_->addCCObserver(this);
 	ccm_ptr_->addECCObserver(this);
     ccm_ptr_->setLocalIpAddressAndGateway(local_ip_v4_address_,"");
-	//ccm_ptr_->setSIPCCLoggingMask( GSM_DEBUG_BIT | FIM_DEBUG_BIT | SIP_DEBUG_MSG_BIT | CC_APP_DEBUG_BIT | SIP_DEBUG_REG_STATE_BIT );
 	ccm_ptr_->setSIPCCLoggingMask(0); 
 	LOG(ERROR)<<"SipccController:: Authentication user : " << sip_user_;
 	initDone = true;	
@@ -138,13 +137,7 @@ void SipccController::PlaceCall(std::string dial_number) {
 		Logger::Instance()->logIt(dial_number_);
         device_ptr_ = ccm_ptr_->getActiveDevice();
         outgoing_call_ = device_ptr_->createCall();
-		//defaulting to I420 video format retrieval
-		Logger::Instance()->logIt("Setting the external renderer ");
-		if(ext_renderer  == 0)
-		{
-			Logger::Instance()->logIt(" ext_renderer is NULL in PlaceCall");
-		}
-		outgoing_call_->setExternalRenderer(0,ext_renderer);
+		outgoing_call_->setRemoteWindow((VideoWindowHandle)video_window);
         if(outgoing_call_->originateCall(CC_SDP_DIRECTION_SENDRECV, dial_number_)) {
 			Logger::Instance()->logIt("SipccController::PlaceCall: Call Setup Succeeded ");
         	return ;
@@ -180,15 +173,10 @@ Logger::Instance()->logIt(" In Asnwer call ");
 			}
 		} else {
         }
-		//defaulting to I420 video format retrieval
-		if(ext_renderer == 0)
-			Logger::Instance()->logIt(" ext_renderer is NULL in PlaceCall");
-
-	    answerableCall->setExternalRenderer(0,ext_renderer);
+		answerableCall->setRemoteWindow((VideoWindowHandle)video_window);
 	} else {
 	}
 }
-
 
 
 // Device , Line Events notification handlers

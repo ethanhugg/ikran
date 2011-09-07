@@ -112,6 +112,8 @@ typedef enum rtp_ptype_
     RTP_L16          = 102,
     RTP_H263         = 103,
     RTP_ILBC         = 116, /* used only to make an offer */
+	RTP_VP8			 = 120,
+	RTP_I420		 = 124,
     RTP_ISAC         = 124
 } rtp_ptype;
 
