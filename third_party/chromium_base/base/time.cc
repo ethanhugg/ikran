@@ -28,7 +28,7 @@ double TimeDelta::InSecondsF() const {
   return static_cast<double>(delta_) / Time::kMicrosecondsPerSecond;
 }
 
-int64 TimeDelta::InSeconds() const {
+i64Bit::int64 TimeDelta::InSeconds() const {
   return delta_ / Time::kMicrosecondsPerSecond;
 }
 
@@ -36,16 +36,16 @@ double TimeDelta::InMillisecondsF() const {
   return static_cast<double>(delta_) / Time::kMicrosecondsPerMillisecond;
 }
 
-int64 TimeDelta::InMilliseconds() const {
+i64Bit::int64 TimeDelta::InMilliseconds() const {
   return delta_ / Time::kMicrosecondsPerMillisecond;
 }
 
-int64 TimeDelta::InMillisecondsRoundedUp() const {
+i64Bit::int64 TimeDelta::InMillisecondsRoundedUp() const {
   return (delta_ + Time::kMicrosecondsPerMillisecond - 1) /
       Time::kMicrosecondsPerMillisecond;
 }
 
-int64 TimeDelta::InMicroseconds() const {
+i64Bit::int64 TimeDelta::InMicroseconds() const {
   return delta_;
 }
 
@@ -68,7 +68,7 @@ time_t Time::ToTimeT() const {
 Time Time::FromDoubleT(double dt) {
   if (dt == 0)
     return Time();  // Preserve 0 so we can tell it doesn't exist.
-  return Time(static_cast<int64>((dt *
+  return Time(static_cast<i64Bit::int64>((dt *
                                   static_cast<double>(kMicrosecondsPerSecond)) +
                                  kTimeTToMicrosecondsOffset));
 }

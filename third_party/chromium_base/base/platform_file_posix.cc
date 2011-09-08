@@ -144,14 +144,14 @@ bool ClosePlatformFile(PlatformFile file) {
   return !close(file);
 }
 
-int ReadPlatformFile(PlatformFile file, int64 offset, char* data, int size) {
+int ReadPlatformFile(PlatformFile file, i64Bit::int64 offset, char* data, int size) {
   if (file < 0)
     return -1;
 
   return HANDLE_EINTR(pread(file, data, size, offset));
 }
 
-int WritePlatformFile(PlatformFile file, int64 offset,
+int WritePlatformFile(PlatformFile file, i64Bit::int64 offset,
                       const char* data, int size) {
   if (file < 0)
     return -1;
@@ -159,7 +159,7 @@ int WritePlatformFile(PlatformFile file, int64 offset,
   return HANDLE_EINTR(pwrite(file, data, size, offset));
 }
 
-bool TruncatePlatformFile(PlatformFile file, int64 length) {
+bool TruncatePlatformFile(PlatformFile file, i64Bit::int64 length) {
   return ((file >= 0) && !HANDLE_EINTR(ftruncate(file, length)));
 }
 

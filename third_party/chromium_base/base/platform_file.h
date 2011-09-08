@@ -75,7 +75,7 @@ struct PlatformFileInfo {
   ~PlatformFileInfo();
 
   // The size of the file in bytes.  Undefined when is_directory is true.
-  int64 size;
+  i64Bit::int64 size;
 
   // True if the file corresponds to a directory.
   bool is_directory;
@@ -110,18 +110,18 @@ bool ClosePlatformFile(PlatformFile file);
 
 // Reads the given number of bytes (or until EOF is reached) starting with the
 // given offset. Returns the number of bytes read, or -1 on error.
-int ReadPlatformFile(PlatformFile file, int64 offset, char* data, int size);
+int ReadPlatformFile(PlatformFile file, i64Bit::int64 offset, char* data, int size);
 
 // Writes the given buffer into the file at the given offset, overwritting any
 // data that was previously there. Returns the number of bytes written, or -1
 // on error.
-int WritePlatformFile(PlatformFile file, int64 offset,
+int WritePlatformFile(PlatformFile file, i64Bit::int64 offset,
                       const char* data, int size);
 
 // Truncates the given file to the given length. If |length| is greater than
 // the current size of the file, the file is extended with zeros. If the file
 // doesn't exist, |false| is returned.
-bool TruncatePlatformFile(PlatformFile file, int64 length);
+bool TruncatePlatformFile(PlatformFile file, i64Bit::int64 length);
 
 // Flushes the buffers of the given file.
 bool FlushPlatformFile(PlatformFile file);

@@ -33,8 +33,8 @@ string16 IntToString16(int value);
 std::string UintToString(unsigned value);
 string16 UintToString16(unsigned value);
 
-std::string Int64ToString(int64 value);
-string16 Int64ToString16(int64 value);
+std::string Int64ToString(i64Bit::int64 value);
+string16 Int64ToString16(i64Bit::int64 value);
 
 std::string Uint64ToString(i64Bit::uint64 value);
 string16 Uint64ToString16(i64Bit::uint64 value);
@@ -69,17 +69,17 @@ bool StringToInt(string16::const_iterator begin,
                  int* output);
 bool StringToInt(const char16* begin, const char16* end, int* output);
 
-bool StringToInt64(const std::string& input, int64* output);
+bool StringToInt64(const std::string& input, i64Bit::int64* output);
 bool StringToInt64(std::string::const_iterator begin,
                    std::string::const_iterator end,
-                   int64* output);
-bool StringToInt64(const char* begin, const char* end, int64* output);
+                   i64Bit::int64* output);
+bool StringToInt64(const char* begin, const char* end, i64Bit::int64* output);
 
-bool StringToInt64(const string16& input, int64* output);
+bool StringToInt64(const string16& input, i64Bit::int64* output);
 bool StringToInt64(string16::const_iterator begin,
                    string16::const_iterator end,
-                   int64* output);
-bool StringToInt64(const char16* begin, const char16* end, int64* output);
+                   i64Bit::int64* output);
+bool StringToInt64(const char16* begin, const char16* end, i64Bit::int64* output);
 
 // For floating-point conversions, only conversions of input strings in decimal
 // form are defined to work.  Behavior with strings representing floating-point

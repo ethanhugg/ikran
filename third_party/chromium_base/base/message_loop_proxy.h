@@ -31,13 +31,13 @@ class MessageLoopProxy
   virtual bool PostTask(const tracked_objects::Location& from_here,
                         Task* task) = 0;
   virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
-                               Task* task, int64 delay_ms) = 0;
+                               Task* task, i64Bit::int64 delay_ms) = 0;
   virtual bool PostNonNestableTask(const tracked_objects::Location& from_here,
                                    Task* task) = 0;
   virtual bool PostNonNestableDelayedTask(
       const tracked_objects::Location& from_here,
       Task* task,
-      int64 delay_ms) = 0;
+      i64Bit::int64 delay_ms) = 0;
   // A method which checks if the caller is currently running in the thread that
   // this proxy represents.
   virtual bool BelongsToCurrentThread() = 0;
