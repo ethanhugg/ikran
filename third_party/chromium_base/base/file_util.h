@@ -81,7 +81,7 @@ int CountFilesCreatedAfter(const FilePath& path,
 //
 // This function is implemented using the FileEnumerator class so it is not
 // particularly speedy in any platform.
-int64 ComputeDirectorySize(const FilePath& root_path);
+i64Bit::int64 ComputeDirectorySize(const FilePath& root_path);
 
 // Returns the total number of bytes used by all files matching the provided
 // |pattern|, on this |directory| (without recursion). If the path does not
@@ -89,7 +89,7 @@ int64 ComputeDirectorySize(const FilePath& root_path);
 //
 // This function is implemented using the FileEnumerator class so it is not
 // particularly speedy in any platform.
-int64 ComputeFilesSize(const FilePath& directory,
+i64Bit::int64 ComputeFilesSize(const FilePath& directory,
                        const FilePath::StringType& pattern);
 
 // Deletes the given path, whether it's a file or a directory.
@@ -290,7 +290,7 @@ bool CreateTemporaryDirInDir(const FilePath& base_dir,
 bool CreateDirectory(const FilePath& full_path);
 
 // Returns the file size. Returns true on success.
-bool GetFileSize(const FilePath& file_path, int64* file_size);
+bool GetFileSize(const FilePath& file_path, i64Bit::int64* file_size);
 
 // Returns true if the given path's base name is ".".
 bool IsDot(const FilePath& path);

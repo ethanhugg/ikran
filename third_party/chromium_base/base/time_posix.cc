@@ -15,7 +15,7 @@
 namespace base {
 
 struct timespec TimeDelta::ToTimeSpec() const {
-  int64 microseconds = InMicroseconds();
+  i64Bit::int64 microseconds = InMicroseconds();
   time_t seconds = 0;
   if (microseconds >= Time::kMicrosecondsPerSecond) {
     seconds = InSeconds();
@@ -40,18 +40,18 @@ struct timespec TimeDelta::ToTimeSpec() const {
 //   => Thu Jan 01 00:00:00 UTC 1970
 //   irb(main):011:0> Time.at(-11644473600).getutc()
 //   => Mon Jan 01 00:00:00 UTC 1601
-static const int64 kWindowsEpochDeltaSeconds = GG_INT64_C(11644473600);
-static const int64 kWindowsEpochDeltaMilliseconds =
+static const i64Bit::int64 kWindowsEpochDeltaSeconds = GG_INT64_C(11644473600);
+static const i64Bit::int64 kWindowsEpochDeltaMilliseconds =
     kWindowsEpochDeltaSeconds * Time::kMillisecondsPerSecond;
 
 // static
-const int64 Time::kWindowsEpochDeltaMicroseconds =
+const i64Bit::int64 Time::kWindowsEpochDeltaMicroseconds =
     kWindowsEpochDeltaSeconds * Time::kMicrosecondsPerSecond;
 
 // Some functions in time.cc use time_t directly, so we provide an offset
 // to convert from time_t (Unix epoch) and internal (Windows epoch).
 // static
-const int64 Time::kTimeTToMicrosecondsOffset = kWindowsEpochDeltaMicroseconds;
+const i64Bit::int64 Time::kTimeTToMicrosecondsOffset = kWindowsEpochDeltaMicroseconds;
 
 // static
 Time Time::Now() {
@@ -77,7 +77,7 @@ void Time::Explode(bool is_local, Exploded* exploded) const {
   // Time stores times with microsecond resolution, but Exploded only carries
   // millisecond resolution, so begin by being lossy.  Adjust from Windows
   // epoch (1601) to Unix epoch (1970);
-  int64 milliseconds = (us_ - kWindowsEpochDeltaMicroseconds) /
+  i64Bit::int64 milliseconds = (us_ - kWindowsEpochDeltaMicroseconds) /
       kMicrosecondsPerMillisecond;
   time_t seconds = milliseconds / kMillisecondsPerSecond;
 
@@ -118,7 +118,7 @@ Time Time::FromExploded(bool is_local, const Exploded& exploded) {
   else
     seconds = timegm(&timestruct);
 
-  int64 milliseconds;
+  i64Bit::int64 milliseconds;
   // Handle overflow.  Clamping the range to what mktime and timegm might
   // return is the best that can be done here.  It's not ideal, but it's better
   // than failing here or ignoring the overflow case and treating each time
@@ -173,8 +173,8 @@ TimeTicks TimeTicks::Now() {
   }
 
   absolute_micro =
-      (static_cast<int64>(ts.tv_sec) * Time::kMicrosecondsPerSecond) +
-      (static_cast<int64>(ts.tv_nsec) / Time::kNanosecondsPerMicrosecond);
+      (static_cast<i64Bit::int64>(ts.tv_sec) * Time::kMicrosecondsPerSecond) +
+      (static_cast<i64Bit::int64>(ts.tv_nsec) / Time::kNanosecondsPerMicrosecond);
 
   return TimeTicks(absolute_micro);
 }
@@ -192,7 +192,7 @@ TimeTicks TimeTicks::HighResNow() {
 
 struct timeval Time::ToTimeVal() const {
   struct timeval result;
-  int64 us = us_ - kTimeTToMicrosecondsOffset;
+  i64Bit::int64 us = us_ - kTimeTToMicrosecondsOffset;
   result.tv_sec = us / Time::kMicrosecondsPerSecond;
   result.tv_usec = us % Time::kMicrosecondsPerSecond;
   return result;

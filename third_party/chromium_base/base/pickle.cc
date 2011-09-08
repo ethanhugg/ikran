@@ -185,7 +185,7 @@ bool Pickle::ReadUInt32(void** iter, uint32* result) const {
   return true;
 }
 
-bool Pickle::ReadInt64(void** iter, int64* result) const {
+bool Pickle::ReadInt64(void** iter, i64Bit::int64* result) const {
   DCHECK(iter);
   if (!*iter)
     *iter = const_cast<char*>(payload());

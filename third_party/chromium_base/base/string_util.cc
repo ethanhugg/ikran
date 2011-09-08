@@ -620,11 +620,11 @@ bool EndsWith(const string16& str, const string16& search,
 }
 #endif
 
-DataUnits GetByteDisplayUnits(int64 bytes) {
+DataUnits GetByteDisplayUnits(i64Bit::int64 bytes) {
   // The byte thresholds at which we display amounts.  A byte count is displayed
   // in unit U when kUnitThresholds[U] <= bytes < kUnitThresholds[U+1].
   // This must match the DataUnits enum.
-  static const int64 kUnitThresholds[] = {
+  static const i64Bit::int64 kUnitThresholds[] = {
     0,              // DATA_UNITS_BYTE,
     3*1024,         // DATA_UNITS_KIBIBYTE,
     2*1024*1024,    // DATA_UNITS_MEBIBYTE,
@@ -662,7 +662,7 @@ static const char* const kSpeedStrings[] = {
   "GB/s"
 };
 
-string16 FormatBytesInternal(int64 bytes,
+string16 FormatBytesInternal(i64Bit::int64 bytes,
                              DataUnits units,
                              bool show_units,
                              const char* const* suffix) {
@@ -693,11 +693,11 @@ string16 FormatBytesInternal(int64 bytes,
   return ASCIIToUTF16(ret);
 }
 
-string16 FormatBytes(int64 bytes, DataUnits units, bool show_units) {
+string16 FormatBytes(i64Bit::int64 bytes, DataUnits units, bool show_units) {
   return FormatBytesInternal(bytes, units, show_units, kByteStrings);
 }
 
-string16 FormatSpeed(int64 bytes, DataUnits units, bool show_units) {
+string16 FormatSpeed(i64Bit::int64 bytes, DataUnits units, bool show_units) {
   return FormatBytesInternal(bytes, units, show_units, kSpeedStrings);
 }
 

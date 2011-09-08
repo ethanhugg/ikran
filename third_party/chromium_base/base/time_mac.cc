@@ -32,24 +32,24 @@ namespace base {
 //   => Thu Jan 01 00:00:00 UTC 1970
 //   irb(main):011:0> Time.at(-11644473600).getutc()
 //   => Mon Jan 01 00:00:00 UTC 1601
-static const int64 kWindowsEpochDeltaSeconds = GG_INT64_C(11644473600);
-static const int64 kWindowsEpochDeltaMilliseconds =
+static const i64Bit::int64 kWindowsEpochDeltaSeconds = GG_INT64_C(11644473600);
+static const i64Bit::int64 kWindowsEpochDeltaMilliseconds =
     kWindowsEpochDeltaSeconds * Time::kMillisecondsPerSecond;
 
 // static
-const int64 Time::kWindowsEpochDeltaMicroseconds =
+const i64Bit::int64 Time::kWindowsEpochDeltaMicroseconds =
     kWindowsEpochDeltaSeconds * Time::kMicrosecondsPerSecond;
 
 // Some functions in time.cc use time_t directly, so we provide an offset
 // to convert from time_t (Unix epoch) and internal (Windows epoch).
 // static
-const int64 Time::kTimeTToMicrosecondsOffset = kWindowsEpochDeltaMicroseconds;
+const i64Bit::int64 Time::kTimeTToMicrosecondsOffset = kWindowsEpochDeltaMicroseconds;
 
 // static
 Time Time::Now() {
   CFAbsoluteTime now =
       CFAbsoluteTimeGetCurrent() + kCFAbsoluteTimeIntervalSince1970;
-  return Time(static_cast<int64>(now * kMicrosecondsPerSecond) +
+  return Time(static_cast<i64Bit::int64>(now * kMicrosecondsPerSecond) +
       kWindowsEpochDeltaMicroseconds);
 }
 
@@ -74,7 +74,7 @@ Time Time::FromExploded(bool is_local, const Exploded& exploded) {
       time_zone(is_local ? CFTimeZoneCopySystem() : NULL);
   CFAbsoluteTime seconds = CFGregorianDateGetAbsoluteTime(date, time_zone) +
       kCFAbsoluteTimeIntervalSince1970;
-  return Time(static_cast<int64>(seconds * kMicrosecondsPerSecond) +
+  return Time(static_cast<i64Bit::int64>(seconds * kMicrosecondsPerSecond) +
       kWindowsEpochDeltaMicroseconds);
 }
 

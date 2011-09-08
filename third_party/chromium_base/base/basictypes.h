@@ -30,9 +30,15 @@ typedef int                 int32;
 // The NSPR system headers define 64-bit as |long| when possible.  In order to
 // not have typedef mismatches, we do the same on LP64.
 #if __LP64__
+namespace i64Bit
+{
 typedef long                int64;
+}
 #else
+namespace i64Bit
+{
 typedef long long           int64;
+}
 #endif
 
 // NOTE: unsigned types are DANGEROUS in loops and other arithmetical
@@ -78,8 +84,8 @@ const  int16 kint16min  = (( int16) 0x8000);
 const  int16 kint16max  = (( int16) 0x7FFF);
 const  int32 kint32min  = (( int32) 0x80000000);
 const  int32 kint32max  = (( int32) 0x7FFFFFFF);
-const  int64 kint64min  = (( int64) GG_LONGLONG(0x8000000000000000));
-const  int64 kint64max  = (( int64) GG_LONGLONG(0x7FFFFFFFFFFFFFFF));
+const  i64Bit::int64 kint64min  = (( i64Bit::int64) GG_LONGLONG(0x8000000000000000));
+const  i64Bit::int64 kint64max  = (( i64Bit::int64) GG_LONGLONG(0x7FFFFFFFFFFFFFFF));
 
 // A macro to disallow the copy constructor and operator= functions
 // This should be used in the private: declarations for a class
