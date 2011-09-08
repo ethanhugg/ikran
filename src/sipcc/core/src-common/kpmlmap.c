@@ -1897,7 +1897,7 @@ kpml_generate_notify (kpml_data_t *kpml_data, boolean no_body,
         if (resp_code == KPML_SUCCESS) {
 
             strncpy(&(peventData->u.kpml_response.digits[0]),
-                    &(kpml_data->kpmlDialed[0]), MAX_DIALSTRING);
+                    &(kpml_data->kpmlDialed[0]), sizeof(peventData->u.kpml_response.digits)); // was MAX_DIALSTRING
         }
 
         if (kpml_data->flush == FALSE) {
@@ -1909,7 +1909,7 @@ kpml_generate_notify (kpml_data_t *kpml_data, boolean no_body,
         }
 
         strncpy(&(peventData->u.kpml_response.tag[0]),
-                &(kpml_data->regex->tag[0]), MAX_KPML_TAG_STRING);
+                &(kpml_data->regex->tag[0]), sizeof(peventData->u.kpml_response.tag)); // was MAX_KPML_TAG_STRING
 
         strncpy(&(peventData->u.kpml_response.text[0]),
                 resp_text, MAX_KPML_TEXT_STRING);

@@ -24,7 +24,7 @@
 		if(type == "incoming-call")
 		{
 			alert(" incoming call ");
-			Me.answerCall(onMediaStateChange);
+			Me.answerCall(ctx,onMediaStateChange);
 			callbut.value = "End Call";
 			ReRe = true;
 			msg.innerHTML = type;
@@ -80,7 +80,7 @@
             // Start recording
             ReRe = true;
             msg.innerHTML = "Placing Call...";
-            Me.placeCall("9991", onMediaStateChange);
+            Me.placeCall("9991",ctx, onMediaStateChange);
             callbut.value = "End Call!";
         }
     }

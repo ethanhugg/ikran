@@ -95,6 +95,8 @@
 #define VCM_CODEC_RESOURCE_iSAC     0x00000040
 #define VCM_CODEC_RESOURCE_H264     0x00000080
 #define VCM_CODEC_RESOURCE_H263     0x00000002
+#define VCM_CODEC_RESOURCE_VP8      0x00000100
+#define VCM_CODEC_RESOURCE_I420     0x00000200
 
 #define VCM_DSP_DECODEONLY  0
 #define VCM_DSP_ENCODEONLY  1
@@ -224,6 +226,8 @@ typedef enum
     VCM_Media_Payload_G726_32K = 82,
     VCM_Media_Payload_G726_24K = 83,
     VCM_Media_Payload_G726_16K = 84,
+    VCM_Media_Payload_VP8 = 120,
+    VCM_Media_Payload_I420 = 124,
     VCM_Media_Payload_Max           // Please leave this so we won't get compile errors.
 } vcm_media_payload_type_t;
 

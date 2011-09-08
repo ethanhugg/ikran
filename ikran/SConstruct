@@ -8,7 +8,6 @@ Import('componentName')
 Import('suffixName')
 Import('webrtcpath')
 
-
 ## Add Tests folders here
 # Temp using absolute paths
 include_dirs = [
@@ -26,31 +25,25 @@ include_dirs = [
   mozsdkpath + '/include/content',
   mozsdkpath + '/include/dom',
   mozsdkpath + '/include/nspr',
-  mozsdkpath + '/sdk/include'
+  mozsdkpath + '/sdk/include',
+  webrtcpath + '/src',
+  webrtcpath + '/src/video_engine/main/interface',
+  webrtcpath + '/src/voice_engine/main/interface'
 ]
-
-if sys.platform =='linux2':
-  include_dirs += [
-		'/usr/include/gtk-2.0',
-		'/usr/lib/gtk-2.0/include',
-		'/usr/include/cairo',
-		'/usr/include/glib-2.0',
-		'/usr/lib/glib-2.0/include',
-		'/usr/include/pango-1.0',
-		'/usr/include/atk-1.0'
-	]
 
 ## Add test src files here
 #
 src_files = [
   'Logger.cpp',
+  'video_renderer.cpp',
+  'Convert.cpp',
   'sipcc_controller.cpp',
   'CallControl.cpp',
   'CallControlModule.cpp'
 ]
+
 libpath = ['../out/lib']
 libs = []
-
 
 
 env = build_env.Clone(CPPPATH=include_dirs)
@@ -272,6 +265,10 @@ elif sys.platform=='darwin':
   env.Execute(xpidl_h_cmd)
   env.Execute(xpidl_tl_cmd)
 elif sys.platform=='linux2':
+  env.ParseConfig('pkg-config --cflags --libs gtk+-2.0')
+
+  print env['CPPPATH']
+
   outputlibname = 'libsessioncontrol.so'
   env["CPPDEFINES"] += [
     'MOZ_NO_MOZALLOC',
@@ -297,17 +294,28 @@ elif sys.platform=='linux2':
     '-Wno-non-virtual-dtor',
     '-Wcast-align',
     '-Wno-long-long',
+    '-Wno-enum-compare',
     '-include',
     'xpcom-config.h'
   ]
   libpath += [
     '../third_party/chromium_base',
     '../third_party/lib',
-    '/usr/include',
-    '/usr/lib',
+    '/usr/include'
+  ]
+  if x64 == 'yes':
+    libpath += [
+      '/usr/lib64'
+    ]
+  else:
+    libpath += [
+      '/usr/lib'
+    ]
+
+  libpath += [
     mozsdkpath + '/lib',
     mozsdkpath + '/bin',
- webrtcpath + '/out/Debug/obj.target/src/video_engine/main/source',
+     webrtcpath + '/out/Debug/obj.target/src/video_engine/main/source',
      webrtcpath + '/out/Debug/obj.target/src/voice_engine/main/source',
      webrtcpath + '/out/Debug/obj.target/src/modules/video_render/main/source',
      webrtcpath + '/out/Debug/obj.target/src/modules/media_file/source',
@@ -365,7 +373,6 @@ elif sys.platform=='linux2':
     'xml2', 
     'asound',
     'Xext',
-    'glib-2.0',
     'chromium',
  	'libvideo_engine_core.a',
     'libvoice_engine_core.a',
@@ -410,12 +417,18 @@ elif sys.platform=='linux2':
     '-shared',
 	'-pthread',
 	'-pipe',
-	'-m32',
 	'-Wl',	
     '-z',
     'muldefs'
   ]
-
+  if x64 == 'yes':
+    env["LINKFLAGS"] += [
+      '-m64',
+    ]
+  else:
+    env["LINKFLAGS"] += [
+      '-m32',
+    ]
   # Execute  xpcom commands
   xpidl_h_cmd =  mozsdkpath + '/bin/xpidl -m header -I' + mozsdkpath + '/idl ./ICallControl.idl'
   xpidl_tl_cmd = mozsdkpath + '/bin/xpidl -m typelib -I' + mozsdkpath + '/idl ./ICallControl.idl'

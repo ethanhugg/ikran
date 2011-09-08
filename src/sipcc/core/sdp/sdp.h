@@ -302,10 +302,10 @@ typedef enum {
 } sdp_direction_e;
 
 #define SDP_DIRECTION_PRINT(arg) \
-    (arg == SDP_DIRECTION_INACTIVE ? "SDP_DIRECTION_INACTIVE " : \
-    arg == SDP_DIRECTION_SENDONLY ? "SDP_DIRECTION_SENDONLY": \
-    arg == SDP_DIRECTION_RECVONLY ? "SDP_DIRECTION_RECVONLY ": \
-    arg == SDP_DIRECTION_SENDRECV ? " SDP_DIRECTION_SENDRECV": "SDP_MAX_QOS_DIRECTIONS")  
+    (((sdp_direction_e)(arg)) == SDP_DIRECTION_INACTIVE ? "SDP_DIRECTION_INACTIVE " : \
+     ((sdp_direction_e)(arg)) == SDP_DIRECTION_SENDONLY ? "SDP_DIRECTION_SENDONLY": \
+     ((sdp_direction_e)(arg)) == SDP_DIRECTION_RECVONLY ? "SDP_DIRECTION_RECVONLY ": \
+     ((sdp_direction_e)(arg)) == SDP_DIRECTION_SENDRECV ? " SDP_DIRECTION_SENDRECV": "SDP_MAX_QOS_DIRECTIONS")  
 
 
 /* QOS Strength tag */

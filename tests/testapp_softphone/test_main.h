@@ -5,7 +5,7 @@
  * 1.1 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
- *Webrtc
+ *
  * Software distributed under the License is distributed on an "AS IS" basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
  * for the specific language governing rights and limitations under the
@@ -19,6 +19,7 @@
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
+ *  Webrtc Authors
  *  Enda Mannion <emannion@cisco.com>
  *  Suhas Nandakumar <snandaku@cisco.com>
  *  Ethan Hugg <ehugg@cisco.com>
@@ -37,74 +38,34 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef WEBRTCAUDIOCODECSELECTOR_H_
-#define WEBRTCAUDIOCODECSELECTOR_H_
+#ifndef TEST_MAIN_H_
+#define TEST_MAIN_H_
 
-#ifndef _USE_CPVE
+#if defined __APPLE__
 
-#include <CSFAudioTermination.h>
-#include "voe_base.h"
-#include "voe_codec.h"
-#include <map>
+#include <string>
+#include "sipcc_controller.h"
 
+using namespace std;
 
-typedef enum {
-  WebrtcAudioPayloadType_PCMU = 0,
-  WebrtcAudioPayloadType_PCMA = 8,
-  WebrtcAudioPayloadType_G722 = 9,
-  WebrtcAudioPayloadType_iLBC = 102,
-  WebrtcAudioPayloadType_ISAC = 103,
-  WebrtcAudioPayloadType_TELEPHONE_EVENT = 106,
-  WebrtcAudioPayloadType_ISACLC = 119,
-  WebrtcAudioPayloadType_DIM = -1
-
-} WebrtcAudioPayloadType;
-
-const int ComfortNoisePayloadType = 13;
-const int SamplingFreq8000Hz =8000;
-const int SamplingFreq16000Hz =16000;
-const int SamplingFreq32000Hz =32000;
-
-namespace CSF
-{
-
-// A class to select a VOE audio codec
-class WebrtcAudioCodecSelector
+class TestMain :
+		public SipccControllerObserver
 {
 public:
-	// the constructor
-	WebrtcAudioCodecSelector();
-
-	// the destructor
-	~WebrtcAudioCodecSelector();
-
-	int init( webrtc::VoiceEngine* voeVoice, bool useLowBandwidthCodecOnly, bool advertiseG722Codec );
-
-	void release();
-
-	// return a bit mask of the available codecs
-	int  advertiseCodecs( CodecRequestType requestType );
-
-	// select the VOE codec according to payload type and packet size
-	// return 0 if a codec was selected
-	int select( int payloadType, int dynamicPayloadType, int packetSize, webrtc::CodecInst& selectedCoded );
-
-	// apply a sending codec to the channel
-	// return 0 if codec could be applied
-	int setSend(int channel, const webrtc::CodecInst& codec,int payloadType,bool vad);
-
-	// apply a receiving codec to the channel
-	// return 0 if codec could be applied
-	int setReceive(int channel, const webrtc::CodecInst& codec);
-
+    TestMain();
+    bool BeginOSIndependentTesting();
+	virtual void OnIncomingCall(std::string callingPartyName, std::string callingPartyNumber);
+ 	virtual void OnRegisterStateChange(std::string registrationState);
+ 	virtual void OnCallTerminated(); 
+	virtual void OnCallConnected();   
 private:
-	// the reference to the GIPS Codec sub-interface
-	webrtc::VoECodec* voeCodec;
-
-	std::map<int, webrtc::CodecInst*> codecMap;
+	void FillInUserData();
+	bool videoWinEnabled;
+	std::string sipProxy;
+	std::string deviceName;
+	std::string userName;
+	std::string userPassword;
 };
 
-} // namespace CSF
-
 #endif
-#endif /* WEBRTCAUDIOCODECSELECTOR_H_ */
+#endif  // TEST_MAIN_H_

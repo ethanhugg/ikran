@@ -527,8 +527,8 @@ void ccsnap_handle_mnc_reached (cc_line_info_t *line_info, cc_boolean mnc_reache
     for ( i=0; i<count; i++) {
 	cinfo = CCAPI_Call_getCallInfo(handles[i]);
 	if (cinfo) {
-	    if ( cinfo->attr == CONF_CONSULT ||
-	         cinfo->attr == XFR_CONSULT ) {
+	    if ( cinfo->attr == (cc_call_attr_t) CONF_CONSULT ||
+	         cinfo->attr == (cc_call_attr_t) XFR_CONSULT ) {
 	       CCAPI_Call_releaseCallInfo(cinfo);
 	       continue;
 	    }

@@ -11,17 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * The Original Code is the Cisco Systems SIP Stack.
+ * The Original Code is Rainbow.
  *
- * The Initial Developer of the Original Code is
- * Cisco Systems (CSCO).
- * Portions created by the Initial Developer are Copyright (C) 2002
+ * The Initial Developer of the Original Code is Mozilla Labs.
+ * Portions created by the Initial Developer are Copyright (C) 2010
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- *  Enda Mannion <emannion@cisco.com>
- *  Suhas Nandakumar <snandaku@cisco.com>
- *  Ethan Hugg <ehugg@cisco.com>
+ *   Anant Narayanan <anant@kix.in>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -36,36 +33,30 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
+#include "VideoSource.h"
 
-#ifndef CSFVIDEOMEDIATERMINATION_H_
-#define CSFVIDEOMEDIATERMINATION_H_
+#include <stdio.h>
+#include "VideoSource.h"
+#include <prmem.h>
+#include "vie_base.h"
+#include "vie_codec.h"
+#include "vie_render.h"
+#include "vie_capture.h"
+#include "common_types.h"
 
-#include <CSFMediaTermination.h>
-#include <CSFVideoControl.h>
+class VideoRenderer: public webrtc::ExternalRenderer {
+public:
+    VideoRenderer(int w, int h,nsIDOMCanvasRenderingContext2D *ctx);
+    ~VideoRenderer();
 
-typedef enum
-{
-	VideoCodecMask_H264 = 1,
-	VideoCodecMask_H263 = 2
+protected:
+    int FrameSizeChange(
+        unsigned int width, unsigned int height, unsigned int numberOfStreams
+    );
+    int DeliverFrame(unsigned char* buffer, int bufferSize);
+	int width;
+	int height;	
+    nsIDOMCanvasRenderingContext2D *vCanvas;
+};
 
-} VideoCodecMask;
 
-#if __cplusplus
-
-namespace CSF
-{
-	class VideoTermination : public MediaTermination
-	{
-	public:
-		virtual void setRemoteWindow( int streamId, VideoWindowHandle window) = 0;
-		virtual int setExternalRenderer( int streamId, VideoFormat videoFormat, ExternalRendererHandle render) = 0;
-		virtual void sendIFrame	( int streamId ) = 0;
-		virtual bool  mute		( int streamId, bool mute ) = 0;
-		virtual void setAudioStreamId( int streamId) = 0;
-	};
-
-} // namespace
-
-#endif // __cplusplus
-
-#endif /* CSFVIDEOMEDIATERMINATION_H_ */

@@ -103,9 +103,9 @@
 
 typedef struct timer_ipc_cmd_s 
 {
-    uint32_t timer_ptr;
-    uint32_t user_data_ptr;
-    uint32_t duration;
+    cpr_timer_t *timer_ptr;
+    void        *user_data_ptr;
+    uint32_t    duration;
 } timer_ipc_cmd_t;
 
 
@@ -267,8 +267,8 @@ static cprRC_t addTimerToList (cpr_timer_t *cprTimerPtr, uint32_t duration, void
     //CPR_INFO("%s: cprTimerptr=0x%x dur=%d user_data=%x\n",
     //       fname, cprTimerPtr, duration, data);
     tmr_cmd.msg_type = TMR_CMD_ADD;
-    tmr_cmd.u.cmd.timer_ptr = (uint32_t) cprTimerPtr;
-    tmr_cmd.u.cmd.user_data_ptr = (uint32_t)data;
+    tmr_cmd.u.cmd.timer_ptr = cprTimerPtr;
+    tmr_cmd.u.cmd.user_data_ptr = data;
     tmr_cmd.u.cmd.duration = duration;
 
 //CPR_INFO("%s:sending messge of type=%d\n", fname, tmr_cmd.msg_type);
@@ -445,7 +445,7 @@ removeTimerFromList (cpr_timer_t *cprTimerPtr)
     
     //CPR_INFO("%s:remove timer from list=0x%x\n",fname, cprTimerPtr); 
     tmr_cmd.msg_type = TMR_CMD_REMOVE;
-    tmr_cmd.u.cmd.timer_ptr = (uint32_t) cprTimerPtr;
+    tmr_cmd.u.cmd.timer_ptr = cprTimerPtr;
   
     //CPR_INFO("sending messge of type=%d\n", tmr_cmd.msg_type);
 
@@ -1084,14 +1084,14 @@ static cprRC_t read_timer_cmd ()
             //CPR_INFO("request to add timer ptr=%x duration=%d datptr=%x\n", 
             //       tmr_cmd.u.cmd.timer_ptr, tmr_cmd.u.cmd.duration, tmr_cmd.u.cmd.user_data_ptr);
 	  
-            ret = addTimer((cpr_timer_t *)tmr_cmd.u.cmd.timer_ptr,tmr_cmd.u.cmd.duration,
+            ret = addTimer(tmr_cmd.u.cmd.timer_ptr,tmr_cmd.u.cmd.duration,
                      (void *)tmr_cmd.u.cmd.user_data_ptr);
 
             break;
             
 	case TMR_CMD_REMOVE:
             //CPR_INFO("request to remove timer ptr=%x\n", tmr_cmd.u.cmd.timer_ptr);
-            ret = removeTimer((cpr_timer_t *)tmr_cmd.u.cmd.timer_ptr);
+            ret = removeTimer(tmr_cmd.u.cmd.timer_ptr);
             break;
             
         default:

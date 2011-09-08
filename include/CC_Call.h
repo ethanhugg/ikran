@@ -59,6 +59,8 @@ namespace CSF
 
 		virtual void setRemoteWindow (VideoWindowHandle window) = 0;
 
+		virtual int setExternalRenderer(VideoFormat videoFormat, ExternalRendererHandle renderer) = 0;
+
 		virtual void sendIFrame	() = 0;
 
         virtual CC_CallInfoPtr getCallInfo () = 0;

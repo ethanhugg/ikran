@@ -409,7 +409,8 @@ config_get_line_id (int id, int line)
     const var_t *entry;
 
     if ((line == 0) || (line > MAX_REG_LINES)) {
-        entry = &prot_cfg_table[id];
+        entry = &prot_cfg_table[id];  // XXX set but not used
+        (void) entry;
         CONFIG_ERROR(CFG_F_PREFIX"ID=%d- line %d out of range\n", "config_get_line_id", id, line);
         return (0);
     }

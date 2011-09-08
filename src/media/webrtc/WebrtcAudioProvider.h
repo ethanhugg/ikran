@@ -59,13 +59,6 @@
 #include <map>
 #include "base/synchronization/lock.h"
 
-class webrtc::VoiceEngine;
-class VoEFile;
-class VoEHardware;
-class VoEDtmf;
-class VoENetwork;
-class VoEVolumeControl;
-class VoEAudioProcessing;
 
 namespace CSF
 {

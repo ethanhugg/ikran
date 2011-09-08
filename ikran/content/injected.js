@@ -6,8 +6,8 @@ if (window && window.navigator) {
         registerUser: function(user_device, user, credential,proxy_address, sess_obs) {
             return regUser(window.location, user_device, user, credential, proxy_address, sess_obs);
         },
-        placeCall: function(dn, media_obs) {
-            return callStart(window.location, dn, media_obs);
+        placeCall: function(dn, ctx, media_obs) {
+            return callStart(window.location, dn, ctx, media_obs);
         },
         hangupCall: function() {
             return callStop(window.location);
@@ -15,8 +15,8 @@ if (window && window.navigator) {
         unregisterUser: function() {
             return unregUser(window.location);
         },
-        answerCall: function(media_obs) {
-            return callAnswer(window.location, media_obs);
+        answerCall: function(ctx, media_obs) {
+            return callAnswer(window.location, ctx, media_obs);
         },
   	fetchImage: function(isFile) {
             return fetchImg(window.location, isFile);

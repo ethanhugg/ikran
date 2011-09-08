@@ -103,7 +103,7 @@ elif sys.platform=='darwin':
     ]    
     
   build_env["CPPDEFINES"] += [
-    'NO_WEBRTC_VIDEO',
+#    'NO_WEBRTC_VIDEO',
     'SIP_OS_OSX', 
     'OSX', 
     'GIPS_VER=3410', 
@@ -130,6 +130,8 @@ elif sys.platform=='darwin':
     'OpenGL',
     '-framework',
     'Carbon',
+    '-framework',
+    'QtKit',
 	#'-fvisibility=hidden'
   ]
 
@@ -147,10 +149,11 @@ elif sys.platform=='darwin':
   
 elif sys.platform=='linux2':
   build_env["CPPFLAGS"] = [
-    #'-Werror',
+    '-Werror',
     '-Wall',
     '-fexceptions',
     '-fno-common',
+    '-fPIC',
   ]
   if x64 == 'yes':
     build_env["CPPFLAGS"] += [
@@ -162,7 +165,7 @@ elif sys.platform=='linux2':
       '-march=i486'
     ] 
   build_env["CPPDEFINES"] += [
-    'NO_WEBRTC_VIDEO',
+#    'NO_WEBRTC_VIDEO',
     '_GNU_SOURCE', 
     'SIP_OS_LINUX', 
     'LINUX', 
