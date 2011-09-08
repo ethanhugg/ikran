@@ -150,8 +150,8 @@ i64Bit::uint64 TickCount() {
   clock_gettime(CLOCK_MONOTONIC, &ts);
 
   i64Bit::uint64 absolute_micro =
-    static_cast<int64>(ts.tv_sec) * 1000000 +
-    static_cast<int64>(ts.tv_nsec) / 1000;
+    static_cast<i64Bit::int64>(ts.tv_sec) * 1000000 +
+    static_cast<i64Bit::int64>(ts.tv_nsec) / 1000;
 
   return absolute_micro;
 #endif
