@@ -6,4 +6,5 @@ interfaces ICallControl.xpt
 binary-component libsessioncontrol.dylib ABI=Darwin_x86-gcc3
 binary-component libsessioncontrol.dll ABI=WINNT_x86-msvc
 binary-component libsessioncontrol.so ABI=Linux_x86-gcc3
+binary-component libsessioncontrol.so ABI=Linux_x86_64-gcc3
 
