@@ -29,7 +29,8 @@ Required for all platforms:
 
 Linux:
   Built regularly on Ubuntu 10.4 32bit and 64bit
-  Should build on Ubuntu 11.04 32-bit and close to building on Fedora 15 64-bit
+  Built regularly on Ubuntu 11.0.4 32bit and 64bit
+  Close to building on Fedora 15 64-bit
   Third-Party Libraries
   +libxml2 - sudo apt-get install libxml2-dev
   +Glib    - sudo apt-get install libdbus-glib-1-dev
@@ -54,6 +55,8 @@ Windows:
   - Extract the package & Set the MOZSDKPATH env variable to point to it
   - Build WEBRTC for video and audio engine libraries 
 	+  Follow the instructions @ http://www.webrtc.org/reference/getting-started
+    +  webtrc version > 595 has been tested. To download a specific version use 
+			gclient sync --revision 595 
 	+  Set WEBRTCPATH to point to it : export WEBRTCPATH=/Users/XTM/HTML5/webrtc/trunk
   - Instead of using scons directly, use runSconsBuild.py like this
     'python runSconsBuild.py debug' or
@@ -70,14 +73,14 @@ Windows:
 -----------------------
 5. Testing the addon
 -----------------------
-  To build  & test 32bit addon , follow below steps
+  To build  & test addon , follow below steps
 
   - Addon executable shall be generated under the <SOURCE>/ikran
  	 called ikran-0.2-dev.xpi
-  - OSX
+  - OSX 
 	Start Firefox in 32 bit as 
 		arch -i386 /Applications/Firefox.app/Contents/MacOS/firefox-bin 
-  - Linux
+  - Linux (32 bit and 64 bit)
 	Connect your camera and make sure it works :)
 	Start Firefox normally  
   - Install the addon
