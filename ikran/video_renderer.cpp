@@ -60,7 +60,7 @@ VideoRenderer::FrameSizeChange(
 }
 
 int
-VideoRenderer::DeliverFrame(unsigned char* buffer, int bufferSize)
+VideoRenderer::DeliverFrame(unsigned char* buffer, int bufferSize, unsigned int timestamp)
 {
     nsresult rv;
 
