@@ -470,6 +470,7 @@ void CC_SIPCCCall::addStream(int streamId, bool isVideo)
             CSFLogInfoS( logTag, "addStream: externalRenderer is NULL");
 
 		}
+     
 
         for (StreamMapType::iterator entry =  pMediaData->streamMap.begin(); entry !=  pMediaData->streamMap.end(); entry++)
         {

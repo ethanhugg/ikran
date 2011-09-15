@@ -53,7 +53,7 @@ protected:
     int FrameSizeChange(
         unsigned int width, unsigned int height, unsigned int numberOfStreams
     );
-    int DeliverFrame(unsigned char* buffer, int bufferSize);
+    int DeliverFrame(unsigned char* buffer, int bufferSize, unsigned timestamp);
 	int width;
 	int height;	
     nsIDOMCanvasRenderingContext2D *vCanvas;
