@@ -9,14 +9,14 @@
   
 Source tree strcture:
 <SOURCE> 
-tests         [Standalone test application and add-on]
+tests                       [Standalone test application and add-on]
 	testapp_softphone
-ikran         [addon code and sample html]
-third_party   [Third party dependencies ]
+ikran                       [addon code and sample html]
+third_party                 [Third party dependencies ]
 	chromium_base
-lib           [GIPS libraries go here].
-src/sipcc     [SIP stack]
-src           [ECC - call control wrapper for SIP stack]
+lib                         [GIPS libraries go here].
+src/sipcc                   [SIP stack]
+src                         [ECC - call control wrapper for SIP stack]
 
 --------------------
 1. Platform Support 
@@ -54,10 +54,10 @@ Windows:
 	 https://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/6.0/sdk
   - Extract the package & Set the MOZSDKPATH env variable to point to it
   - Build WEBRTC for video and audio engine libraries 
-	+  Follow the instructions @ http://www.webrtc.org/reference/getting-started
-    +  webtrc version > 595 has been tested. To download a specific version use 
-			gclient sync --revision 595 
-	+  Set WEBRTCPATH to point to it : export WEBRTCPATH=/Users/XTM/HTML5/webrtc/trunk
+      +  Follow the instructions @ http://www.webrtc.org/reference/getting-started
+      +  webtrc version > 595 has been tested. To download a specific version use 
+		gclient sync --revision 595 
+      +  Set WEBRTCPATH to point to it : export WEBRTCPATH=/Users/XTM/HTML5/webrtc/trunk
   - Instead of using scons directly, use runSconsBuild.py like this
     'python runSconsBuild.py debug' or
     'python runSconsBuild.py clean'
@@ -94,46 +94,26 @@ NOTES:
 6. Using the Test Application
 --------------------------------
 Use the command line test application to exercise the SIP stack.
-There are two ways to use the Test Application
+The test application can be used against Cisco Call Manager, Asterisk and kamailio.
 
  Run the Test Application from the command line with no parameters
    ./tests/testapp_softphone/TestApp_SoftPhone
-  
-   Enter SIP Server IP address
-   Enter SIP Server Username (phone DN for CUCM)
-   Enter Password (not required for CUCM)
-   Enter device name (only required for CUCM)
- 
- 
- Run the Test Application from the command line with a config file as a parameter
-   ./tests/testapp_softphone/TestApp_SoftPhone cfg.txt
-     - Sample cfg.txt  (create file named e.g. cfg.txt)
 
-        IP_ADDRESS=10.53.40.5
-        DEVICENAME=emannionsip1
-        LOGFILE=local.log
-        SIPUSER=1010
-        CREDENTIALS=1234
+   ********************************
+   Please Choose One :
+         0. Quit
+         1. Register User
+         2. Place Call
+         3. Answer Call
+         4. End Call
+   What Action do you want to perform Monsieur ??
 
-Notes
- IP_ADDRESS = SIP server IP address, used as part of SIP AOR
- DEVICENAME = name of device config file on SIP server, onlr for CUCM
- SIPUSER = users DN configured on CUCM used as part of SIP AOR, i.e. SIPUSER@IP_ADDRESS
- CREDENTIALS = secter configured for a SIP user on Asterisk
+   Select 1 to register, enter the following details, inside square brackets are defaults.
 
-TestApp Commands
- - ?           -- view commands available
- - d <digits>  -- make call
- - e           -- end call
- - h           -- place a call on hold
- - r           -- resume a held call
- - m           -- mute audio while on a call
- - n           -- unmute audio
- - k           -- video mute
- - j           -- video unmute
- - z           -- enable\disable video
- - v           -- Setup video send direction, send only, sendrecv, revc only, inactive
- - q           -- quit
+   Enter SIP Server IP Address [ 10.53.47.140 ]:
+   Enter SIP Server username (phone DN for CUCM) [ 9995 ]:
+   Enter Password (not required for CUCM [ Enter ]:
+   Enter device name (only required for CUCM) [ emannionsip01 ]:
  
 -------------
 7. Addon API
@@ -184,4 +164,19 @@ Please see content/ikran.html for sample usage of the API.
   extn => 1234,1,Dial(SIP/bob)
   
 3. From the Asterisk CLI> sip reload  
+
+-----------------------------------
+9. Configuring kamailo SIP Server
+-----------------------------------
+Here is a good reference: http://www.oldskoolphreak.com/tfiles/voip/beginners_openser.txt
+
+1. Create two users
+
+  kamctl add userbob bobpassword bob@localhost
+  kamctl add useralice alicepassword alice@localhost
+
+
+2. Start kamailio
+
+  /usr/local/sbin$ ./kamailio
   
