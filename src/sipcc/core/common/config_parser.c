@@ -1514,6 +1514,9 @@ void config_setup_elements (const char *sipUser, const char *sipPassword, const 
     CONFIG_DEBUG(CFG_F_PREFIX "%s \n", "config_parser_element", "externalNumberMask");
     compare_or_set_string_value(CFGID_CCM_EXTERNAL_NUMBER_MASK, gExternalNumberMask, (const unsigned char *) "externalNumberMask");
 
+    // Set SIP P2P boolean
+    compare_or_set_boolean_value(CFGID_P2PSIP, gP2PSIP, (const unsigned char *) "p2psip");
+
     (void) isSecure; // XXX set but not used
     (void) isValid; // XXX set but not used
 }

@@ -96,10 +96,10 @@ void TestMain::OnCallConnected()
 
 }
 
-TestMain::TestMain(): sipProxy("10.99.10.75"),
-					  userName("1000"),
+TestMain::TestMain(): sipProxy("10.53.47.140"),
+					  userName("9995"),
 					  userPassword(""),
-					  deviceName("emannionsip01") 
+					  deviceName("ECPemannion")
 {
 }
 
