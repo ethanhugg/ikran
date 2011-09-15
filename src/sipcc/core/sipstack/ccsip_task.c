@@ -483,7 +483,14 @@ SIPTaskProcessListEvent (uint32_t cmd, void *msg, void *pUsr, uint16_t len)
             return;
         }
         sip_mode_quiet = FALSE;
-        sip_platform_init();
+
+        int p2psip = 0;
+        config_get_value(CFGID_P2PSIP, &p2psip, sizeof(p2psip));
+
+        // If P2P do not register with SIP Server
+        if (p2psip == 0)
+        	sip_platform_init();
+
         sip.taskInited = TRUE;
         DEF_DEBUG(SIP_F_PREFIX"sip.taskInited is set to true ",  fname);
 #ifdef SAPP_SAPP_GSM

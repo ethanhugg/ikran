@@ -220,6 +220,7 @@ static const boolean gCcm1_isvalid = TRUE;
 static const int gDscpCallControl = 1;
 static const int gSpeakerEnabled = 1;
 static const char gExternalNumberMask[] = "";
+static const boolean gP2PSIP = TRUE;
 
 
 
