@@ -173,7 +173,7 @@ static const int gRemoteCcEnable = 1;
 static const int gTimerKeepAliveExpires = 120;
 static const int gTimerSubscribeExpires = 120;
 static const int gTimerSubscribeDelta = 5;
-static const int gTransportLayerProtocol = 4;  //  4 = tcp, 2 = udp
+static const int gTransportLayerProtocol = 2;  //  4 = tcp, 2 = udp
 static const int gKpml = 3;
 static const boolean gNatEnabled = FALSE;
 static const char gNatAddress[] = "";

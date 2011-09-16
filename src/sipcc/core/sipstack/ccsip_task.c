@@ -478,14 +478,16 @@ SIPTaskProcessListEvent (uint32_t cmd, void *msg, void *pUsr, uint16_t len)
          */
         cprReleaseBuffer(msg);
 
-        if (sip_sm_init() < 0) {
-            CCSIP_DEBUG_ERROR(SIP_F_PREFIX"sip_sm_init() failed ",  fname);
-            return;
-        }
-        sip_mode_quiet = FALSE;
-
         int p2psip = 0;
         config_get_value(CFGID_P2PSIP, &p2psip, sizeof(p2psip));
+
+        //if (p2psip == 0) {
+        	if (sip_sm_init() < 0) {
+        		CCSIP_DEBUG_ERROR(SIP_F_PREFIX"sip_sm_init() failed ",  fname);
+        		return;
+        	}
+        //}
+        sip_mode_quiet = FALSE;
 
         // If P2P do not register with SIP Server
         if (p2psip == 0)
@@ -521,6 +523,22 @@ SIPTaskProcessListEvent (uint32_t cmd, void *msg, void *pUsr, uint16_t len)
             return;
         }
 #endif
+
+/*
+            cc_msg_t  *pCCMsg = (cc_msg_t *) msg;
+            if (pCCMsg->msg.setup.msg_id == CC_MSG_ONHOOK) {
+
+        	int p2psip = 0;
+        	config_get_value(CFGID_P2PSIP, &p2psip, sizeof(p2psip));
+        	if (p2psip == 1) {
+        		if (sip_sm_init() < 0) {
+        			CCSIP_DEBUG_ERROR(SIP_F_PREFIX"sip_sm_init() failed ",  fname);
+        			return;
+        		}
+            }
+
+*/
+
         if (sip_sm_process_cc_event(msg) != SIP_OK) {
             CCSIP_DEBUG_ERROR(SIP_F_PREFIX"sip_sm_process_cc_event() "
                               "failed.\n", fname);
