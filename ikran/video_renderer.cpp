@@ -62,8 +62,6 @@ VideoRenderer::FrameSizeChange(
 int
 VideoRenderer::DeliverFrame(unsigned char* buffer, int bufferSize, unsigned int timestamp)
 {
-    nsresult rv;
-
     PRTime epoch_c = PR_Now();
     PRFloat64 epoch = (PRFloat64)(epoch_c / MICROSECONDS);
     epoch += ((PRFloat64)(epoch_c % MICROSECONDS)) / MICROSECONDS;
@@ -79,7 +77,8 @@ VideoRenderer::DeliverFrame(unsigned char* buffer, int bufferSize, unsigned int 
         nsCOMPtr<nsIRunnable> render = new CanvasRenderer(
             vCanvas, width, height, rgb32, fsize
         );
-        rv = NS_DispatchToMainThread(render);
+
+        NS_DispatchToMainThread(render);
     }
 
     return 0;
