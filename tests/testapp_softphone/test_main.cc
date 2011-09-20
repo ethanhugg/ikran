@@ -96,10 +96,10 @@ void TestMain::OnCallConnected()
 
 }
 
-TestMain::TestMain(): sipProxy("10.99.10.75"),
-					  userName("1000"),
+TestMain::TestMain(): sipProxy("10.53.47.140"),
+					  userName("9995"),
 					  userPassword(""),
-					  deviceName("emannionsip01") 
+					  deviceName("ECPemannion")
 {
 }
 
@@ -143,7 +143,8 @@ bool TestMain::BeginOSIndependentTesting()
                                  window2Title);
     windowManager->SetTopmostWindow();
 	
-   	std::string dn; 
+   	std::string dn;
+   	std::string input;
     int testType = 0;
     int testErrors = 0;
     do
@@ -155,12 +156,14 @@ bool TestMain::BeginOSIndependentTesting()
 		cout << "\t 2. Place Call" << endl;
         cout << "\t 3. Answer Call" << endl;
 		cout << "\t 4. End Call" << endl;
+		cout << "\t 5. Start P2P mode" << endl;
+		cout << "\t 6. Place P2P Call" << endl;
 		
 		cout << " What Action do you want to perform Monsieur ?? " << endl;
 		scanf("%d", &testType);
 		getchar();
 		cout << "********************************" << endl;        
-        if (testType < 0 || testType > 4)
+        if (testType < 0 || testType > 6)
         {
 			continue;
         }
@@ -178,7 +181,7 @@ bool TestMain::BeginOSIndependentTesting()
 
             case 2:
 				SipccController::GetInstance()->SetVideoWindow(windowManager->GetWindow2());
-				cout << "Enter the number to dail, signore " ;
+				cout << "Enter the number to dial, signore " ;
 				getline(cin, dn, '\n');
 				SipccController::GetInstance()->PlaceCall(dn);
 				inCall = true;
@@ -191,6 +194,28 @@ bool TestMain::BeginOSIndependentTesting()
                	SipccController::GetInstance()->EndCall(); 
 				inCall = false;
                 break;
+
+            case 5:
+            	cout << "Enter local peer username (usually a phone DN) [ " << userName << " ]: " ;
+            	getline(cin, input, '\n');
+            	if(input.length() > 0)
+            	{
+            		userName = input;
+            	}
+            	SipccController::GetInstance()->StartP2PMode(userName);
+            	break;
+
+            case 6:
+            	SipccController::GetInstance()->SetVideoWindow(windowManager->GetWindow2());
+            	cout << "Enter the number to dail, signore " ;
+            	getline(cin, dn, '\n');
+            	cout << "Enter the IP Address to dial, signore " ;
+            	getline(cin, input, '\n');
+            	if(input.length() > 0)
+            	{
+            		p2pIPAddress = input;
+            	}
+            	SipccController::GetInstance()->PlaceP2PCall(dn, p2pIPAddress);
 
 			default:
                 break;

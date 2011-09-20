@@ -50,6 +50,7 @@ typedef enum eUserOperationRequest
     eQuit,
     eIncomingCallReceived,
     eOriginatePhoneCall,
+    eOriginateP2PPhoneCall,
     eAnswerCall,
     eCycleThroughVideoPrefOptions,
     eEndFirstCallWithEndCallCaps,
@@ -80,6 +81,7 @@ public:
 
     UserOperationRequestData(eUserOperationRequest req, void * pData) : request(req), m_pData(pData) {}
     ~UserOperationRequestData();
+
 
     union
     {

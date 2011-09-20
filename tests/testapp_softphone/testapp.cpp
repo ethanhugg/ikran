@@ -136,6 +136,9 @@ static base::WaitableEvent _WindowThreadEvent(true,false);
 bool endWindowWorkItem = true;
 bool g_bAutoAnswer = false;
 bool showVideoAutomatically = false;
+#define TEST_IP_ADDRESS  "10.99.10.75"
+static string PEERIPAddress = TEST_IP_ADDRESS;
+
 
 class MyPhoneListener : public CC_Observer
 {
@@ -578,6 +581,42 @@ static void handleOriginatePhoneCall (CallControlManagerPtr ccmPtr, const string
     	CSFLogDebug(logTag, " dialing (%s) # %s...", pMediaTypeStr, digits.c_str());
 
         if (outgoingCall->originateCall(videoPref, digits))
+        {
+        	CSFLogDebug(logTag, "Dialing (%s) %s...", pMediaTypeStr, digits.c_str());
+        }
+        else
+        {
+        	CSFLogDebugS(logTag, "Attempt to originate call failed.");
+        }
+    }
+}
+
+
+static void handleOriginateP2PPhoneCall (CallControlManagerPtr ccmPtr, const string & phoneNumberToCall)
+{
+    string digits = phoneNumberToCall;
+    digits.erase(remove_if(digits.begin(), digits.end(), std::not1(std::ptr_fun(isPhoneDNDigit))), digits.end());
+    CC_DevicePtr devicePtr = ccmPtr->getActiveDevice();
+
+    if (devicePtr != NULL)
+    {
+        CC_CallPtr outgoingCall = devicePtr->createCall();
+        CSFLogDebugS(logTag, "Created call, ");
+
+        cc_sdp_direction_t videoPref = getActiveVideoPref();
+        const char * pMediaTypeStr = getUserFriendlyNameForVideoPref(videoPref);
+
+
+#ifndef NOVIDEO
+    	CSFLogDebug(logTag, "  SUHAS SUHAS SUHAS SUHAS SUHAS SUHAS SUHAS ");
+		// associate the video window - even if this is not a video call, it might be escalated later, so
+		// it is easier to always associate them
+    	outgoingCall->setRemoteWindow((VideoWindowHandle)hVideoWindow);
+#endif
+
+    	CSFLogDebug(logTag, " dialing (%s) # %s...", pMediaTypeStr, digits.c_str());
+
+        if (outgoingCall->originateP2PCall(videoPref, digits, PEERIPAddress))
         {
         	CSFLogDebug(logTag, "Dialing (%s) %s...", pMediaTypeStr, digits.c_str());
         }
@@ -1050,6 +1089,13 @@ static bool handleAllUserRequests (CallControlManagerPtr ccmPtr)
                 handleOriginatePhoneCall(ccmPtr, *pNumber);
             }
             break;
+        case eOriginateP2PPhoneCall:
+            if (pRequest->m_pData != NULL)
+            {
+                string * pNumber = pRequest->m_pPhoneNumberToCall;
+                handleOriginateP2PPhoneCall(ccmPtr, *pNumber);
+            }
+            break;
 #ifndef NOVIDEO
         case eCycleThroughVideoPrefOptions:
             handleCycleThroughVideoPrefOptions(ccmPtr);
@@ -1144,7 +1190,6 @@ static void processUserInput (CallControlManagerPtr ccmPtr)
 }
 
 #define TEST_USER_NAME   "1000"
-#define TEST_IP_ADDRESS  "10.99.10.75"
 #define TEST_DEVICE_NAME "emannionsip01"
 
 static string logDestination = "stdout";
@@ -1206,6 +1251,15 @@ static void promptUserForInitialConfigInfo (const char * vxccCfgFilename)
         {
             CUCMIPAddress = input;
         }
+
+        cout << "Enter Remote Peer IP Address [" << PEERIPAddress << "]: ";
+        getline( cin, input, '\n');
+
+        if (input.length() > 0)
+        {
+        	PEERIPAddress = input;
+        }
+
 
         cout << "Enter SIP Server username (phone DN for CUCM) [" << username << "]: ";
         getline( cin, input, '\n');
@@ -1273,6 +1327,49 @@ static int performRegister ()
 
     return returnCode;
 }
+
+/*
+ * This function starts the sip stack in P2P mode.
+ */
+static int startInP2PMode ()
+{
+    int returnCode = 0;
+    int tBeforeConnect = GetTimeNow();
+
+    if( ccmPtr->startP2PMode(username) == false)
+    {
+    	CSFLogDebugS(logTag, "Failed to connect.");
+        returnCode = -1;
+    }
+    else
+    {
+        int loopCount = 0;
+        int tDiff = GetTimeElapsedSince(tBeforeConnect);
+
+        CSFLogDebug(logTag, "Connect succeeded after %d ms.\n", tDiff);
+
+        while ((ccmPtr->getActiveDevice() == NULL) && (loopCount < 5))
+        {
+        	CSFLogDebugS(logTag, "Device not available yet. Trying again in 2 seconds...");
+			base::PlatformThread::Sleep(2000);
+            ++loopCount;
+	    }
+
+	    if (ccmPtr->getActiveDevice() != NULL)
+	    {
+	    	CSFLogDebugS(logTag, "Phone is now ready for use...");
+	        processUserInput(ccmPtr);
+	    }
+	    else
+	    {
+	    	CSFLogDebugS(logTag, "Timed out waiting for device. Cannot continue...");
+	        returnCode = -1;
+	    }
+    }
+
+    return returnCode;
+}
+
 
 #ifndef WIN32
 std::string proxy_ip_address_="10.99.10.75";
@@ -1354,7 +1451,21 @@ static int runMainLoop ()
 
     ccmPtr->setSIPCCLoggingMask( GSM_DEBUG_BIT | FIM_DEBUG_BIT | SIP_DEBUG_MSG_BIT | CC_APP_DEBUG_BIT | SIP_DEBUG_REG_STATE_BIT );
 
-    return performRegister();
+    // make decision how to start the stack
+    std::string selection = "R";
+    std::string input;
+    cout << std::endl << std::endl << "Select Mode, (R) normal register, (P) P2P Mode [" << selection << "]: ";
+    getline( cin, input, '\n');
+
+    if (input.length() > 0)
+    {
+    	selection = input;
+    }
+
+    if (selection == "R" || selection == "r")
+    	return performRegister();
+    else
+    	return startInP2PMode();
 }
 
 static void initLogging(int argc, char** argv)

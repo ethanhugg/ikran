@@ -291,5 +291,17 @@ namespace CSF
         */
         virtual bool setVolume(int volume) = 0;
 
+
+        /**
+           Originate P2P call - API to go offhook and dial specified digits\user on a given call
+
+           @param [in] video_pref - video direction desired on call
+           @param [in] digits - digits to be dialed. can be empty then this API simply goes offhook
+           @param [in] ip address - the ip address of the peer to call
+
+           @return true or false.
+         */
+        virtual bool originateP2PCall (cc_sdp_direction_t video_pref, const std::string & digits, const std::string & ip) = 0;
+
     };
 };

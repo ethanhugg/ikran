@@ -129,6 +129,9 @@ namespace CSF
         virtual ConnectionStatusEnum::ConnectionStatus getConnectionStatus() = 0;
         virtual std::string getCurrentServer() = 0;
 
+        /* P2P API */
+        virtual bool startP2PMode(const std::string& user) = 0;
+
         /**
          * Obtain the device object, from which call control can be done.
          * getAvailablePhoneDetails lists all known devices which the user is likely to be able to control.

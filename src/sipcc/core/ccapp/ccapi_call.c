@@ -375,4 +375,3 @@ cc_return_t CCAPI_Call_setVideoMute (cc_call_handle_t handle, cc_boolean val){
 	}
         return CC_SUCCESS;
 }
-
