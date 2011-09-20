@@ -151,6 +151,9 @@ UserOperationRequestData::~UserOperationRequestData()
     case eOriginatePhoneCall:
         delete m_pPhoneNumberToCall;
         break;
+    case eOriginateP2PPhoneCall:
+        delete m_pPhoneNumberToCall;
+        break;
     case eSendDTMFDigitOnFirstCallWithDTMFCaps:
         delete m_pDTMFDigit;
         break;
@@ -256,6 +259,9 @@ void InputHandler::UserInputWorkItem::Run()
         {
         case 'd':
             context->createUserOperationAndSignal(eOriginatePhoneCall, new string(getInput("Enter DN# to call: ")));
+            break;
+        case 'p':
+            context->createUserOperationAndSignal(eOriginateP2PPhoneCall, new string(getInput("Enter DN# to call: ")));
             break;
         case 'a':
             context->createUserOperationAndSignal(eAnswerCall);
