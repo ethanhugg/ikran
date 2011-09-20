@@ -260,4 +260,5 @@ cc_return_t CCAPI_Call_setAudioMute(cc_call_handle_t handle, cc_boolean val);
  */
 cc_return_t CCAPI_Call_setVideoMute(cc_call_handle_t handle, cc_boolean val);
 
+
 #endif // _CCAPI_CALL_H_

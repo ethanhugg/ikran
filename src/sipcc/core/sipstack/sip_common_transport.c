@@ -478,8 +478,9 @@ sip_transport_setup_cc_conn (line_t dn, CCM_ID ccm_id)
 
         util_ntohl(&server_ipaddr, &server_ipaddr);
 
-        //server_port = (uint16_t) CCM_Config_Table[dn - 1][ccm_id]->ti_common.port;
-        server_port = gCcm1_sip_port;
+        uint32_t s_port;
+        config_get_value(CFGID_VOIP_CONTROL_PORT, &s_port, sizeof(s_port));
+        server_port =  (uint16_t) s_port;
 
         if (CCM_Config_Table[dn - 1][ccm_id]->ti_common.conn_type == CONN_UDP) {
             type = SOCK_DGRAM;
@@ -2107,6 +2108,7 @@ sipTransportInit (void)
              * start open sockets for listening for SIP messages and
              * the UDP channel to the SIP proxy server
              */
+
             if (SIPTransportUDPListenForSipMessages() == SIP_ERROR) {
                 CCSIP_DEBUG_ERROR(SIP_F_PREFIX"device unable to"
                                   " receive SIP messages.\n", fname);
@@ -2204,4 +2206,14 @@ sipTransportSetServerHandleAndPort (cpr_socket_t socket_handle,
         ti_common->handle = socket_handle;
         ti_common->listen_port = listen_port;
     }
+}
+
+void
+sipTransportSetSIPServer() {
+	char addr_str[MAX_IPADDR_STR_LEN];
+	init_empty_str(addr_str);
+	config_get_string(CFGID_CCM1_ADDRESS, addr_str, MAX_IPADDR_STR_LEN);
+	sstrncpy(CCM_Config_Table[0][0]->ti_common.addr_str, addr_str, MAX_IPADDR_STR_LEN);
+
+	sstrncpy(CCM_Device_Specific_Config_Table[PRIMARY_CCM].ti_common.addr_str, addr_str, MAX_IPADDR_STR_LEN);
 }
