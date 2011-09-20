@@ -65,6 +65,7 @@ private:
 	std::string deviceName;
 	std::string userName;
 	std::string userPassword;
+	std::string p2pIPAddress;
 };
 
 #endif

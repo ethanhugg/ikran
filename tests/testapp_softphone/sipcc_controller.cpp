@@ -100,6 +100,46 @@ bool SipccController::RegisterInternal() {
 	return true;
 }
 
+bool SipccController::StartP2PMode(std::string sipUser) {
+	int result = 0;
+	sip_user_ = sipUser;
+	Logger::Instance()->logIt("StartP2PMode");
+	Logger::Instance()->logIt(sip_user_);
+	GetLocalActiveInterfaceAddress();
+
+	InitInternal();
+	if(ccm_ptr_->startP2PMode(sip_user_) == false) {
+		Logger::Instance()->logIt("StartP2PMode - FAILED ");
+		return false;
+	}
+
+	return true;
+}
+
+void SipccController::PlaceP2PCall(std::string dial_number,  std::string sipDomain) {
+
+	Logger::Instance()->logIt(" SipccController::PlaceP2PCall");
+	dial_number_ = dial_number;
+	sipDomain_ = sipDomain;
+	 if (ccm_ptr_ != NULL)
+     {
+		Logger::Instance()->logIt(" Dial Number is ");
+		Logger::Instance()->logIt(dial_number_);
+		Logger::Instance()->logIt(" Domain is ");
+		Logger::Instance()->logIt(sipDomain);
+        device_ptr_ = ccm_ptr_->getActiveDevice();
+        outgoing_call_ = device_ptr_->createCall();
+		outgoing_call_->setRemoteWindow((VideoWindowHandle)video_window);
+        if(outgoing_call_->originateP2PCall(CC_SDP_DIRECTION_SENDRECV, dial_number_, sipDomain_)) {
+			Logger::Instance()->logIt("SipccController::PlaceP2PCall: Call Setup Succeeded ");
+        	return ;
+        } else {
+        }
+    } else {
+    }
+}
+
+
 // API Functions
 int SipccController::Register(std::string device, std::string sipUser, std::string sipCredentials, std::string sipDomain) {
 	int result = 0;	

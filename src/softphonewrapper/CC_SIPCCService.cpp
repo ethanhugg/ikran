@@ -583,6 +583,8 @@ bool CC_SIPCCService::startService()
 		pVideo->setDSCPValue(136);
     }
 
+    CCAPI_Config_set_transport(false);
+
     bUseConfig = false;
     if (!(bStarted = (CCAPI_Service_start() == CC_SUCCESS)))
     {
@@ -1142,6 +1144,14 @@ void CC_SIPCCService::onMediaLost( int callId )
 
 void CC_SIPCCService::onMediaRestored( int callId )
 {
+}
+
+bool CC_SIPCCService::setVoipPort(int port) {
+	return CCAPI_Config_set_voip_port(port);
+}
+
+bool CC_SIPCCService::setP2PMode(bool mode)  {
+	return CCAPI_Config_set_p2p_mode(mode);
 }
 
 } // End of namespace CSF

@@ -91,6 +91,9 @@ public:
 	void EndCall();
 	void AnswerCall();
 	
+	bool StartP2PMode(std::string sipUser);
+	void PlaceP2PCall(std::string dial_number,  std::string sipDomain);
+
 	void SetVideoWindow(void* videoWin) {
 		video_window =  videoWin;
 	}
@@ -135,6 +138,7 @@ private:
     std::string sip_credentials_;
     std::string destination_url_; // destination sip-address or phone number to call
     std::string dial_number_;
+    std::string sipDomain_;
 	//Controllers local database
     std::string local_ip_v4_address_;
 

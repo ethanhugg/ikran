@@ -260,6 +260,7 @@ sip_platform_udp_channel_create (cpr_ip_mode_e ip_mode, cpr_socket_t *s,
 
     sip_config_get_net_device_ipaddr(&local_signaladdr);
     memset(&local_sock_addr, 0, sizeof(local_sock_addr));
+
     (void) sip_set_sockaddr(&local_sock_addr, af_family_connect, local_signaladdr, 0, &addr_len);
     CCSIP_DEBUG_REG_STATE(DEB_F_PREFIX"local_signaladdr.u.ip4=%x\n",
         DEB_F_PREFIX_ARGS(SIP_SDP, fname), local_signaladdr.u.ip4);

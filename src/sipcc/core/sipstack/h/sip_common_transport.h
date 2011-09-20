@@ -251,4 +251,8 @@ extern void ccsip_dump_send_msg_info(char *msg, sipMessage_t *pSIPMessage,
 void SIPTaskProcessTCPMessage(sipMessage_t *pSipMessage,
                               cpr_sockaddr_storage from);
 
+void
+sipTransportSetSIPServer();
+
+
 #endif /* __SIP_COMMON_TRANSPORT_H__ */
