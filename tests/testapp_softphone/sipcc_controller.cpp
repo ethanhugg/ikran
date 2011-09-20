@@ -101,7 +101,6 @@ bool SipccController::RegisterInternal() {
 }
 
 bool SipccController::StartP2PMode(std::string sipUser) {
-	int result = 0;
 	sip_user_ = sipUser;
 	Logger::Instance()->logIt("StartP2PMode");
 	Logger::Instance()->logIt(sip_user_);
