@@ -467,6 +467,9 @@ SIPTaskProcessListEvent (uint32_t cmd, void *msg, void *pUsr, uint16_t len)
          */
     }
 
+    int p2psip = 0;
+    config_get_value(CFGID_P2PSIP, &p2psip, sizeof(p2psip));
+
     switch (cmd) {
         /*
          * See comment above
@@ -478,20 +481,22 @@ SIPTaskProcessListEvent (uint32_t cmd, void *msg, void *pUsr, uint16_t len)
          */
         cprReleaseBuffer(msg);
 
-        int p2psip = 0;
-        config_get_value(CFGID_P2PSIP, &p2psip, sizeof(p2psip));
+        // If P2P set transport to UDP
+        if (p2psip == TRUE)
+        	CC_Config_setIntValue(CFGID_TRANSPORT_LAYER_PROT, 2);
 
-        //if (p2psip == 0) {
-        	if (sip_sm_init() < 0) {
-        		CCSIP_DEBUG_ERROR(SIP_F_PREFIX"sip_sm_init() failed ",  fname);
-        		return;
-        	}
-        //}
+        if (sip_sm_init() < 0) {
+        	CCSIP_DEBUG_ERROR(SIP_F_PREFIX"sip_sm_init() failed ",  fname);
+        	return;
+        }
+
         sip_mode_quiet = FALSE;
 
         // If P2P do not register with SIP Server
-        if (p2psip == 0)
+        if (p2psip == FALSE)
         	sip_platform_init();
+        else
+        	ui_set_sip_registration_state(CC_ALL_LINES, TRUE);
 
         sip.taskInited = TRUE;
         DEF_DEBUG(SIP_F_PREFIX"sip.taskInited is set to true ",  fname);
@@ -524,20 +529,8 @@ SIPTaskProcessListEvent (uint32_t cmd, void *msg, void *pUsr, uint16_t len)
         }
 #endif
 
-/*
-            cc_msg_t  *pCCMsg = (cc_msg_t *) msg;
-            if (pCCMsg->msg.setup.msg_id == CC_MSG_ONHOOK) {
-
-        	int p2psip = 0;
-        	config_get_value(CFGID_P2PSIP, &p2psip, sizeof(p2psip));
-        	if (p2psip == 1) {
-        		if (sip_sm_init() < 0) {
-        			CCSIP_DEBUG_ERROR(SIP_F_PREFIX"sip_sm_init() failed ",  fname);
-        			return;
-        		}
-            }
-
-*/
+        if (p2psip == TRUE)
+        	sipTransportSetSIPServer();
 
         if (sip_sm_process_cc_event(msg) != SIP_OK) {
             CCSIP_DEBUG_ERROR(SIP_F_PREFIX"sip_sm_process_cc_event() "
@@ -1088,13 +1081,20 @@ SIPTaskProcessUDPMessage (cprBuffer_t msg,
      * Determine whether we want to process this packet
      * Initially just do this if we are talking to CCM - can be expanded later
      */
-    if (sip_regmgr_get_cc_mode(1) == REG_MODE_CCM) {
-        accept_msg = SIPTaskCheckSource(from);
-        if (accept_msg != SIP_OK) {
-            CCSIP_DEBUG_ERROR(SIP_F_PREFIX"SIPTaskCheckSource() failed - Sender not "
-                              "recognized\n", fname);
+
+
+    int p2psip = 0;
+    config_get_value(CFGID_P2PSIP, &p2psip, sizeof(p2psip));
+
+    if (p2psip == 0) {
+    	if (sip_regmgr_get_cc_mode(1) == REG_MODE_CCM) {
+        	accept_msg = SIPTaskCheckSource(from);
+        	if (accept_msg != SIP_OK) {
+        		CCSIP_DEBUG_ERROR(SIP_F_PREFIX"SIPTaskCheckSource() failed - Sender not "
+        				"recognized\n", fname);
             return SIP_ERROR;
-        }
+        	}
+    	}
     }
 
     /*

@@ -46,7 +46,7 @@
 extern boolean dump_reg_msg;
 
 /* SIP flags */
-cc_int32_t SipDebugMessage          = 0; /* SIP messaging output */
+cc_int32_t SipDebugMessage          = 1; /* SIP messaging output */
 cc_int32_t SipDebugState            = 0; /* SIP State Machine output */
 cc_int32_t SipDebugTask             = 1; /* SIP Task output */
 cc_int32_t SipDebugRegState         = 0; /* SIP Registration State Mach. output */

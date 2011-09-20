@@ -131,8 +131,6 @@ int cfg_get_inhibitLoading(void);
 ////
 //////
 
-//static char fname[] = "config_parser_handle_fcp_file";
-
 static const int gStartMediaPort = 16384;
 static const int gStopMediaPort = 32766;
 static const boolean gCallerIdBlocking = FALSE;
@@ -173,11 +171,9 @@ static const int gRemoteCcEnable = 1;
 static const int gTimerKeepAliveExpires = 120;
 static const int gTimerSubscribeExpires = 120;
 static const int gTimerSubscribeDelta = 5;
-static const int gTransportLayerProtocol = 2;  //  4 = tcp, 2 = udp
 static const int gKpml = 3;
 static const boolean gNatEnabled = FALSE;
 static const char gNatAddress[] = "";
-static const int gVoipControlPort = 5060;
 static const boolean gAnableVad = FALSE;
 static const boolean gAutoAnswerAltBehavior = FALSE;
 static const int gAutoAnswerTimer = 1;
@@ -220,8 +216,6 @@ static const boolean gCcm1_isvalid = TRUE;
 static const int gDscpCallControl = 1;
 static const int gSpeakerEnabled = 1;
 static const char gExternalNumberMask[] = "";
-static const boolean gP2PSIP = TRUE;
-
 
 
 #endif /* _CONFIG_H_ */

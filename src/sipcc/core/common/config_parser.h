@@ -162,6 +162,27 @@ void config_parse_element (xmlNode *cur_node, char *  value, xmlDocPtr doc );
  */
 void config_setup_elements ( const char *sipUser, const char *sipPassword, const char *sipDomain);
 
+/*
+ * Set server ip address into config
+ * Same ip address is also used to make a P2P call
+ */
+void config_setup_server_address (const char *sipDomain);
+
+/*
+ * set transport protocol, limited to udp or tcp for now
+ */
+void config_setup_transport(const cc_boolean is_udp);
+
+/*
+ * set local voip port defaults to 5060
+ */
+void config_setup_voip_control_port(const int voipControlPort);
+
+/*
+ * set p2p mode on or off
+ */
+void config_setup_p2p_mode(const cc_boolean is_p2p);
+
 /**
 * config_minimum_check:
 *

@@ -132,6 +132,7 @@ namespace CSF
         virtual void addStream(int streamId, bool isVideo);
         virtual void removeStream(int streamId);
         virtual bool setVolume(int volume);
+        virtual bool originateP2PCall (cc_sdp_direction_t video_pref, const std::string & digits, const std::string & ip);
 
         virtual CC_SIPCCCallMediaDataPtr getMediaData();
 

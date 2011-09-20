@@ -145,9 +145,29 @@ cc_boolean parse_setup_properties (int device_handle, const char *device_name, c
     return TRUE;
 }
 
+cc_boolean CCAPI_Config_set_server_address(const char *ip_address) {
+	config_setup_server_address(ip_address);
+	return TRUE;
+}
+
+cc_boolean CCAPI_Config_set_transport(const cc_boolean is_udp) {
+	config_setup_transport(is_udp);
+	return TRUE;
+}
+
+cc_boolean CCAPI_Config_set_voip_port(const int port) {
+	config_setup_voip_control_port(port);
+	return TRUE;
+}
+
 cc_boolean CCAPI_Config_checkValidity (int device_handle, const char *cfg_file_name, int from_memory) {
     CCAPP_ERROR("CCAPI_Config_checkValidity - check config file validity \n");
     return is_config_valid((char *)cfg_file_name, from_memory);
+}
+
+cc_boolean CCAPI_Config_set_p2p_mode(const cc_boolean is_p2p) {
+	config_setup_p2p_mode(is_p2p);
+	return TRUE;
 }
 
 /**

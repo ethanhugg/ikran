@@ -494,14 +494,14 @@ sip_tcp_create_connection (sipSPIMessage_t *spi_msg)
      
     memset(&local_sock_addr, 0, sizeof(local_sock_addr));
 
-    int p2psip = 0;
-    config_get_value(CFGID_P2PSIP, &p2psip, sizeof(p2psip));
+    //int p2psip = 0;
+    //config_get_value(CFGID_P2PSIP, &p2psip, sizeof(p2psip));
 
     // If P2P then listen locally on 5060
-    if (p2psip == 0)
-    	(void) sip_set_sockaddr(&local_sock_addr, af_listen, local_ipaddr, 0, &addr_len);
-    else
-    	(void) sip_set_sockaddr(&local_sock_addr, af_listen, local_ipaddr, 5060, &addr_len);
+    //if (p2psip == 0)
+    (void) sip_set_sockaddr(&local_sock_addr, af_listen, local_ipaddr, 0, &addr_len);
+    //else
+    //	(void) sip_set_sockaddr(&local_sock_addr, af_listen, local_ipaddr, 5060, &addr_len);
 
     CCSIP_DEBUG_REG_STATE(DEB_F_PREFIX"local_ipaddr.u.ip4=%x\n",
             DEB_F_PREFIX_ARGS(SIP_TCP_MSG, fname), local_ipaddr.u.ip4);

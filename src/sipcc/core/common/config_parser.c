@@ -97,6 +97,11 @@ static int secured_sip_port[MAX_CCM];
 static int security_mode = 1; /*NONSECURE*/
 extern accessory_cfg_info_t g_accessoryCfgInfo;
 
+// Configurable settings
+static int gTransportLayerProtocol = 4;   //  4 = tcp, 2 = udp
+static boolean gP2PSIP = FALSE;
+static int gVoipControlPort = 5060;
+
 typedef struct _multiLevel {
     int cfgId;           /* config id */
     xmlChar *name;          /* tag name */
@@ -1519,6 +1524,25 @@ void config_setup_elements (const char *sipUser, const char *sipPassword, const 
 
     (void) isSecure; // XXX set but not used
     (void) isValid; // XXX set but not used
+}
+
+void config_setup_server_address (const char *sipDomain) {
+	compare_or_set_string_value(CFGID_CCM1_ADDRESS+0, sipDomain, (const unsigned char *) "ccm1_addr");
+}
+
+void config_setup_transport(const cc_boolean is_udp) {
+	gTransportLayerProtocol = is_udp ? 2 : 4;
+	compare_or_set_int_value(CFGID_TRANSPORT_LAYER_PROT, gTransportLayerProtocol, (const unsigned char *) "transportLayerProtocol");
+}
+
+void config_setup_voip_control_port(const int voipControlPort) {
+	gVoipControlPort = voipControlPort;
+	compare_or_set_int_value(CFGID_VOIP_CONTROL_PORT, voipControlPort, (const unsigned char *) "voipControlPort");
+}
+
+void config_setup_p2p_mode(const cc_boolean is_p2p) {
+	gP2PSIP = is_p2p;
+	compare_or_set_boolean_value(CFGID_P2PSIP, is_p2p, (const unsigned char *) "p2psip");
 }
 
 /**
