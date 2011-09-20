@@ -101,6 +101,7 @@ extern accessory_cfg_info_t g_accessoryCfgInfo;
 static int gTransportLayerProtocol = 4;   //  4 = tcp, 2 = udp
 static boolean gP2PSIP = FALSE;
 static int gVoipControlPort = 5060;
+static int gCcm1_sip_port = 5060;
 
 typedef struct _multiLevel {
     int cfgId;           /* config id */
@@ -1537,7 +1538,9 @@ void config_setup_transport(const cc_boolean is_udp) {
 
 void config_setup_voip_control_port(const int voipControlPort) {
 	gVoipControlPort = voipControlPort;
+	gCcm1_sip_port = voipControlPort;
 	compare_or_set_int_value(CFGID_VOIP_CONTROL_PORT, voipControlPort, (const unsigned char *) "voipControlPort");
+	compare_or_set_int_value(CFGID_CCM1_SIP_PORT, voipControlPort,(const unsigned char *)"ccm1_sip_port");
 }
 
 void config_setup_p2p_mode(const cc_boolean is_p2p) {

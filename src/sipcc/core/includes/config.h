@@ -209,7 +209,6 @@ static const int gBusyTrigger = 1;
 static const unsigned char gAutoAnswerEnabled = 2 & 0x1;
 static const unsigned char gCallWaiting = 3 & 0x1;
 static const int gDeviceSecurityMode = 1;
-static const int gCcm1_sip_port = 5060;
 static const int gCcm2_sip_port = 5060;
 static const int gCcm3_sip_port = 5060;
 static const boolean gCcm1_isvalid = TRUE;
