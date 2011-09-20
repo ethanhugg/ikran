@@ -229,10 +229,9 @@ void InputHandler::UserInputWorkItem::signalSendDTMF (int asciiChar)
 
 static void clearBufferOfTypeAhead ()
 {
-    int ch = 0;
     while (csf_kbhit())//doesn't block, returns 0 if no char in buffer
     {
-        ch = csf_getch();
+        csf_getch();
     }
 }
 
