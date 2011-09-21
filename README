@@ -38,8 +38,9 @@ Linux:
   +libgtk  - sudo apt-get install libgtk2.0-dev     
 
 Mac OSX:
-  Built regularly on OSX 10.6 with XCode 3.2.6
-  Links to Framework 10.5
+  Built on OSX 10.7 with XCode 4.1 and OSX 10.6 with XCode 3.2.6
+  Links to Framework 10.6, minimum version 10.5
+  Requires libidl installed.  You can use MacPorts ("sudo port install libidl")
 
 Windows:
   Built regularly on Windows XP & Windows 7 32bit.
@@ -50,9 +51,11 @@ Windows:
 -------------
 2. Building 
 -------------
-  - Get Gecko2 SDK (32bit) for your platform from 
+  - Get the Gecko2 SDK 6.0 for your platform and target bitlength from 
 	 https://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/6.0/sdk
   - Extract the package & Set the MOZSDKPATH env variable to point to it
+  - NOTE FOR OSX : If you are compiling 32bit OSX use the 32bit Gecko2 SDK, 
+      but copy in the xpidl executable from the 64bit SDK.
   - Build WEBRTC for video and audio engine libraries 
       +  Follow the instructions @ http://www.webrtc.org/reference/getting-started
       +  webtrc version > 595 has been tested. To download a specific version use 
@@ -66,7 +69,7 @@ Windows:
 ----------
 4. Output
 ----------
-  Build will create a standalone test app and an addon for Firefox 4 or 5.
+  Build will create a standalone test app and an addon for Firefox 4, 5 or 6.
   Test App Exe: TestApp_Softphone
   Addon: ikran-0.2-dev.xpi
 

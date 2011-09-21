@@ -16,9 +16,8 @@
 
 #define MAC_COCOA_USE_NSRUNLOOP 1
 
-@class CocoaRenderView;
-
 #import <Cocoa/Cocoa.h>
+#import "cocoa_render_view.h"
 
 class WindowManager
 {

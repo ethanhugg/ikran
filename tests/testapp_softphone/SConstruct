@@ -22,12 +22,15 @@ include_dirs = [
 ## Add test src files here
 #
 if sys.platform == 'darwin':
-	src_files = [
-		'Logger.cpp',
-		'sipcc_controller.cc',
-		'test_mac_cocoa.cc',
-		'test_main.cc'
-		]
+  src_files = [
+    'Logger.cpp',
+    'sipcc_controller.cc',
+    'test_mac_cocoa.cc',
+    'test_main.cc'
+  ]
+  include_dirs += [
+    webrtcpath + '/src/modules/video_render/main/source/mac'
+  ] 
 else:
    src_files = Glob('*.cpp')
 

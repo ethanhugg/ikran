@@ -88,7 +88,6 @@ elif sys.platform=='darwin':
     '-Wunused-function',
     '-fexceptions',
     '-fno-common',
-    '-fvisibility=hidden'
   ]
   
   if x64 == 'yes':
@@ -119,7 +118,7 @@ elif sys.platform=='darwin':
   
   build_env["LINKFLAGS"] = [
     '-isysroot',
-    '/Developer/SDKs/MacOSX10.5.sdk',
+    '/Developer/SDKs/MacOSX10.6.sdk',
     '-mmacosx-version-min=10.5',
     '-L/usr/X11R6/lib',
     '-framework',
@@ -132,7 +131,6 @@ elif sys.platform=='darwin':
     'Carbon',
     '-framework',
     'QtKit',
-	#'-fvisibility=hidden'
   ]
 
   if x64 == 'yes':
@@ -208,7 +206,7 @@ if int(debug):
       '-g',
       '-ggdb',
       '-isysroot',
-      '/Developer/SDKs/MacOSX10.5.sdk',
+      '/Developer/SDKs/MacOSX10.6.sdk',
       '-mmacosx-version-min=10.5'
   ]
   elif sys.platform=='linux2':
@@ -236,7 +234,7 @@ else:
       '-D',
       'NDEBUG',
       '-isysroot',
-      '/Developer/SDKs/MacOSX10.5.sdk',
+      '/Developer/SDKs/MacOSX10.6.sdk',
       '-mmacosx-version-min=10.5'
     ]
   elif sys.platform=='linux2':

@@ -224,7 +224,6 @@ elif sys.platform=='darwin':
     '-Wno-long-long',
     '-include',
     'xpcom-config.h',
-	'-fvisibility=default'
   ]
   env["LINKFLAGS"] += [
     '-pthread',

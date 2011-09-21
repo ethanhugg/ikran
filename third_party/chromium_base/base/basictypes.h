@@ -26,13 +26,10 @@ typedef short               int16;
 //namespace fix is a temporary one to avoid the above conflict.
 // It does pollutes the code .. But no GO :-(
 
-#ifndef _INT32
-#define _INT32
 namespace i32Bit
 {
 typedef int                 int32;
 }
-#endif
 
 // The NSPR system headers define 64-bit as |long| when possible.  In order to
 // not have typedef mismatches, we do the same on LP64.
@@ -59,13 +56,10 @@ typedef unsigned short     uint16;
 // TODO: Remove these type guards.  These are to avoid conflicts with
 // obsolete/protypes.h in the Gecko SDK.
 //namespace is a temp fix untill we get a better way to do this :-(
-#ifndef _UINT32
-#define _UINT32
 namespace i32Bit 
 {
 typedef unsigned int       uint32;
 }
-#endif
 
 // See the comment above about NSPR and 64-bit.
 #if __LP64__
