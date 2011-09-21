@@ -17,14 +17,21 @@
 #include <stdint.h>         // For intptr_t.
 #endif
 
+
 typedef signed char         schar;
 typedef signed char         int8;
 typedef short               int16;
 // TODO: Remove these type guards.  These are to avoid conflicts with
 // obsolete/protypes.h in the Gecko SDK.
+//namespace fix is a temporary one to avoid the above conflict.
+// It does pollutes the code .. But no GO :-(
+
 #ifndef _INT32
 #define _INT32
+namespace i32Bit
+{
 typedef int                 int32;
+}
 #endif
 
 // The NSPR system headers define 64-bit as |long| when possible.  In order to
@@ -51,9 +58,13 @@ typedef unsigned char      uint8;
 typedef unsigned short     uint16;
 // TODO: Remove these type guards.  These are to avoid conflicts with
 // obsolete/protypes.h in the Gecko SDK.
+//namespace is a temp fix untill we get a better way to do this :-(
 #ifndef _UINT32
 #define _UINT32
+namespace i32Bit 
+{
 typedef unsigned int       uint32;
+}
 #endif
 
 // See the comment above about NSPR and 64-bit.
@@ -76,14 +87,14 @@ typedef signed int         char32;
 
 const uint8  kuint8max  = (( uint8) 0xFF);
 const uint16 kuint16max = ((uint16) 0xFFFF);
-const uint32 kuint32max = ((uint32) 0xFFFFFFFF);
+const i32Bit::uint32 kuint32max = ((i32Bit::uint32) 0xFFFFFFFF);
 const i64Bit::uint64 kuint64max = ((i64Bit::uint64) GG_LONGLONG(0xFFFFFFFFFFFFFFFF));
 const  int8  kint8min   = ((  int8) 0x80);
 const  int8  kint8max   = ((  int8) 0x7F);
 const  int16 kint16min  = (( int16) 0x8000);
 const  int16 kint16max  = (( int16) 0x7FFF);
-const  int32 kint32min  = (( int32) 0x80000000);
-const  int32 kint32max  = (( int32) 0x7FFFFFFF);
+const  i32Bit::int32 kint32min  = (( i32Bit::int32) 0x80000000);
+const  i32Bit::int32 kint32max  = (( i32Bit::int32) 0x7FFFFFFF);
 const  i64Bit::int64 kint64min  = (( i64Bit::int64) GG_LONGLONG(0x8000000000000000));
 const  i64Bit::int64 kint64max  = (( i64Bit::int64) GG_LONGLONG(0x7FFFFFFFFFFFFFFF));
 
@@ -268,7 +279,7 @@ struct CompileAssert {
 
 // MetatagId refers to metatag-id that we assign to
 // each metatag <name, value> pair..
-typedef uint32 MetatagId;
+typedef i32Bit::uint32 MetatagId;
 
 // Argument type used in interfaces that can optionally take ownership
 // of a passed in argument.  If TAKE_OWNERSHIP is passed, the called

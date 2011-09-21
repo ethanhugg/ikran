@@ -17,7 +17,7 @@ const int Pickle::kPayloadUnit = 64;
 // We mark a read only pickle with a special capacity_.
 static const size_t kCapacityReadOnly = std::numeric_limits<size_t>::max();
 
-// Payload is uint32 aligned.
+// Payload is i32Bit::uint32 aligned.
 
 Pickle::Pickle()
     : header_(NULL),
@@ -30,7 +30,7 @@ Pickle::Pickle()
 
 Pickle::Pickle(int header_size)
     : header_(NULL),
-      header_size_(AlignInt(header_size, sizeof(uint32))),
+      header_size_(AlignInt(header_size, sizeof(i32Bit::uint32))),
       capacity_(0),
       variable_buffer_offset_(0) {
   DCHECK(static_cast<size_t>(header_size) >= sizeof(Header));
@@ -50,7 +50,7 @@ Pickle::Pickle(const char* data, int data_len)
   if (header_size_ > static_cast<unsigned int>(data_len))
     header_size_ = 0;
 
-  if (header_size_ != AlignInt(header_size_, sizeof(uint32)))
+  if (header_size_ != AlignInt(header_size_, sizeof(i32Bit::uint32)))
     header_size_ = 0;
 
   // If there is anything wrong with the data, we're not going to use it.
@@ -171,7 +171,7 @@ bool Pickle::ReadUInt16(void** iter, uint16* result) const {
   return true;
 }
 
-bool Pickle::ReadUInt32(void** iter, uint32* result) const {
+bool Pickle::ReadUInt32(void** iter, i32Bit::uint32* result) const {
   DCHECK(iter);
   if (!*iter)
     *iter = const_cast<char*>(payload());
@@ -377,8 +377,8 @@ void Pickle::TrimWriteData(int new_length) {
 }
 
 char* Pickle::BeginWrite(size_t length) {
-  // write at a uint32-aligned offset from the beginning of the header
-  size_t offset = AlignInt(header_->payload_size, sizeof(uint32));
+  // write at a i32Bit::uint32-aligned offset from the beginning of the header
+  size_t offset = AlignInt(header_->payload_size, sizeof(i32Bit::uint32));
 
   size_t new_size = offset + length;
   size_t needed_size = header_size_ + new_size;
@@ -386,18 +386,18 @@ char* Pickle::BeginWrite(size_t length) {
     return NULL;
 
 #ifdef ARCH_CPU_64_BITS
-  DCHECK_LE(length, std::numeric_limits<uint32>::max());
+  DCHECK_LE(length, std::numeric_limits<i32Bit::uint32>::max());
 #endif
 
-  header_->payload_size = static_cast<uint32>(new_size);
+  header_->payload_size = static_cast<i32Bit::uint32>(new_size);
   return payload() + offset;
 }
 
 void Pickle::EndWrite(char* dest, int length) {
   // Zero-pad to keep tools like purify from complaining about uninitialized
   // memory.
-  if (length % sizeof(uint32))
-    memset(dest + length, 0, sizeof(uint32) - (length % sizeof(uint32)));
+  if (length % sizeof(i32Bit::uint32))
+    memset(dest + length, 0, sizeof(i32Bit::uint32) - (length % sizeof(i32Bit::uint32)));
 }
 
 bool Pickle::Resize(size_t new_capacity) {
@@ -417,7 +417,7 @@ bool Pickle::Resize(size_t new_capacity) {
 const char* Pickle::FindNext(size_t header_size,
                              const char* start,
                              const char* end) {
-  DCHECK(header_size == AlignInt(header_size, sizeof(uint32)));
+  DCHECK(header_size == AlignInt(header_size, sizeof(i32Bit::uint32)));
   DCHECK(header_size <= static_cast<size_t>(kPayloadUnit));
 
   if (static_cast<size_t>(end - start) < sizeof(Header))

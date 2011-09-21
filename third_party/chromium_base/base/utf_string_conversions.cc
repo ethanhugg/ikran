@@ -27,9 +27,9 @@ bool ConvertUnicode(const SRC_CHAR* src,
                     DEST_STRING* output) {
   // ICU requires 32-bit numbers.
   bool success = true;
-  int32 src_len32 = static_cast<int32>(src_len);
-  for (int32 i = 0; i < src_len32; i++) {
-    uint32 code_point;
+  i32Bit::int32 src_len32 = static_cast<i32Bit::int32>(src_len);
+  for (i32Bit::int32 i = 0; i < src_len32; i++) {
+    i32Bit::uint32 code_point;
     if (ReadUnicodeCharacter(src, src_len32, &i, &code_point)) {
       WriteUnicodeCharacter(code_point, output);
     } else {

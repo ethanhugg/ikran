@@ -10,6 +10,7 @@ Import('webrtcpath')
 
 ## Add Tests folders here
 # Temp using absolute paths
+windows_sdk_incl_dir=os.environ['MS_WINDOWS_SDK_PATH'] + '/Include'
 include_dirs = [
   '.',
   '../../include',
@@ -18,19 +19,20 @@ include_dirs = [
   '../../out/include/system',
   '../../third_party/chromium_base',
   '../../src/common/browser_logging'
-]
+ ]
 
 ## Add test src files here
 #
 if sys.platform == 'darwin':
 	src_files = [
 		'Logger.cpp',
-		'sipcc_controller.cpp',
+		'sipcc_controller.cc',
 		'test_mac_cocoa.cc',
 		'test_main.cc'
 		]
 else:
    src_files = Glob('*.cpp')
+
 
 
 libpath = ['../../out/lib']
@@ -52,16 +54,20 @@ if sys.platform =='win32':
     '/wd4275',
     '/wd4512'
   ]
-  windows_sdk_lib_dir=os.environ['MS_WINDOWS_SDK_PATH'] + '/lib'
+  windows_sdk_lib_dir=os.environ['MS_WINDOWS_SDK_PATH'] + '\Lib'
+  print windows_sdk_lib_dir
   ms_vc_lib_dir=os.environ['MS_VC_PATH'] + '/VC/lib'
   ms_vc_atlmfc_lib_dir=os.environ['MS_VC_PATH'] + '/VC/ATLMFC/lib'
+  ms_dx_sdk_dir = os.environ['DXSDK_DIR'] + 'Lib/x86'
   libpath += [ 
     ms_vc_lib_dir,
     windows_sdk_lib_dir,
     ms_vc_atlmfc_lib_dir,
+	ms_dx_sdk_dir,
     '../../third_party/lib',
     '../../third_party/chromium_base',
-    '../../src/common/browser_logging'
+    '../../src/common/browser_logging',
+	 webrtcpath + '/Debug/lib'
   ]
   libs += [
     componentName + suffixName + '.lib',
@@ -81,14 +87,55 @@ if sys.platform =='win32':
     'atls.lib',  
     'avrt.lib', 
     'DelayImp.lib', 
-    'ddraw.lib', 
+    'ddraw.lib',
+	'dmoguids.lib',
+	'msdmo.lib', 
+	'WinMM.lib',
+	'wmcodecdspuuid.lib',
     'ws2_32.lib', 
     'mswsock.lib', 
     'dbghelp.lib', 
     'Psapi.lib',
     'chromium.lib',
     'browser_logging.lib',
-    'GIPSVideoEngineWindows_MT.lib'
+	'aec.lib',
+    'aecm.lib',
+	'agc.lib',
+    'apm_util.lib',
+    'audio_coding_module.lib',
+    'audio_conference_mixer.lib',
+    'audio_device.lib',
+    'audio_processing.lib',
+    'CNG.lib',
+    'G711.lib',
+    'G722.lib',
+    'iLBC.lib',
+    'iSAC.lib',
+    'iSACFix.lib',
+    'libjpeg.lib',
+    'media_file.lib',
+    'NetEq.lib',
+    'ns.lib',
+    'PCM16B.lib',
+    'resampler.lib',
+    'rtp_rtcp.lib',
+    'spl.lib',
+    'protobuf_lite.lib',
+	'system_wrappers.lib',
+    'udp_transport.lib',
+	'vad.lib',
+    'video_capture_module.lib',
+    'video_engine_core.lib',
+    'video_processing.lib',
+	'video_render_module.lib',
+	'voice_engine_core.lib',
+	'libvpx.lib',
+	'webrtc_i420.lib',
+	'webrtc_jpeg.lib',
+	'webrtc_utility.lib',
+	'webrtc_video_coding.lib',
+	'webrtc_vp8.lib',
+	'webrtc_vplib.lib'
   ]
   if int(debug):
     libs += [

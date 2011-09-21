@@ -53,8 +53,10 @@ if sys.platform =='win32':
   env["CPPDEFINES"] += [
     'WIN32',
     '_CONSOLE',
-    'MBCS'
-  ]
+    'MBCS',
+	'XP_WIN',
+	'MOZ_NO_MOZALLOC',
+	]
   env["CPPFLAGS"] += [
     '/c',
     '/W4',
@@ -65,16 +67,28 @@ if sys.platform =='win32':
   windows_sdk_lib_dir=os.environ['MS_WINDOWS_SDK_PATH'] + '/lib'
   ms_vc_lib_dir=os.environ['MS_VC_PATH'] + '/VC/lib'
   ms_vc_atlmfc_lib_dir=os.environ['MS_VC_PATH'] + '/VC/ATLMFC/lib'
+  ms_dx_sdk_dir = os.environ['DXSDK_DIR'] + 'Lib/x86'
+  
   libpath += [ 
     ms_vc_lib_dir,
     windows_sdk_lib_dir,
     ms_vc_atlmfc_lib_dir,
+	ms_dx_sdk_dir,
     '../third_party/lib',
     '../third_party/chromium_base',
-    '../src/common/browser_logging'
+    '../src/common/browser_logging',
+	mozsdkpath + '/lib',
+    mozsdkpath + '/bin',
+  	webrtcpath + '/Debug/lib'
   ]
   libs += [
     componentName + suffixName + '.lib',
+	'xpcomglue_s.lib',
+    'xpcom.lib',
+    'nspr4.lib',
+    'mozalloc.lib',
+    'plds4.lib',
+    'plc4.lib',
     'winmm.lib',
     'kernel32.lib',
     'user32.lib',
@@ -92,13 +106,54 @@ if sys.platform =='win32':
     'avrt.lib', 
     'DelayImp.lib', 
     'ddraw.lib', 
+	'dmoguids.lib',
+	'msdmo.lib', 
+	'WinMM.lib',
+	'wmcodecdspuuid.lib',
     'ws2_32.lib', 
     'mswsock.lib', 
     'dbghelp.lib', 
-    'Psapi.lib'
+    'Psapi.lib',
     'chromium.lib',
     'browser_logging.lib',
-    'GIPSVideoEngineWindows_MT.lib'
+    'aec.lib',
+    'aecm.lib',
+	'agc.lib',
+    'apm_util.lib',
+    'audio_coding_module.lib',
+    'audio_conference_mixer.lib',
+    'audio_device.lib',
+    'audio_processing.lib',
+    'CNG.lib',
+    'G711.lib',
+    'G722.lib',
+    'iLBC.lib',
+    'iSAC.lib',
+    'iSACFix.lib',
+    'libjpeg.lib',
+    'media_file.lib',
+    'NetEq.lib',
+    'ns.lib',
+    'PCM16B.lib',
+    'resampler.lib',
+    'rtp_rtcp.lib',
+    'spl.lib',
+    'protobuf_lite.lib',
+	'system_wrappers.lib',
+    'udp_transport.lib',
+	'vad.lib',
+    'video_capture_module.lib',
+    'video_engine_core.lib',
+    'video_processing.lib',
+	'video_render_module.lib',
+	'voice_engine_core.lib',
+	'libvpx.lib',
+	'webrtc_i420.lib',
+	'webrtc_jpeg.lib',
+	'webrtc_utility.lib',
+	'webrtc_video_coding.lib',
+	'webrtc_vp8.lib',
+	'webrtc_vplib.lib'
   ]
   if int(debug):
     libs += [
@@ -111,6 +166,8 @@ if sys.platform =='win32':
       'libxml2_mt.lib'
     ]
   env["LINKFLAGS"] = [
+    '/nologo',
+    '/dll',
     '/DELAYLOAD:"avrt.dll"',
     '/SUBSYSTEM:CONSOLE',
     '/DYNAMICBASE',
@@ -124,11 +181,18 @@ if sys.platform =='win32':
     '/NODEFAULTLIB:"avrt.lib"',
     '/NODEFAULTLIB:"libirc.lib"',
     '/NODEFAULTLIB:"advapi32.lib"'
-  ]
+	]
   if int(debug):
     env["LINKFLAGS"] += [
       '/DEBUG '
     ]
+  
+  moz_sdk_dir = os.environ['MOZSDKPATH']
+  xpidl_h_cmd =  moz_sdk_dir + '\\bin\\xpidl -m header -I' + moz_sdk_dir + '\idl ./ICallControl.idl'
+  xpidl_tl_cmd = moz_sdk_dir + '\\bin\\xpidl -m typelib -I' + moz_sdk_dir + '\idl ./ICallControl.idl'
+  env.Execute(xpidl_h_cmd)
+  env.Execute(xpidl_tl_cmd)
+  
 elif sys.platform=='darwin':
   outputlibname = 'libsessioncontrol.dylib'
   env["CPPDEFINES"] += [
@@ -408,9 +472,14 @@ elif sys.platform=='linux2':
   env.Execute(xpidl_tl_cmd)
 
 
-buildResult = env.Program(outputlibname, src_files,
-  LIBS=libs,
-  LIBPATH=libpath)
+if sys.platform == "win32":
+	buildResult = env.SharedLibrary(outputlibname, src_files,
+	LIBS=libs,
+	LIBPATH=libpath)
+else:
+	buildResult = env.Program(outputlibname, src_files,
+	LIBS=libs,
+	LIBPATH=libpath)
 
 
 if sys.platform =='win32':

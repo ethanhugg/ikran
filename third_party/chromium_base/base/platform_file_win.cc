@@ -115,7 +115,7 @@ bool ClosePlatformFile(PlatformFile file) {
   return (CloseHandle(file) != 0);
 }
 
-int ReadPlatformFile(PlatformFile file, int64 offset, char* data, int size) {
+int ReadPlatformFile(PlatformFile file, i64Bit::int64 offset, char* data, int size) {
   base::ThreadRestrictions::AssertIOAllowed();
   if (file == kInvalidPlatformFileValue)
     return -1;
@@ -136,7 +136,7 @@ int ReadPlatformFile(PlatformFile file, int64 offset, char* data, int size) {
   return -1;
 }
 
-int WritePlatformFile(PlatformFile file, int64 offset,
+int WritePlatformFile(PlatformFile file, i64Bit::int64 offset,
                       const char* data, int size) {
   base::ThreadRestrictions::AssertIOAllowed();
   if (file == kInvalidPlatformFileValue)
@@ -156,7 +156,7 @@ int WritePlatformFile(PlatformFile file, int64 offset,
   return -1;
 }
 
-bool TruncatePlatformFile(PlatformFile file, int64 length) {
+bool TruncatePlatformFile(PlatformFile file, i64Bit::int64 length) {
   base::ThreadRestrictions::AssertIOAllowed();
   if (file == kInvalidPlatformFileValue)
     return false;

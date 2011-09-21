@@ -197,10 +197,10 @@ LONG RegKey::ReadValueDW(const wchar_t* name, DWORD* value) const {
   return result;
 }
 
-LONG RegKey::ReadInt64(const wchar_t* name, int64* value) const {
+LONG RegKey::ReadInt64(const wchar_t* name, i64Bit::int64* value) const {
   DCHECK(value);
   DWORD type = REG_QWORD;
-  int64 local_value = 0;
+  i64Bit::int64 local_value = 0;
   DWORD size = sizeof(local_value);
   LONG result = ReadValue(name, &local_value, &size, &type);
   if (result == ERROR_SUCCESS) {

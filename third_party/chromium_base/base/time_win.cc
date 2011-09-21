@@ -54,23 +54,23 @@ namespace {
 
 // From MSDN, FILETIME "Contains a 64-bit value representing the number of
 // 100-nanosecond intervals since January 1, 1601 (UTC)."
-int64 FileTimeToMicroseconds(const FILETIME& ft) {
+i64Bit::int64 FileTimeToMicroseconds(const FILETIME& ft) {
   // Need to bit_cast to fix alignment, then divide by 10 to convert
   // 100-nanoseconds to milliseconds. This only works on little-endian
   // machines.
-  return bit_cast<int64, FILETIME>(ft) / 10;
+  return bit_cast<i64Bit::int64, FILETIME>(ft) / 10;
 }
 
-void MicrosecondsToFileTime(int64 us, FILETIME* ft) {
+void MicrosecondsToFileTime(i64Bit::int64 us, FILETIME* ft) {
   DCHECK(us >= 0) << "Time is less than 0, negative values are not "
       "representable in FILETIME";
 
   // Multiply by 10 to convert milliseconds to 100-nanoseconds. Bit_cast will
   // handle alignment problems. This only works on little-endian machines.
-  *ft = bit_cast<FILETIME, int64>(us * 10);
+  *ft = bit_cast<FILETIME, i64Bit::int64>(us * 10);
 }
 
-int64 CurrentWallclockMicroseconds() {
+i64Bit::int64 CurrentWallclockMicroseconds() {
   FILETIME ft;
   ::GetSystemTimeAsFileTime(&ft);
   return FileTimeToMicroseconds(ft);
@@ -79,7 +79,7 @@ int64 CurrentWallclockMicroseconds() {
 // Time between resampling the un-granular clock for this API.  60 seconds.
 const int kMaxMillisecondsToAvoidDrift = 60 * Time::kMillisecondsPerSecond;
 
-int64 initial_time = 0;
+i64Bit::int64 initial_time = 0;
 TimeTicks initial_ticks;
 
 void InitializeClock() {
@@ -96,7 +96,7 @@ void InitializeClock() {
 // number of leap year days between 1601 and 1970: (1970-1601)/4 excluding
 // 1700, 1800, and 1900.
 // static
-const int64 Time::kTimeTToMicrosecondsOffset = GG_INT64_C(11644473600000000);
+const i64Bit::int64 Time::kTimeTToMicrosecondsOffset = GG_INT64_C(11644473600000000);
 
 bool Time::high_resolution_timer_enabled_ = false;
 
@@ -251,7 +251,7 @@ DWORD timeGetTimeWrapper() {
 DWORD (*tick_function)(void) = &timeGetTimeWrapper;
 
 // Accumulation of time lost due to rollover (in milliseconds).
-int64 rollover_ms = 0;
+i64Bit::int64 rollover_ms = 0;
 
 // The last timeGetTime value we saw, to detect rollover.
 DWORD last_seen_now = 0;
@@ -330,7 +330,7 @@ class HighResNowSingleton {
     return RolloverProtectedNow();
   }
 
-  int64 GetQPCDriftMicroseconds() {
+  i64Bit::int64 GetQPCDriftMicroseconds() {
     if (!IsUsingHighResClock())
       return 0;
 
@@ -362,21 +362,21 @@ class HighResNowSingleton {
   }
 
   // Get the number of microseconds since boot in an unreliable fashion.
-  int64 UnreliableNow() {
+  i64Bit::int64 UnreliableNow() {
     LARGE_INTEGER now;
     QueryPerformanceCounter(&now);
-    return static_cast<int64>(now.QuadPart / ticks_per_microsecond_);
+    return static_cast<i64Bit::int64>(now.QuadPart / ticks_per_microsecond_);
   }
 
   // Get the number of microseconds since boot in a reliable fashion.
-  int64 ReliableNow() {
+  i64Bit::int64 ReliableNow() {
     return RolloverProtectedNow().InMicroseconds();
   }
 
   // Cached clock frequency -> microseconds. This assumes that the clock
   // frequency is faster than one microsecond (which is 1MHz, should be OK).
   float ticks_per_microsecond_;  // 0 indicates QPF failed and we're broken.
-  int64 skew_;  // Skew between lo-res and hi-res clocks (for debugging).
+  i64Bit::int64 skew_;  // Skew between lo-res and hi-res clocks (for debugging).
 
   friend struct DefaultSingletonTraits<HighResNowSingleton>;
 };
@@ -402,7 +402,7 @@ TimeTicks TimeTicks::HighResNow() {
 }
 
 // static
-int64 TimeTicks::GetQPCDriftMicroseconds() {
+i64Bit::int64 TimeTicks::GetQPCDriftMicroseconds() {
   return HighResNowSingleton::GetInstance()->GetQPCDriftMicroseconds();
 }
 

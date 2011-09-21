@@ -415,6 +415,7 @@ SIPTaskProcessListEvent (uint32_t cmd, void *msg, void *pUsr, uint16_t len)
     static const char *fname = "SIPTaskProcessListEvent";
     sipSMEvent_t    sip_sm_event;
     int             idx;
+	int				p2psip;
     cprCallBackTimerMsg_t *timerMsg;
     line_t          last_available_line;
     CCM_ID ccm_id;
@@ -467,8 +468,8 @@ SIPTaskProcessListEvent (uint32_t cmd, void *msg, void *pUsr, uint16_t len)
          */
     }
 
-    int p2psip = 0;
-    config_get_value(CFGID_P2PSIP, &p2psip, sizeof(p2psip));
+    p2psip = 0;
+	config_get_value(CFGID_P2PSIP, &p2psip, sizeof(p2psip));
 
     switch (cmd) {
         /*
@@ -1039,7 +1040,7 @@ SIPTaskProcessUDPMessage (cprBuffer_t msg,
     uint32_t        bytes_used = 0;
     int             accept_msg = SIP_OK;
     cpr_ip_addr_t   ip_addr;
-
+	int p2psip = 0;
     /*
      * Convert IP address to string, for debugs
      */
@@ -1083,7 +1084,7 @@ SIPTaskProcessUDPMessage (cprBuffer_t msg,
      */
 
 
-    int p2psip = 0;
+    
     config_get_value(CFGID_P2PSIP, &p2psip, sizeof(p2psip));
 
     if (p2psip == 0) {
