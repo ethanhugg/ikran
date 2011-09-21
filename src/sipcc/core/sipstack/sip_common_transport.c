@@ -425,6 +425,7 @@ sip_transport_setup_cc_conn (line_t dn, CCM_ID ccm_id)
     uint32_t        type;
     ti_common_t    *ti_common;
     int            ip_mode = CPR_IP_MODE_IPV4;
+	uint32_t		s_port;
 
     /*
      * Checking for dn < 1, since we dereference the Config_Tables using
@@ -478,7 +479,7 @@ sip_transport_setup_cc_conn (line_t dn, CCM_ID ccm_id)
 
         util_ntohl(&server_ipaddr, &server_ipaddr);
 
-        uint32_t s_port;
+        
         config_get_value(CFGID_VOIP_CONTROL_PORT, &s_port, sizeof(s_port));
         server_port =  (uint16_t) s_port;
 

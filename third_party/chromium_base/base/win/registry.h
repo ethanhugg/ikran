@@ -63,7 +63,7 @@ class RegKey {
                  DWORD* dtype) const;
   LONG ReadValue(const wchar_t* name, std::wstring* value) const;
   LONG ReadValueDW(const wchar_t* name, DWORD* value) const;
-  LONG ReadInt64(const wchar_t* name, int64* value) const;
+  LONG ReadInt64(const wchar_t* name, i64Bit::int64* value) const;
 
   LONG WriteValue(const wchar_t* name, const void* data, DWORD dsize,
                   DWORD dtype);

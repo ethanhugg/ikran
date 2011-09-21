@@ -69,7 +69,7 @@ class Pickle {
   bool ReadLong(void** iter, long* result) const;
   bool ReadSize(void** iter, size_t* result) const;
   bool ReadUInt16(void** iter, uint16* result) const;
-  bool ReadUInt32(void** iter, uint32* result) const;
+  bool ReadUInt32(void** iter, i32Bit::uint32* result) const;
   bool ReadInt64(void** iter, i64Bit::int64* result) const;
   bool ReadUInt64(void** iter, i64Bit::uint64* result) const;
   bool ReadString(void** iter, std::string* result) const;
@@ -101,7 +101,7 @@ class Pickle {
   bool WriteUInt16(uint16 value) {
     return WriteBytes(&value, sizeof(value));
   }
-  bool WriteUInt32(uint32 value) {
+  bool WriteUInt32(i32Bit::uint32 value) {
     return WriteBytes(&value, sizeof(value));
   }
   bool WriteInt64(i64Bit::int64 value) {
@@ -139,7 +139,7 @@ class Pickle {
 
   // Payload follows after allocation of Header (header size is customizable).
   struct Header {
-    uint32 payload_size;  // Specifies the size of the payload.
+    i32Bit::uint32 payload_size;  // Specifies the size of the payload.
   };
 
   // Returns the header, cast to a user-specified type T.  The type T must be a
@@ -216,9 +216,9 @@ class Pickle {
 
   // Moves the iterator by the given number of bytes, making sure it is aligned.
   // Pointer (iterator) is NOT aligned, but the change in the pointer
-  // is guaranteed to be a multiple of sizeof(uint32).
+  // is guaranteed to be a multiple of sizeof(i32Bit::uint32).
   static void UpdateIter(void** iter, int bytes) {
-    *iter = static_cast<char*>(*iter) + AlignInt(bytes, sizeof(uint32));
+    *iter = static_cast<char*>(*iter) + AlignInt(bytes, sizeof(i32Bit::uint32));
   }
 
   // Find the end of the pickled data that starts at range_start.  Returns NULL

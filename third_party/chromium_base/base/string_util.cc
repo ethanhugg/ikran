@@ -264,10 +264,10 @@ void TruncateUTF8ToByteSize(const std::string& input,
     *output = input;
     return;
   }
-  DCHECK_LE(byte_size, static_cast<uint32>(kint32max));
+  DCHECK_LE(byte_size, static_cast<i32Bit::uint32>(kint32max));
   // Note: This cast is necessary because CBU8_NEXT uses int32s.
-  int32 truncation_length = static_cast<int32>(byte_size);
-  int32 char_index = truncation_length - 1;
+  i32Bit::int32 truncation_length = static_cast<i32Bit::int32>(byte_size);
+  i32Bit::int32 char_index = truncation_length - 1;
   const char* data = input.data();
 
   // Using CBU8, we will move backwards from the truncation point
@@ -275,8 +275,8 @@ void TruncateUTF8ToByteSize(const std::string& input,
   // character.  Once a full UTF8 character is found, we will
   // truncate the string to the end of that character.
   while (char_index >= 0) {
-    int32 prev = char_index;
-    uint32 code_point = 0;
+    i32Bit::int32 prev = char_index;
+    i32Bit::uint32 code_point = 0;
     CBU8_NEXT(data, char_index, truncation_length, code_point);
     if (!base::IsValidCharacter(code_point) ||
         !base::IsValidCodepoint(code_point)) {
@@ -471,11 +471,11 @@ bool IsStringASCII(const base::StringPiece& str) {
 
 bool IsStringUTF8(const std::string& str) {
   const char *src = str.data();
-  int32 src_len = static_cast<int32>(str.length());
-  int32 char_index = 0;
+  i32Bit::int32 src_len = static_cast<i32Bit::int32>(str.length());
+  i32Bit::int32 char_index = 0;
 
   while (char_index < src_len) {
-    int32 code_point;
+    i32Bit::int32 code_point;
     CBU8_NEXT(src, char_index, src_len, code_point);
     if (!base::IsValidCharacter(code_point))
        return false;

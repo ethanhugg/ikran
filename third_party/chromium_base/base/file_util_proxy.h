@@ -151,7 +151,7 @@ class FileUtilProxy {
   static bool Read(
       scoped_refptr<MessageLoopProxy> message_loop_proxy,
       PlatformFile file,
-      int64 offset,
+      i64Bit::int64 offset,
       int bytes_to_read,
       ReadCallback* callback);
 
@@ -161,7 +161,7 @@ class FileUtilProxy {
   static bool Write(
       scoped_refptr<MessageLoopProxy> message_loop_proxy,
       PlatformFile file,
-      int64 offset,
+      i64Bit::int64 offset,
       const char* buffer,
       int bytes_to_write,
       WriteCallback* callback);
@@ -188,7 +188,7 @@ class FileUtilProxy {
   static bool Truncate(
       scoped_refptr<MessageLoopProxy> message_loop_proxy,
       PlatformFile file,
-      int64 length,
+      i64Bit::int64 length,
       StatusCallback* callback);
 
   // Truncates a file to the given length. If |length| is greater than the
@@ -197,7 +197,7 @@ class FileUtilProxy {
   static bool Truncate(
       scoped_refptr<MessageLoopProxy> message_loop_proxy,
       const FilePath& path,
-      int64 length,
+      i64Bit::int64 length,
       StatusCallback* callback);
 
   // Flushes a file. The callback can be NULL.

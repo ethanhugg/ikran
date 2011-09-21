@@ -524,7 +524,7 @@ class RelayGetFileInfoFromPlatformFile : public MessageLoopRelay {
 class RelayRead : public MessageLoopRelay {
  public:
   RelayRead(base::PlatformFile file,
-            int64 offset,
+            i64Bit::int64 offset,
             int bytes_to_read,
             base::FileUtilProxy::ReadCallback* callback)
       : file_(file),
@@ -552,7 +552,7 @@ class RelayRead : public MessageLoopRelay {
 
  private:
   base::PlatformFile file_;
-  int64 offset_;
+  i64Bit::int64 offset_;
   scoped_array<char> buffer_;
   int bytes_to_read_;
   base::FileUtilProxy::ReadCallback* callback_;
@@ -562,7 +562,7 @@ class RelayRead : public MessageLoopRelay {
 class RelayWrite : public MessageLoopRelay {
  public:
   RelayWrite(base::PlatformFile file,
-             int64 offset,
+             i64Bit::int64 offset,
              const char* buffer,
              int bytes_to_write,
              base::FileUtilProxy::WriteCallback* callback)
@@ -591,7 +591,7 @@ class RelayWrite : public MessageLoopRelay {
 
  private:
   base::PlatformFile file_;
-  int64 offset_;
+  i64Bit::int64 offset_;
   scoped_array<char> buffer_;
   int bytes_to_write_;
   base::FileUtilProxy::WriteCallback* callback_;
@@ -650,7 +650,7 @@ class RelayTouchFilePath : public RelayWithStatusCallback {
 class RelayTruncatePlatformFile : public RelayWithStatusCallback {
  public:
   RelayTruncatePlatformFile(base::PlatformFile file,
-                            int64 length,
+                            i64Bit::int64 length,
                             base::FileUtilProxy::StatusCallback* callback)
       : RelayWithStatusCallback(callback),
         file_(file),
@@ -665,13 +665,13 @@ class RelayTruncatePlatformFile : public RelayWithStatusCallback {
 
  private:
   base::PlatformFile file_;
-  int64 length_;
+  i64Bit::int64 length_;
 };
 
 class RelayTruncate : public RelayWithStatusCallback {
  public:
   RelayTruncate(const FilePath& path,
-                int64 length,
+                i64Bit::int64 length,
                 base::FileUtilProxy::StatusCallback* callback)
       : RelayWithStatusCallback(callback),
         path_(path),
@@ -698,7 +698,7 @@ class RelayTruncate : public RelayWithStatusCallback {
 
  private:
   FilePath path_;
-  int64 length_;
+  i64Bit::int64 length_;
 };
 
 class RelayFlush : public RelayWithStatusCallback {
@@ -842,7 +842,7 @@ bool FileUtilProxy::RecursiveDelete(
 bool FileUtilProxy::Read(
     scoped_refptr<MessageLoopProxy> message_loop_proxy,
     PlatformFile file,
-    int64 offset,
+    i64Bit::int64 offset,
     int bytes_to_read,
     ReadCallback* callback) {
   return Start(FROM_HERE, message_loop_proxy,
@@ -853,7 +853,7 @@ bool FileUtilProxy::Read(
 bool FileUtilProxy::Write(
     scoped_refptr<MessageLoopProxy> message_loop_proxy,
     PlatformFile file,
-    int64 offset,
+    i64Bit::int64 offset,
     const char* buffer,
     int bytes_to_write,
     WriteCallback* callback) {
@@ -889,7 +889,7 @@ bool FileUtilProxy::Touch(
 bool FileUtilProxy::Truncate(
     scoped_refptr<MessageLoopProxy> message_loop_proxy,
     PlatformFile file,
-    int64 length,
+    i64Bit::int64 length,
     StatusCallback* callback) {
   return Start(FROM_HERE, message_loop_proxy,
                new RelayTruncatePlatformFile(file, length, callback));
@@ -899,7 +899,7 @@ bool FileUtilProxy::Truncate(
 bool FileUtilProxy::Truncate(
     scoped_refptr<MessageLoopProxy> message_loop_proxy,
     const FilePath& path,
-    int64 length,
+    i64Bit::int64 length,
     StatusCallback* callback) {
   return Start(FROM_HERE, message_loop_proxy,
                new RelayTruncate(path, length, callback));

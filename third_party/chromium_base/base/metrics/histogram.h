@@ -310,9 +310,9 @@ class Histogram : public base::RefCountedThreadSafe<Histogram> {
     // Accessor methods.
     Count counts(size_t i) const { return counts_[i]; }
     Count TotalCount() const;
-    int64 sum() const { return sum_; }
-    int64 square_sum() const { return square_sum_; }
-    int64 redundant_count() const { return redundant_count_; }
+    i64Bit::int64 sum() const { return sum_; }
+    i64Bit::int64 square_sum() const { return square_sum_; }
+    i64Bit::int64 redundant_count() const { return redundant_count_; }
 
     // Arithmetic manipulation of corresponding elements of the set.
     void Add(const SampleSet& other);
@@ -328,8 +328,8 @@ class Histogram : public base::RefCountedThreadSafe<Histogram> {
 
     // Save simple stats locally.  Note that this MIGHT get done in base class
     // without shared memory at some point.
-    int64 sum_;         // sum of samples.
-    int64 square_sum_;  // sum of squares of samples.
+    i64Bit::int64 sum_;         // sum of samples.
+    i64Bit::int64 square_sum_;  // sum of squares of samples.
 
    private:
     // Allow tests to corrupt our innards for testing purposes.
@@ -342,7 +342,7 @@ class Histogram : public base::RefCountedThreadSafe<Histogram> {
     // updated on several threads simultaneously), the tallies might mismatch,
     // and also the snapshotting code may asynchronously get a mismatch (though
     // generally either race based mismatch cause is VERY rare).
-    int64 redundant_count_;
+    i64Bit::int64 redundant_count_;
   };
 
   //----------------------------------------------------------------------------
@@ -411,7 +411,7 @@ class Histogram : public base::RefCountedThreadSafe<Histogram> {
   Sample declared_min() const { return declared_min_; }
   Sample declared_max() const { return declared_max_; }
   virtual Sample ranges(size_t i) const;
-  uint32 range_checksum() const { return range_checksum_; }
+  i32Bit::uint32 range_checksum() const { return range_checksum_; }
   virtual size_t bucket_count() const;
   // Snapshot the current complete set of sample data.
   // Override with atomic/locked snapshot if needed.
@@ -472,7 +472,7 @@ class Histogram : public base::RefCountedThreadSafe<Histogram> {
   // values relate properly to the declared_min_ and declared_max_)..
   bool ValidateBucketRanges() const;
 
-  virtual uint32 CalculateRangeChecksum() const;
+  virtual i32Bit::uint32 CalculateRangeChecksum() const;
 
  private:
   // Allow tests to corrupt our innards for testing purposes.
@@ -485,7 +485,7 @@ class Histogram : public base::RefCountedThreadSafe<Histogram> {
   void Initialize();
 
   // Checksum function for accumulating range values into a checksum.
-  static uint32 Crc32(uint32 sum, Sample range);
+  static i32Bit::uint32 Crc32(i32Bit::uint32 sum, Sample range);
 
   //----------------------------------------------------------------------------
   // Helpers for emitting Ascii graphic.  Each method appends data to output.
@@ -499,8 +499,8 @@ class Histogram : public base::RefCountedThreadSafe<Histogram> {
 
   // Write information about previous, current, and next buckets.
   // Information such as cumulative percentage, etc.
-  void WriteAsciiBucketContext(const int64 past, const Count current,
-                               const int64 remaining, const size_t i,
+  void WriteAsciiBucketContext(const i64Bit::int64 past, const Count current,
+                               const i64Bit::int64 remaining, const size_t i,
                                std::string* output) const;
 
   // Write textual description of the bucket contents (relative to histogram).
@@ -514,7 +514,7 @@ class Histogram : public base::RefCountedThreadSafe<Histogram> {
 
   //----------------------------------------------------------------------------
   // Table for generating Crc32 values.
-  static const uint32 kCrcTable[256];
+  static const i32Bit::uint32 kCrcTable[256];
   //----------------------------------------------------------------------------
   // Invariant values set at/near construction time
 
@@ -537,7 +537,7 @@ class Histogram : public base::RefCountedThreadSafe<Histogram> {
   // For redundancy, we store a checksum of all the sample ranges when ranges
   // are generated.  If ever there is ever a difference, then the histogram must
   // have been corrupted.
-  uint32 range_checksum_;
+  i32Bit::uint32 range_checksum_;
 
   // Finally, provide the state that changes with the addition of each new
   // sample.
