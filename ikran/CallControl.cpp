@@ -215,6 +215,40 @@ CallControl::RegisterUser(
 
 
 /*
+ * Start ikran session
+ * Performs SIP registration
+ */
+NS_IMETHODIMP
+CallControl::StartP2PMode(
+    const char* user,
+    nsISessionStateObserver *obs
+)
+{
+	//copy the parameters
+    sessionObserver = obs;
+    m_user = const_cast<char*>(user);
+
+    if (m_registered) {
+        NS_DispatchToMainThread(new SessionCallback(
+            sessionObserver, "error", "User Already Registered"
+        ));
+        return NS_ERROR_FAILURE;
+    }
+
+
+	//lets give it a shot
+	SipccController::GetInstance()->AddSipccControllerObserver(this);
+	int res = SipccController::GetInstance()->StartP2PMode(m_user);
+	if(res == 0) {
+		m_registered = PR_TRUE;
+    	return NS_OK;
+	}
+	else
+		return NS_ERROR_FAILURE;
+}
+
+
+/*
  * UnRegister User 
  */
 NS_IMETHODIMP
@@ -263,6 +297,40 @@ CallControl::PlaceCall(const char* dn,
 	m_session = PR_TRUE;
 	return NS_OK;
 }
+
+/*
+ * Initiate VOIP P2P call to dn and IP Address
+ * for local peer user
+ */
+NS_IMETHODIMP
+CallControl::PlaceP2PCall(const char* dn,
+						const char* ip_address,
+						nsIDOMCanvasRenderingContext2D *ctx,
+						nsIMediaStateObserver* obs)
+{
+	mediaObserver = obs;
+	vCanvas = ctx;
+	if(m_session) {
+		Logger::Instance()->logIt("Place P2P Call: call is in progress");
+        NS_DispatchToMainThread(new MediaCallback(
+            mediaObserver, "error", "call is in progress"
+        ));
+        return NS_ERROR_FAILURE;
+	}
+	m_dial_number = const_cast<char*>(dn);
+	m_local_ip_address = const_cast<char*>(ip_address);
+	if(vSource == 0)
+	{
+		//hardcoding the width and height for now
+		vSource = new VideoRenderer(640, 480, vCanvas);
+	 	Logger::Instance()->logIt("Vsource is null in PlaceCall");
+	}
+	SipccController::GetInstance()->SetExternalRenderer(vSource);
+	SipccController::GetInstance()->PlaceP2PCall(m_dial_number, m_local_ip_address);
+	m_session = PR_TRUE;
+	return NS_OK;
+}
+
 
 /*
  * End Call 
