@@ -553,7 +553,7 @@ struct ToUnsigned<wchar_t> {
 #if defined(WCHAR_T_IS_UTF16)
   typedef unsigned short Unsigned;
 #elif defined(WCHAR_T_IS_UTF32)
-  typedef uint32 Unsigned;
+  typedef i32Bit::uint32 Unsigned;
 #endif
 };
 template<>

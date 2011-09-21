@@ -45,10 +45,10 @@ struct AtomicOps_x86CPUFeatureStruct AtomicOps_Internalx86CPUFeatures = {
 
 // Initialize the AtomicOps_Internalx86CPUFeatures struct.
 static void AtomicOps_Internalx86CPUFeaturesInit() {
-  uint32 eax;
-  uint32 ebx;
-  uint32 ecx;
-  uint32 edx;
+  i32Bit::uint32 eax;
+  i32Bit::uint32 ebx;
+  i32Bit::uint32 ecx;
+  i32Bit::uint32 edx;
 
   // Get vendor string (issue CPUID with eax = 0)
   cpuid(eax, ebx, ecx, edx, 0);

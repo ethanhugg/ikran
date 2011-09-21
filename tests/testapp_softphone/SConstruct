@@ -9,8 +9,6 @@ Import('webrtcpath')
 
 
 ## Add Tests folders here
-# Temp using absolute paths
-windows_sdk_incl_dir=os.environ['MS_WINDOWS_SDK_PATH'] + '/Include'
 include_dirs = [
   '.',
   '../../include',
@@ -54,6 +52,7 @@ if sys.platform =='win32':
     '/wd4275',
     '/wd4512'
   ]
+  windows_sdk_incl_dir=os.environ['MS_WINDOWS_SDK_PATH'] + '/Include'
   windows_sdk_lib_dir=os.environ['MS_WINDOWS_SDK_PATH'] + '\Lib'
   print windows_sdk_lib_dir
   ms_vc_lib_dir=os.environ['MS_VC_PATH'] + '/VC/lib'
