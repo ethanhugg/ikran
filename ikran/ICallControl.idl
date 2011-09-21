@@ -71,10 +71,16 @@ interface ICallControl : nsISupports
 						in string credentials,
 						in string proxy_address,
 						in nsISessionStateObserver sess_obs);
+	void startP2PMode(in string user,
+						in nsISessionStateObserver sess_obs);						
 	void unregisterUser();
 	void placeCall(in string dn,
 					in nsIDOMCanvasRenderingContext2D ctx,
 					in nsIMediaStateObserver media_obs);
+	void placeP2PCall(in string dn,
+					in string ip_address,
+					in nsIDOMCanvasRenderingContext2D ctx,
+					in nsIMediaStateObserver media_obs);					
 	void hangupCall();
 	void answerCall(in nsIDOMCanvasRenderingContext2D ctx,
 					in nsIMediaStateObserver media_obs);

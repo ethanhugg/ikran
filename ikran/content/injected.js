@@ -9,6 +9,12 @@ if (window && window.navigator) {
         placeCall: function(dn, ctx, media_obs) {
             return callStart(window.location, dn, ctx, media_obs);
         },
+        startP2PMode: function(user, sess_obs) {
+            return startP2PMode(window.location, user, sess_obs);
+        },
+        placeP2PCall: function(dn, ip_address, ctx, media_obs) {
+            return callP2PStart(window.location, dn, ip_address, ctx, media_obs);
+        },        
         hangupCall: function() {
             return callStop(window.location);
         },

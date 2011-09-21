@@ -203,6 +203,7 @@ bool TestMain::BeginOSIndependentTesting()
             		userName = input;
             	}
             	SipccController::GetInstance()->StartP2PMode(userName);
+            	SipccController::GetInstance()->SetVideoWindow(windowManager->GetWindow2());
             	break;
 
             case 6:

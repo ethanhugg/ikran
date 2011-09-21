@@ -101,12 +101,24 @@ var IkranObserver = {
                 else throw "Permission denied";
             });
         }, "regUser");
+        sandbox.importFunction(function(loc, user, sess_obs) {
+            ikran._verifyPermission(window, loc, function(allowed) {
+                if (allowed) ikran.startP2PMode(user, sess_obs);
+                else throw "Permission denied";
+            });
+        }, "startP2PMode");        
         sandbox.importFunction(function(loc, dn, ctx, media_obs) {
             ikran._verifyPermission(window, loc, function(allowed) {
                 if (allowed) ikran.placeCall(dn,ctx, media_obs);
                 else throw "Permission denied";
             });
         }, "callStart");
+        sandbox.importFunction(function(loc, dn, ip_address, ctx, media_obs) {
+            ikran._verifyPermission(window, loc, function(allowed) {
+                if (allowed) ikran.placeP2PCall(dn, ip_address, ctx, media_obs);
+                else throw "Permission denied";
+            });
+        }, "callP2PStart");        
         sandbox.importFunction(function(loc) {
             let ret;
             ikran._verifyPermission(window, loc, function(allowed) {
