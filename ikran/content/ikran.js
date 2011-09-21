@@ -166,6 +166,19 @@ Ikran.prototype = {
         this._ikran.registerUser(user_device, user, credential, proxy, this._session_observer);
         this._session = true;
     },
+
+    startP2PMode: function(user, obs) {
+        if (this._session)
+            throw "Session already in progress";
+
+        // Make sure observer is setup correctly, if none provided, ignore
+        if (obs) this._session_observer = obs;
+        else this._session_observer = function() {};
+        
+        // Start rainbow session
+        this._ikran.startP2PMode( user, this._session_observer);
+        this._session = true;
+    },
     
     placeCall: function(dn, ctx, obs) {
             
@@ -174,6 +187,15 @@ Ikran.prototype = {
         else this._media_observer = function() {};
 
         this._ikran.placeCall(dn, ctx, this._media_observer);
+    },
+
+    placeP2PCall: function(dn, ip_address, ctx, obs) {
+            
+        // Make sure observer is setup correctly, if none provided, ignore
+        if (obs) this._media_observer = obs;
+        else this._media_observer = function() {};
+
+        this._ikran.placeP2PCall(dn, ip_address, ctx, this._media_observer);
     },
     
     hangupCall: function() {
