@@ -119,7 +119,7 @@ void SipccController::PlaceP2PCall(std::string dial_number,  std::string sipDoma
 
 	Logger::Instance()->logIt(" SipccController::PlaceP2PCall");
 	dial_number_ = dial_number;
-	sipDomain_ = sipDomain;
+	sip_domain_ = sipDomain;
 	 if (ccm_ptr_ != NULL)
      {
 		Logger::Instance()->logIt(" Dial Number is ");
@@ -129,7 +129,7 @@ void SipccController::PlaceP2PCall(std::string dial_number,  std::string sipDoma
         device_ptr_ = ccm_ptr_->getActiveDevice();
         outgoing_call_ = device_ptr_->createCall();
 		outgoing_call_->setRemoteWindow((VideoWindowHandle)video_window);
-        if(outgoing_call_->originateP2PCall(CC_SDP_DIRECTION_SENDRECV, dial_number_, sipDomain_)) {
+        if(outgoing_call_->originateP2PCall(CC_SDP_DIRECTION_SENDRECV, dial_number_, sip_domain_)) {
 			Logger::Instance()->logIt("SipccController::PlaceP2PCall: Call Setup Succeeded ");
         	return ;
         } else {
