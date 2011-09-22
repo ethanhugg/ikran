@@ -232,7 +232,7 @@ bool CallControlManagerImpl::startP2PMode(const std::string& user)
     phone->addCCObserver(this);
 
     phone->setP2PMode(true);
-    phone->setVoipPort(5062);
+    phone->setVoipPort(5060);
 
     bool bStarted = phone->startService();
     if (!bStarted) {
