@@ -138,7 +138,6 @@ private:
     std::string sip_credentials_;
     std::string destination_url_; // destination sip-address or phone number to call
     std::string dial_number_;
-    std::string sipDomain_;
 	//Controllers local database
     std::string local_ip_v4_address_;
 

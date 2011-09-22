@@ -2215,6 +2215,5 @@ sipTransportSetSIPServer() {
 	init_empty_str(addr_str);
 	config_get_string(CFGID_CCM1_ADDRESS, addr_str, MAX_IPADDR_STR_LEN);
 	sstrncpy(CCM_Config_Table[0][0]->ti_common.addr_str, addr_str, MAX_IPADDR_STR_LEN);
-
 	sstrncpy(CCM_Device_Specific_Config_Table[PRIMARY_CCM].ti_common.addr_str, addr_str, MAX_IPADDR_STR_LEN);
 }
