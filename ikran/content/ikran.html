@@ -5,11 +5,13 @@
         let Me = window.navigator.service.call;
     </script>
 </head>
-<body onLoad="serverRadioClick()" style="margin:50px 0px;padding:0px;text-align:center;">
-    <h1>Ikran Example</h1>
-    <input type="radio" id="regradio" name="reg" value="Register" checked onClick="serverRadioClick()"> Register Mode<br>
+	<body onLoad="pageLoad()" style="margin:10px 0px;padding:0px;text-align:center;">
+	<h2>Ikran Example</h2>
+	<canvas id="thecanvas" width="640" height="480"></canvas>
+	<div>
+	<input type="radio" id="regradio" name="reg" value="Register" checked onClick="serverRadioClick()"> Register Mode<br>
 	<input type="radio" id="p2pradio" name="reg" value="P2P" onClick="p2pRadioClick()"> P2P Mode<br>
-	
+	</div>
 	<div id="registerDiv">
 	<p>Sip Server IP Address: <input type="text" id="regipaddress" /></p>
 	<p>My username or DN: <input type="text" id="mydn" /></p>
@@ -21,14 +23,14 @@
 	<p>My username or DN: <input type="text" id="p2pmydn" /></p>
 	</div>
 	
-    <p><input type="button" id="regbutton" value="Register\Start Session!"/></p>
-    <p>DN to Call: <input type="text" id="dn" /></p>
-    <div id="p2pDiv2">
+	<p><input type="button" id="regbutton" value="Register\Start Session!"/></p>
+	<p>DN to Call: <input type="text" id="dn" /></p>
+	<div id="p2pDiv2">
 	<p>IP Address to Call: <input type="text" id="p2pipaddress" /></p>
 	</div>
-    <p><input type="button" id="callbutton" value="Place Call !"/></p>
-    
-    <p id="tehmsg"></p>
+	<p><input type="button" id="callbutton" value="Place Call !"/></p>
+	<p id="tehmsg"></p>
+
 </body>
 <script type="application/javascript;version=1.8">
     let Re = false;
@@ -45,40 +47,42 @@
     let mydevice = document.getElementById("mydevice");
     let p2pmydn = document.getElementById("p2pmydn");
     let p2pipaddress = document.getElementById("p2pipaddress");
+    let ctx = document.getElementById("thecanvas").getContext("2d");
     
-	function serverRadioClick() {
-		document.getElementById("registerDiv").style.display = '';
-		document.getElementById("p2pDiv").style.display = 'none';
-		document.getElementById("p2pDiv2").style.display = 'none';
-	}
-	function p2pRadioClick() {
-		document.getElementById("registerDiv").style.display = 'none';
-		document.getElementById("p2pDiv").style.display = '';
-		document.getElementById("p2pDiv2").style.display = '';
-	}
-    
-    function onSessionStateChange(type, arg) 
-	{
-		if(type == "incoming-call")
-		{
-			alert(" incoming call ");
-			Me.answerCall(ctx,onMediaStateChange);
-			callbut.value = "End Call";
-			ReRe = true;
-			msg.innerHTML = type;
-		}else 
-		{
-			msg.innerHTML = type;
-		}
+    function pageLoad() {
+    	ctx.drawImage(img, 192, 112);
+    	serverRadioClick();
     }
-    
+    function serverRadioClick() {
+	document.getElementById("registerDiv").style.display = '';
+	document.getElementById("p2pDiv").style.display = 'none';
+	document.getElementById("p2pDiv2").style.display = 'none';
+    }
+    function p2pRadioClick() {
+	document.getElementById("registerDiv").style.display = 'none';
+	document.getElementById("p2pDiv").style.display = '';
+	document.getElementById("p2pDiv2").style.display = '';
+    }
+    function onSessionStateChange(type, arg) 
+    {
+	if(type == "incoming-call")
+	{
+	    alert(" incoming call ");
+	    Me.answerCall(ctx,onMediaStateChange);
+	    callbut.value = "End Call";
+	    ReRe = true;
+	    msg.innerHTML = type;
+	} else {
+	    msg.innerHTML = type;
+	}
+    }
     function onMediaStateChange(type, arg) {
-		msg.innerHTML = type;
-		if(type == "call-terminated")
-		{
-			callbut.value = "Place Call";
-			ReRe = false;
-		}
+	msg.innerHTML = type;
+	if(type == "call-terminated")
+	{
+		callbut.value = "Place Call";
+		ReRe = false;
+	}
     }
 
     if (!Me) {
@@ -90,8 +94,8 @@
         if (Re) {
             // Stop recording
             Me.unregisterUser();
-			msg.innerHTML = " Unregistered ";
-			Re = false;
+ 	    msg.innerHTML = " Unregistered ";
+	    Re = false;
             regbut.value = "Register !";
         } else {
             Re = true;
@@ -100,17 +104,12 @@
             
             if (registerradio.checked) {
             
-            	// Asterisk sample: param1 device name not required
-            	//Me.registerUser("", "1000", "1234", "10.99.10.75", onSessionStateChange);
-            
-            	//cucm sample: param 3 password not required
             	Me.registerUser(mydevice.value, mydn.value, mypass.value, regipaddress.value, onSessionStateChange);
             
             } else { 
             
             	// Start in P2P Mode
             	Me.startP2PMode(p2pmydn.value, onSessionStateChange);
-            
             }        
             
             msg.innerHTML = "Registered...";
@@ -126,6 +125,7 @@
         } else {
             // Start recording
             ReRe = true;
+            callbut.value = " End Call!";
             msg.innerHTML = "Placing Call...";
             
             if (registerradio.checked) {
