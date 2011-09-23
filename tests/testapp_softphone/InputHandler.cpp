@@ -261,7 +261,7 @@ void InputHandler::UserInputWorkItem::Run()
             context->createUserOperationAndSignal(eOriginatePhoneCall, new string(getInput("Enter DN# to call: ")));
             break;
         case 'p':
-            context->createUserOperationAndSignal(eOriginateP2PPhoneCall, new string(getInput("Enter DN# to call: ")));
+            context->createUserOperationAndSignal(eOriginateP2PPhoneCall, new string(getInput("Enter DN# to call P2P: ")));
             break;
         case 'a':
             context->createUserOperationAndSignal(eAnswerCall);
@@ -317,6 +317,7 @@ void InputHandler::UserInputWorkItem::Run()
         case '?':
             CSFLogDebugS(logTag, "\nl = print list of all calls");
             CSFLogDebugS(logTag, "\nd = dial");
+            CSFLogDebugS(logTag, "\np = dialP2P");
             CSFLogDebugS(logTag, "\na = answer (incoming call)");
             CSFLogDebug(logTag, "\nv = cycle to next video pref option (current=%s)", getUserFriendlyNameForVideoPref(getActiveVideoPref()));
             CSFLogDebugS(logTag, "\ne = end call");
