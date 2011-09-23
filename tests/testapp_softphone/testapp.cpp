@@ -1454,7 +1454,7 @@ static int runMainLoop ()
     // make decision how to start the stack
     std::string selection = "R";
     std::string input;
-    cout << std::endl << std::endl << "Select Mode, (R) normal register, (P) P2P Mode [" << selection << "]: ";
+    cout << std::endl << std::endl << "Select Mode, (R) normal register,  (P) P2P Mode   [" << selection << "]: ";
     getline( cin, input, '\n');
 
     if (input.length() > 0)

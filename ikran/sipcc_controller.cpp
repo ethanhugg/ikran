@@ -132,7 +132,7 @@ void SipccController::PlaceP2PCall(std::string dial_number,  std::string sipDoma
 		Logger::Instance()->logIt(sipDomain);
         device_ptr_ = ccm_ptr_->getActiveDevice();
         outgoing_call_ = device_ptr_->createCall();
-		outgoing_call_->setRemoteWindow((VideoWindowHandle)video_window);
+        outgoing_call_->setExternalRenderer(0,ext_renderer);
         if(outgoing_call_->originateP2PCall(CC_SDP_DIRECTION_SENDRECV, dial_number_, sipDomain_)) {
 			Logger::Instance()->logIt("SipccController::PlaceP2PCall: Call Setup Succeeded ");
         	return ;
