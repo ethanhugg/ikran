@@ -2,10 +2,14 @@
 0. Introduction
 ---------------
   Ikran is an experimental addon for Firefox that turns your browser into a SIP endpoint 
-  for both audio and video.  It currently uses GIPS for audio/video support.
+  for both audio and video.  It currently uses WebRTC for audio/video media support.
 
   The ikran is a bird from the mythical world of Pandora (Avatar).  It is well known for
   its birdcall which travels long distances using widely accepted standards for audio and video.
+
+  Ikran can operate in two modes. (1) Registration mode, where it is a SIP UA and registers with 
+  a SIP server. (2) Peer to Peer Mode, where is can communicate directly with other ikran clients
+  in the same mode using SIP. 
   
 Source tree strcture:
 <SOURCE> 
@@ -14,13 +18,12 @@ tests                       [Standalone test application and add-on]
 ikran                       [addon code and sample html]
 third_party                 [Third party dependencies ]
 	chromium_base
-lib                         [GIPS libraries go here].
 src/sipcc                   [SIP stack]
 src                         [ECC - call control wrapper for SIP stack]
 
---------------------
+-------------------
 1. Platform Support 
---------------------
+-------------------
 Required for all platforms:
   Python (www.python.org) -  known to work with 2.6 & 2.7 
   SCons (www.scons.org) - 'sudo apt-get install scons' or 'sudo yum install scons'
@@ -48,9 +51,9 @@ Windows:
   Requires setting environment variables MS_VC_PATH and MS_WINDOWS_SDK_PATH and SCONS_LOCATION
   e.g  SCONS_LOCATION=c:\Python26\Scripts
 
--------------
+-----------
 2. Building 
--------------
+-----------
   - Get the Gecko2 SDK 6.0 for your platform and target bitlength from 
 	 https://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/6.0/sdk
   - Extract the package & Set the MOZSDKPATH env variable to point to it
@@ -66,16 +69,16 @@ Windows:
     'python runSconsBuild.py clean'
     Current command line options are 'debug', 'release', 'clean', 'noaddon' and 'x64'.
     
-----------
+---------
 4. Output
-----------
+---------
   Build will create a standalone test app and an addon for Firefox 4, 5 or 6.
   Test App Exe: TestApp_Softphone
   Addon: ikran-0.2-dev.xpi
 
------------------------
+--------------------
 5. Testing the addon
------------------------
+--------------------
   To build  & test addon , follow below steps
 
   - Addon executable shall be generated under the <SOURCE>/ikran
@@ -93,9 +96,9 @@ NOTES:
 1. ikran.html should be served from a server due to permission issues
    with file loaded locally (file://) 
 
---------------------------------
+-----------------------------
 6. Using the Test Application
---------------------------------
+-----------------------------
 Use the command line test application to exercise the SIP stack.
 The test application can be used against Cisco Call Manager, Asterisk and kamailio.
 
@@ -109,20 +112,33 @@ The test application can be used against Cisco Call Manager, Asterisk and kamail
          2. Place Call
          3. Answer Call
          4. End Call
+	 5. Start P2P mode
+	 6. Place P2P Call
    What Action do you want to perform Monsieur ??
 
    Select 1 to register, enter the following details, inside square brackets are defaults.
 
-   Enter SIP Server IP Address [ 10.53.47.140 ]:
-   Enter SIP Server username (phone DN for CUCM) [ 9995 ]:
-   Enter Password (not required for CUCM [ Enter ]:
-   Enter device name (only required for CUCM) [ emannionsip01 ]:
+      Enter SIP Server IP Address [ 10.53.47.140 ]:
+      Enter SIP Server username (phone DN for CUCM) [ 9995 ]:
+      Enter Password (not required for CUCM [ Enter ]:
+      Enter device name (only required for CUCM) [ emannionsip01 ]:
+
+   Select 5 to start ikran in Peer to Peer mode.  This requires only the SIP username to start.
+
+      Enter local peer username (usually a phone DN) [ 9995 ]:
+
+   To make a P2P call select option 6, this will require remote SIP username and remote IP Address.
+
+
+ When running the Test Application in Linux it operates slightly differently. To see the available
+ list of commangs use the '?' key.
  
--------------
+------------
 7. Addon API
--------------
+------------
 The JS API offers support for 
 	SIP Registration, Place Call, HangUp Call & Answer Call
+        P2P Mode, Place P2P Call
 
 window.navigator.service.call obtains handle to session-control 
 object. 
@@ -148,9 +164,9 @@ Few Points to Note
  
 Please see content/ikran.html for sample usage of the API.
 
------------------------------------
+----------------------------------
 8. Configuring Asterisk SIP Server
------------------------------------
+----------------------------------
 
 1. Create a SIP user in /etc/asterisk/sip.conf
 
@@ -168,9 +184,9 @@ Please see content/ikran.html for sample usage of the API.
   
 3. From the Asterisk CLI> sip reload  
 
------------------------------------
+---------------------------------
 9. Configuring kamailo SIP Server
------------------------------------
+---------------------------------
 Here is a good reference: http://www.oldskoolphreak.com/tfiles/voip/beginners_openser.txt
 
 1. Create two users
