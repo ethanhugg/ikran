@@ -29,7 +29,8 @@ Required for all platforms:
   SCons (www.scons.org) - 'sudo apt-get install scons' or 'sudo yum install scons'
   MOZSDKPATH environment variable pointing to the Gecko2 SDK (6.0 or later)
   WEBRTCPATH environment variable pointing to the webrtc source trunk
-
+  
+  
 Linux:
   Built regularly on Ubuntu 10.4 32bit and 64bit
   Built regularly on Ubuntu 11.0.4 32bit and 64bit
@@ -48,9 +49,14 @@ Mac OSX:
 Windows:
   Built regularly on Windows XP & Windows 7 32bit.
   Python path is in runSconsBuild.py and set to c:\python27
-  Requires setting environment variables MS_VC_PATH and MS_WINDOWS_SDK_PATH and SCONS_LOCATION
-  e.g  SCONS_LOCATION=c:\Python26\Scripts
-
+  Requires setting following environment variables
+  SCONS_LOCATION pointing to scons installation
+  ZIP_LOCATION pointing to 7z zip installation (windows only)
+  MS_WINDOWS_SDK_PATH pointing to Windows SDK path ( v7.1)
+  MS_VC_PATH pointing to Visual Studio installation ( VS9.0)
+  DXSDK_DIR pointing to Micrisoft DirectX SDK installation
+	e.g SCONS_LOCATION=c:\Python26\Scripts
+  
 -----------
 2. Building 
 -----------
