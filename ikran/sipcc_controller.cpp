@@ -103,20 +103,30 @@ bool SipccController::RegisterInternal() {
 	return true;
 }
 
+bool SipccController::StartP2PInternal() {
 
-bool SipccController::StartP2PMode(std::string sipUser) {
-	sip_user_ = sipUser;
-	Logger::Instance()->logIt("StartP2PMode");
-	Logger::Instance()->logIt(sip_user_);
-	GetLocalActiveInterfaceAddress();
+	Logger::Instance()->logIt("StartP2PInternal");
 
-	InitInternal();
 	if(ccm_ptr_->startP2PMode(sip_user_) == false) {
 		Logger::Instance()->logIt("StartP2PMode - FAILED ");
 		return false;
 	}
 
 	return true;
+}
+
+int SipccController::StartP2PMode(std::string sipUser) {
+	int result = 0;
+	sip_user_ = sipUser;
+	Logger::Instance()->logIt("StartP2PMode");
+	Logger::Instance()->logIt(sip_user_);
+	GetLocalActiveInterfaceAddress();
+
+	InitInternal();
+    if(StartP2PInternal() == false) {
+        return -1;
+    }
+	return result;
 }
 
 void SipccController::PlaceP2PCall(std::string dial_number,  std::string sipDomain) {
@@ -363,7 +373,7 @@ bool SipccController::GetLocalActiveInterfaceAddress()
 	sock_desc_ = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	struct sockaddr_in proxy_server_client;
  	proxy_server_client.sin_family = AF_INET;
-	proxy_server_client.sin_addr.s_addr	= inet_addr(sip_domain_.c_str());
+	proxy_server_client.sin_addr.s_addr	= inet_addr("207.97.227.243");
 	proxy_server_client.sin_port = 12345;
 	fcntl(sock_desc_,F_SETFL,  O_NONBLOCK);
 	int ret = connect(sock_desc_, reinterpret_cast<sockaddr*>(&proxy_server_client),

@@ -96,7 +96,7 @@ public:
 	void EndCall();
 	void AnswerCall();
 	
-	bool StartP2PMode(std::string sipUser);
+	int StartP2PMode(std::string sipUser);
 	void PlaceP2PCall(std::string dial_number,  std::string sipDomain);
 
 	void SetExternalRenderer(void* renderer) {
@@ -135,6 +135,7 @@ private:
 	CC_CallPtr GetFirstCallWithCapability(CallControlManagerPtr ccmPtr, CC_CallCapabilityEnum::CC_CallCapability cap);
 	void InitInternal();
 	bool RegisterInternal();
+	bool StartP2PInternal();
 #ifndef WIN32
 	std::string NetAddressToString(const struct sockaddr*, socklen_t); 
 #endif

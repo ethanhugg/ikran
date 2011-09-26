@@ -5,7 +5,7 @@
         let Me = window.navigator.service.call;
     </script>
 </head>
-	<body onLoad="pageLoad()" style="margin:10px 0px;padding:0px;text-align:center;">
+<body onLoad="pageLoad()" style="margin:10px 0px;padding:0px;text-align:center;">
 	<h2>Ikran Example</h2>
 	<canvas id="thecanvas" width="640" height="480"></canvas>
 	<div>
@@ -18,24 +18,22 @@
 	<p>My password (Not for CUCM): <input type="text" id="mypass"  /></p>
 	<p>My device name(Needed for CUCM): <input type="text" id="mydevice" /></p>
 	</div>
-	
 	<div id="p2pDiv">
 	<p>My username or DN: <input type="text" id="p2pmydn" /></p>
 	</div>
-	
 	<p><input type="button" id="regbutton" value="Register\Start Session!"/></p>
 	<p>DN to Call: <input type="text" id="dn" /></p>
 	<div id="p2pDiv2">
 	<p>IP Address to Call: <input type="text" id="p2pipaddress" /></p>
 	</div>
 	<p><input type="button" id="callbutton" value="Place Call !"/></p>
-	<p id="tehmsg"></p>
+	<p id="themsg"></p>
 
 </body>
 <script type="application/javascript;version=1.8">
     let Re = false;
     let ReRe = false;
-    let msg = document.getElementById("tehmsg");
+    let msg = document.getElementById("themsg");
     let regbut = document.getElementById("regbutton");
     let callbut = document.getElementById("callbutton");
     let registerradio = document.getElementById("regradio");
@@ -49,40 +47,42 @@
     let p2pipaddress = document.getElementById("p2pipaddress");
     let ctx = document.getElementById("thecanvas").getContext("2d");
     
-    function pageLoad() {
+	function pageLoad() {
+		let registerradio = document.getElementById("regradio").checked = "yes";
+		document.getElementById("registerDiv").style.display = '';
+		document.getElementById("p2pDiv").style.display = 'none';
+		document.getElementById("p2pDiv2").style.display = 'none';
     	ctx.drawImage(img, 192, 112);
     	serverRadioClick();
     }
     function serverRadioClick() {
-	document.getElementById("registerDiv").style.display = '';
-	document.getElementById("p2pDiv").style.display = 'none';
-	document.getElementById("p2pDiv2").style.display = 'none';
+		document.getElementById("registerDiv").style.display = '';
+		document.getElementById("p2pDiv").style.display = 'none';
+		document.getElementById("p2pDiv2").style.display = 'none';
     }
     function p2pRadioClick() {
-	document.getElementById("registerDiv").style.display = 'none';
-	document.getElementById("p2pDiv").style.display = '';
-	document.getElementById("p2pDiv2").style.display = '';
-    }
-    function onSessionStateChange(type, arg) 
-    {
-	if(type == "incoming-call")
-	{
-	    alert(" incoming call ");
-	    Me.answerCall(ctx,onMediaStateChange);
-	    callbut.value = "End Call";
-	    ReRe = true;
-	    msg.innerHTML = type;
-	} else {
-	    msg.innerHTML = type;
-	}
+		document.getElementById("registerDiv").style.display = 'none';
+		document.getElementById("p2pDiv").style.display = '';
+		document.getElementById("p2pDiv2").style.display = '';
+    }    
+    function onSessionStateChange(type, arg) {
+		if(type == "incoming-call") {
+	    	alert(" incoming call ");
+	    	Me.answerCall(ctx,onMediaStateChange);
+	    	callbut.value = "End Call";
+	    	ReRe = true;
+	    	msg.innerHTML = type;
+		} else {
+	    	msg.innerHTML = type;
+		}
     }
     function onMediaStateChange(type, arg) {
-	msg.innerHTML = type;
-	if(type == "call-terminated")
-	{
-		callbut.value = "Place Call";
-		ReRe = false;
-	}
+		msg.innerHTML = type;
+		if(type == "call-terminated")
+		{
+			callbut.value = "Place Call";
+			ReRe = false;
+		}
     }
 
     if (!Me) {
@@ -90,12 +90,11 @@
     }
     
     regbut.onclick = function() {
-	//alert(" in registration ");
         if (Re) {
             // Stop recording
             Me.unregisterUser();
- 	    msg.innerHTML = " Unregistered ";
-	    Re = false;
+ 	    	msg.innerHTML = " Unregistered ";
+	    	Re = false;
             regbut.value = "Register !";
         } else {
             Re = true;
@@ -103,11 +102,8 @@
             msg.innerHTML = "Atempting 2 Register...";
             
             if (registerradio.checked) {
-            
             	Me.registerUser(mydevice.value, mydn.value, mypass.value, regipaddress.value, onSessionStateChange);
-            
-            } else { 
-            
+            } else {             
             	// Start in P2P Mode
             	Me.startP2PMode(p2pmydn.value, onSessionStateChange);
             }        
@@ -139,4 +135,3 @@
 
 </script>
 </html>
-
