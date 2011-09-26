@@ -104,7 +104,8 @@ bool SipccController::RegisterInternal() {
 }
 
 
-bool SipccController::StartP2PMode(std::string sipUser) {
+int SipccController::StartP2PMode(std::string sipUser) {
+	int result = 0;
 	sip_user_ = sipUser;
 	Logger::Instance()->logIt("StartP2PMode");
 	Logger::Instance()->logIt(sip_user_);
@@ -113,10 +114,10 @@ bool SipccController::StartP2PMode(std::string sipUser) {
 	InitInternal();
 	if(ccm_ptr_->startP2PMode(sip_user_) == false) {
 		Logger::Instance()->logIt("StartP2PMode - FAILED ");
-		return false;
+		return -1;
 	}
 
-	return true;
+	return result;
 }
 
 void SipccController::PlaceP2PCall(std::string dial_number,  std::string sipDomain) {

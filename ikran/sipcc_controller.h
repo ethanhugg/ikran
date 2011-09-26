@@ -96,7 +96,7 @@ public:
 	void EndCall();
 	void AnswerCall();
 	
-	bool StartP2PMode(std::string sipUser);
+	int StartP2PMode(std::string sipUser);
 	void PlaceP2PCall(std::string dial_number,  std::string sipDomain);
 
 	void SetExternalRenderer(void* renderer) {
