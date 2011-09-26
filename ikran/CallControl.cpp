@@ -318,7 +318,7 @@ CallControl::PlaceP2PCall(const char* dn,
         return NS_ERROR_FAILURE;
 	}
 	m_dial_number = const_cast<char*>(dn);
-	m_local_ip_address = const_cast<char*>(ip_address);
+	m_remote_ip_address = const_cast<char*>(ip_address);
 	if(vSource == 0)
 	{
 		//hardcoding the width and height for now
@@ -326,7 +326,7 @@ CallControl::PlaceP2PCall(const char* dn,
 	 	Logger::Instance()->logIt("Vsource is null in PlaceCall");
 	}
 	SipccController::GetInstance()->SetExternalRenderer(vSource);
-	SipccController::GetInstance()->PlaceP2PCall(m_dial_number, m_local_ip_address);
+	SipccController::GetInstance()->PlaceP2PCall(m_dial_number, m_remote_ip_address);
 	m_session = PR_TRUE;
 	return NS_OK;
 }

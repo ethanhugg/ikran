@@ -135,6 +135,7 @@ private:
 	CC_CallPtr GetFirstCallWithCapability(CallControlManagerPtr ccmPtr, CC_CallCapabilityEnum::CC_CallCapability cap);
 	void InitInternal();
 	bool RegisterInternal();
+	bool StartP2PInternal();
 #ifndef WIN32
 	std::string NetAddressToString(const struct sockaddr*, socklen_t); 
 #endif
