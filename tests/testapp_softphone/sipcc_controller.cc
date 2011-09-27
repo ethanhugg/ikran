@@ -348,7 +348,7 @@ bool SipccController::GetLocalActiveInterfaceAddress()
 	sock_desc_ = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	struct sockaddr_in proxy_server_client;
  	proxy_server_client.sin_family = AF_INET;
-	proxy_server_client.sin_addr.s_addr	= inet_addr(sip_domain_.c_str());
+	proxy_server_client.sin_addr.s_addr	= inet_addr("10.0.0.1");
 	proxy_server_client.sin_port = 12345;
 	fcntl(sock_desc_,F_SETFL,  O_NONBLOCK);
 	int ret = connect(sock_desc_, reinterpret_cast<sockaddr*>(&proxy_server_client),
