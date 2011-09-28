@@ -1,0 +1,4 @@
+username=cbran
+password=12345
+sipaddress=10.93.135.138
+devicename=CSFCBRAN
