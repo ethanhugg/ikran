@@ -187,9 +187,8 @@ if sys.platform =='win32':
       '/DEBUG '
     ]
   
-  moz_sdk_dir = os.environ['MOZSDKPATH']
-  xpidl_h_cmd =  moz_sdk_dir + '\\bin\\xpidl -m header -I' + moz_sdk_dir + '\idl ./ICallControl.idl'
-  xpidl_tl_cmd = moz_sdk_dir + '\\bin\\xpidl -m typelib -I' + moz_sdk_dir + '\idl ./ICallControl.idl'
+  xpidl_h_cmd =  mozsdkpath + '\\bin\\xpidl -m header -I' + mozsdkpath + '\idl ./ICallControl.idl'
+  xpidl_tl_cmd = mozsdkpath + '\\bin\\xpidl -m typelib -I' + mozsdkpath + '\idl ./ICallControl.idl'
   env.Execute(xpidl_h_cmd)
   env.Execute(xpidl_tl_cmd)
   
