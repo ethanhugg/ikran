@@ -53,6 +53,7 @@
 #include "test_main.h"
 #include "test_mac_cocoa.h"
 
+
 WindowManager* windowManager; 
 bool inCall = false;
 /*
@@ -96,91 +97,117 @@ void TestMain::OnCallConnected()
 
 }
 
-TestMain::TestMain(): sipProxy("10.53.47.140"),
-					  userName("9995"),
-					  userPassword(""),
-					  deviceName("ECPemannion")
-{
+TestMain::TestMain(){
+	_config = new TestConfiguration();
 }
 
-void TestMain::FillInUserData()
+void TestMain::ManualConfiguration()
 {
-	std::string input;
-	cout << "Enter SIP Server IP Address [ "<< sipProxy <<" ]: " ;
+	std::string input;  
+	cout << "Enter SIP server IP address: [current value = " << _config->GetSIPProxyAddress() << "] " ;
 	getline(cin, input, '\n');
-	if(input.length() > 0)
-	{
-		sipProxy = input;
+	if(input.length() > 0){
+		_config->SetSIPProxyAddress(input);
 	}
-	cout << "Enter SIP Server username (phone DN for CUCM) [ " << userName << " ]: " ;
+	
+	cout << "Enter SIP server username (phone DN for CUCM): [current value = " << _config->GetUserName() << "] " ;
 	getline(cin, input, '\n');
-	if(input.length() > 0)
-	{
-		userName = input;
+	if(input.length() > 0){
+		_config->SetUserName(input);
 	}
-	cout << "Enter Password (not required for CUCM [ Enter ]:" ;
+	
+	cout << "Enter password (not required for CUCM) [ Enter ]:" ;
 	getline(cin, input, '\n');
-	if(input.length() > 0)
-	{
-		userPassword = input;
+	if(input.length() > 0){
+		_config->SetUserPassword(input);
 	}
-	cout << "Enter device name (only required for CUCM) [ " << deviceName << " ]: " ;
+	
+	cout << "Enter device name (only required for CUCM): [current value = " << _config->GetDeviceName() << "] " ;
 	getline(cin, input, '\n');
-	if(input.length() > 0)
-	{
-		deviceName = input;
+	if(input.length() > 0){
+		_config->SetDeviceName(input);
+	}
+	
+	cout << "Use video camera? [yes|no]: [current value = " << (_config->UseVideo() ? "yes" : "no") << "] " ; 
+	getline(cin, input, '\n');
+	if(input.length() > 0){
+		transform(input.begin(), input.end(), input.begin(),::tolower );
+		_config->SetUseVideo(input == "yes");
 	}
 }
 
-bool TestMain::BeginOSIndependentTesting()
-{
+/**
+ * Loads configuration settings from a user specified file path
+ */
+void TestMain::LoadConfigurationFromFile(){
+	string input;
+	cout << "Configuration file should have the following entries (one per line" << endl;
+	cout << "username=<some user name>" << endl;
+	cout << "password=<some password>" << endl;
+	cout << "sipaddress=<ip address to sip proxy>" << endl;
+	cout << "devicename=<name of device>" << endl;
+	cout << "audioonly=<true or false>" << endl;
+	cout << endl;
+	cout << "Enter path to configuration file:" << endl;
+	
+	//read in the user input
+	getline(cin, input, '\n');
+	if(input.length() > 0){
+		//read in the configuration
+		if(_config->ReadConfigFromFile(input)){
+			cout << "configuration read from " << input << endl;
+		}
+		else{
+			cout << "ERROR: failed to read configuration from file " << input << endl;
+		}
+			
+	}
+}
+
+
+bool TestMain::BeginOSIndependentTesting(){
+	
     // Create platform dependent render windows
     windowManager = new WindowManager();
-	char window1Title[1024] = "Not Supported Preview Window";
-    char window2Title[1024] = "Remote Party Video Window";
-
-    windowManager->CreateWindows( window1Title,
-                                 window2Title);
-    windowManager->SetTopmostWindow();
 	
    	std::string dn;
    	std::string input;
     int testType = 0;
-    int testErrors = 0;
-    do
-    {
+    do{
 		cout << "********************************" << endl;        
         cout << "Please Choose One : " << endl;
 		cout << "\t 0. Quit" << endl;
-		cout << "\t 1. Register User" << endl;
+		cout << "\t 1. Register" << endl;
 		cout << "\t 2. Place Call" << endl;
         cout << "\t 3. Answer Call" << endl;
 		cout << "\t 4. End Call" << endl;
 		cout << "\t 5. Start P2P mode" << endl;
 		cout << "\t 6. Place P2P Call" << endl;
+		cout << "\t 7. Manual configuration" << endl;
+		cout << "\t 8. Load configuration from file" << endl;
+		cout << "\t 9. Print current configuration" << endl;
 		
 		cout << " What Action do you want to perform Monsieur ?? " << endl;
 		scanf("%d", &testType);
 		getchar();
 		cout << "********************************" << endl;        
-        if (testType < 0 || testType > 6)
-        {
+        if (testType < 0 || testType > 9){
 			continue;
         }
-
-        switch (testType)
-        {
+	
+	     switch (testType){
+				//TODO: replace literals with an enum or #defines
             case 0:
 				SipccController::GetInstance()->UnRegister();
 				break;
             case 1:
-				FillInUserData();
-				SipccController::GetInstance()->Register(deviceName, userName, userPassword, sipProxy);
-				SipccController::GetInstance()->SetVideoWindow(windowManager->GetWindow2());
-                break;
-
+				SipccController::GetInstance()->Register(_config->GetDeviceName(), _config->GetUserName(), _config->GetUserPassword(), _config->GetSIPProxyAddress());
+			    break;
             case 2:
-				SipccController::GetInstance()->SetVideoWindow(windowManager->GetWindow2());
+				if (_config->UseVideo()) {
+					cout << "setting up for video call";
+					SipccController::GetInstance()->SetVideoWindow(windowManager->GetVideoWindow());
+				}
 				cout << "Enter the number to dial, signore " ;
 				getline(cin, dn, '\n');
 				SipccController::GetInstance()->PlaceCall(dn);
@@ -196,34 +223,49 @@ bool TestMain::BeginOSIndependentTesting()
                 break;
 
             case 5:
-            	cout << "Enter local peer username (usually a phone DN) [ " << userName << " ]: " ;
+            	cout << "Enter local peer username (usually a phone DN)[current value = " << _config->GetUserName() << "] " ;
             	getline(cin, input, '\n');
-            	if(input.length() > 0)
+            	if((input.length() > 0 )&& (input != _config->GetUserName()))
             	{
-            		userName = input;
+            		_config->SetUserName(input);
             	}
-            	SipccController::GetInstance()->StartP2PMode(userName);
-            	SipccController::GetInstance()->SetVideoWindow(windowManager->GetWindow2());
+            	SipccController::GetInstance()->StartP2PMode(_config->GetUserName());
             	break;
 
             case 6:
-            	SipccController::GetInstance()->SetVideoWindow(windowManager->GetWindow2());
-            	cout << "Enter the number to dail, signore " ;
+				 if (_config->UseVideo()) {
+					 cout << "setting up for video P2P call";
+					 SipccController::GetInstance()->SetVideoWindow(windowManager->GetVideoWindow());
+				 }	
+				cout << "Enter the number to dail, signore: " ;
             	getline(cin, dn, '\n');
-            	cout << "Enter the IP Address to dial, signore " ;
+            	cout << "Enter the IP Address to dial, signore: " ;
             	getline(cin, input, '\n');
             	if(input.length() > 0)
             	{
             		p2pIPAddress = input;
             	}
             	SipccController::GetInstance()->PlaceP2PCall(dn, p2pIPAddress);
-
+				break;
+				
+			case 7:
+				 ManualConfiguration();
+				 break;
+				 
+			case 8:
+				 LoadConfigurationFromFile();
+				 break;
+			
+			case 9:
+				cout << _config->toString();
+				break;
+			
 			default:
                 break;
         }
     } while (testType != 0);
 
-    windowManager->TerminateWindows();
+   // windowManager->TerminateWindows();
 
    
 	printf("Press enter to quit...");

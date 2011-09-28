@@ -45,6 +45,7 @@
 
 #include <string>
 #include "sipcc_controller.h"
+#include "test_configuration.h"
 
 using namespace std;
 
@@ -53,18 +54,18 @@ class TestMain :
 {
 public:
     TestMain();
-    bool BeginOSIndependentTesting();
+	bool BeginOSIndependentTesting();
 	virtual void OnIncomingCall(std::string callingPartyName, std::string callingPartyNumber);
  	virtual void OnRegisterStateChange(std::string registrationState);
  	virtual void OnCallTerminated(); 
 	virtual void OnCallConnected();   
 private:
-	void FillInUserData();
-	bool videoWinEnabled;
-	std::string sipProxy;
-	std::string deviceName;
-	std::string userName;
-	std::string userPassword;
+	void ManualConfiguration();
+	void LoadConfigurationFromFile();
+	
+	bool videoWinEnabled;	
+	
+	TestConfiguration* _config;
 	std::string p2pIPAddress;
 };
 
