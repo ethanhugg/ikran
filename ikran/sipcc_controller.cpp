@@ -131,20 +131,23 @@ int SipccController::StartP2PMode(std::string sipUser) {
 
 void SipccController::PlaceP2PCall(std::string dial_number,  std::string sipDomain) {
 
-	Logger::Instance()->logIt(" SipccController::PlaceP2PCall");
+	Logger::Instance()->logIt("SipccController::PlaceP2PCall");
 	dial_number_ = dial_number;
 	sipDomain_ = sipDomain;
-	 if (ccm_ptr_ != NULL)
-     {
-		Logger::Instance()->logIt(" Dial Number is ");
+	if (ccm_ptr_ != NULL) {
+		Logger::Instance()->logIt("Dial Number is");
 		Logger::Instance()->logIt(dial_number_);
-		Logger::Instance()->logIt(" Domain is ");
+		Logger::Instance()->logIt("Domain is");
 		Logger::Instance()->logIt(sipDomain);
         device_ptr_ = ccm_ptr_->getActiveDevice();
         outgoing_call_ = device_ptr_->createCall();
-        outgoing_call_->setExternalRenderer(0,ext_renderer);
+		Logger::Instance()->logIt("Setting the external renderer");
+		if(ext_renderer  == 0) {
+			Logger::Instance()->logIt("ext_renderer is NULL in PlaceP2PCall");
+		}        
+        outgoing_call_->setExternalRenderer(0, ext_renderer);
         if(outgoing_call_->originateP2PCall(CC_SDP_DIRECTION_SENDRECV, dial_number_, sipDomain_)) {
-			Logger::Instance()->logIt("SipccController::PlaceP2PCall: Call Setup Succeeded ");
+			Logger::Instance()->logIt("SipccController::PlaceP2PCall: Call Setup Succeeded");
         	return ;
         } else {
         }

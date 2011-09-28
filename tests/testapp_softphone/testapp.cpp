@@ -1370,12 +1370,71 @@ static int startInP2PMode ()
     return returnCode;
 }
 
-
-#ifndef WIN32
 std::string proxy_ip_address_="10.99.10.75";
 std::string local_ip_v4_address_;
 
+// POSIX Only Implementation
+static bool GetLocalActiveInterfaceAddress() 
+{
+	std::string local_ip_address = "0.0.0.0";
+#ifndef WIN32
+	SOCKET sock_desc_ = INVALID_SOCKET;
+	sock_desc_ = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	struct sockaddr_in proxy_server_client;
+ 	proxy_server_client.sin_family = AF_INET;
+	proxy_server_client.sin_addr.s_addr	= inet_addr("10.0.0.1");
+	proxy_server_client.sin_port = 12345;
+	fcntl(sock_desc_,F_SETFL,  O_NONBLOCK);
+	int ret = connect(sock_desc_, reinterpret_cast<sockaddr*>(&proxy_server_client),
+                    sizeof(proxy_server_client));
+
+	if(ret == SOCKET_ERROR)
+	{
+	}
+ 
+	struct sockaddr_storage source_address;
+	socklen_t addrlen = sizeof(source_address);
+	ret = getsockname(
+			sock_desc_, reinterpret_cast<struct sockaddr*>(&source_address),&addrlen);
+
+	
+	//get the  ip address 
+	local_ip_address = NetAddressToString(
+						reinterpret_cast<const struct sockaddr*>(&source_address),
+						sizeof(source_address));
+	local_ip_v4_address_ = local_ip_address;
+	close(sock_desc_);
+#else
+	/* This function is temporary as it only enumerates the first IP address 
+	 For a better solution do something like what is done for mac\linux 
+	 but this test app is temporary so it should suffice fo now */
+
+    WSAData wsaData;
+    if (WSAStartup(MAKEWORD(1, 1), &wsaData) != 0) {
+		return false;
+    }
+
+	char ac[80];
+    if (gethostname(ac, sizeof(ac)) == SOCKET_ERROR) {
+		return false;
+    }
+
+    struct hostent *phe = gethostbyname(ac);
+    if (phe == 0) {
+		return false;
+    }
+
+    struct in_addr addr;
+    memcpy(&addr, phe->h_addr_list[0], sizeof(struct in_addr));
+	local_ip_v4_address_ = inet_ntoa(addr);
+
+	WSACleanup();
+#endif
+	return true;
+}
+
 //Only POSIX Complaint as of 7/6/11
+#ifndef WIN32
 static std::string NetAddressToString(const struct sockaddr* net_address,
                                socklen_t address_len) {
 
@@ -1387,39 +1446,6 @@ static std::string NetAddressToString(const struct sockaddr* net_address,
     buffer[0] = '\0';
   }
   return std::string(buffer);
-}
-
-static bool GetLocalActiveInterfaceAddress()
-{
-	std::string local_ip_address = "0.0.0.0";
-	CSFLogDebug(logTag, "Proxy IP address is (%s)\n", CUCMIPAddress.c_str());
-	SOCKET sock_desc_ = INVALID_SOCKET;
-	sock_desc_ = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	struct sockaddr_in proxy_server_client;
- 	proxy_server_client.sin_family = AF_INET;
-	proxy_server_client.sin_addr.s_addr	= inet_addr(CUCMIPAddress.c_str());
-	proxy_server_client.sin_port = 12345;
-	fcntl(sock_desc_,F_SETFL,  O_NONBLOCK);
-	int ret = connect(sock_desc_, reinterpret_cast<sockaddr*>(&proxy_server_client),
-                    sizeof(proxy_server_client));
-
-	if(ret == SOCKET_ERROR) {
-	}
-
-	struct sockaddr_storage source_address;
-	socklen_t addrlen = sizeof(source_address);
-	ret = getsockname(
-			sock_desc_, reinterpret_cast<struct sockaddr*>(&source_address),&addrlen);
-
-	//get the  ip address
-	local_ip_address = NetAddressToString(
-						reinterpret_cast<const struct sockaddr*>(&source_address),
-						sizeof(source_address));
-	local_ip_v4_address_ = local_ip_address;
-	CSFLogDebug(logTag, "local IP address is (%s)\n", local_ip_address.c_str());
-
-	close(sock_desc_);
-	return true;
 }
 #endif
 
@@ -1439,16 +1465,11 @@ static int runMainLoop ()
     ccmPtr->addCCObserver(&CCCapsPrinter);
     ccmPtr->addECCObserver(&ECCCapsPrinter);
 
-#ifndef WIN32
     GetLocalActiveInterfaceAddress();
 
     CSFLogDebug(logTag, "LOCAL IP IS %s \n", local_ip_v4_address_.c_str());
 
     ccmPtr->setLocalIpAddressAndGateway(local_ip_v4_address_,"");
-#else
-    ccmPtr->setLocalIpAddressAndGateway(localIP,"");
-#endif
-
     ccmPtr->setSIPCCLoggingMask( GSM_DEBUG_BIT | FIM_DEBUG_BIT | SIP_DEBUG_MSG_BIT | CC_APP_DEBUG_BIT | SIP_DEBUG_REG_STATE_BIT );
 
     // make decision how to start the stack
