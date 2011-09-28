@@ -1373,6 +1373,22 @@ static int startInP2PMode ()
 std::string proxy_ip_address_="10.99.10.75";
 std::string local_ip_v4_address_;
 
+//Only POSIX Complaint as of 7/6/11
+#ifndef WIN32
+static std::string NetAddressToString(const struct sockaddr* net_address,
+                               socklen_t address_len) {
+
+  // This buffer is large enough to fit the biggest IPv6 string.
+  char buffer[128];
+  int result = getnameinfo(net_address, address_len, buffer, sizeof(buffer),
+                           NULL, 0, NI_NUMERICHOST);
+  if (result != 0) {
+    buffer[0] = '\0';
+  }
+  return std::string(buffer);
+}
+#endif
+
 // POSIX Only Implementation
 static bool GetLocalActiveInterfaceAddress() 
 {
@@ -1432,22 +1448,6 @@ static bool GetLocalActiveInterfaceAddress()
 #endif
 	return true;
 }
-
-//Only POSIX Complaint as of 7/6/11
-#ifndef WIN32
-static std::string NetAddressToString(const struct sockaddr* net_address,
-                               socklen_t address_len) {
-
-  // This buffer is large enough to fit the biggest IPv6 string.
-  char buffer[128];
-  int result = getnameinfo(net_address, address_len, buffer, sizeof(buffer),
-                           NULL, 0, NI_NUMERICHOST);
-  if (result != 0) {
-    buffer[0] = '\0';
-  }
-  return std::string(buffer);
-}
-#endif
 
 static int runMainLoop ()
 {
