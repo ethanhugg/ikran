@@ -248,7 +248,7 @@ void SipccController::SetProperty(std::string key, std::string value)
 
 	const int length = key.length();
 	for(int i=0; i < length; ++i) {
-		key[i] = std::tolower(key[i]);
+		key[i] = tolower(key[i]);
 	}
 
 	if (key == "localvoipport") {
