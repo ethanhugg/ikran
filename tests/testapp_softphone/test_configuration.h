@@ -57,20 +57,34 @@ public:
 	virtual bool ReadConfigFromFile(string pathToConfigurationFile); 
 	
 	//getters and setters
-	virtual string GetUserName(void);
-	virtual void SetUserName(string username);
+	virtual string GetUserNumber(void);
+	virtual void SetUserNumber(string userNumber);
 	
-	virtual string GetUserPassword(void);
-	virtual void SetUserPassword(string password);
+	virtual string GetPassword(void);
+	virtual void SetPassword(string password);
 	
 	virtual string GetDeviceName(void);
 	virtual void SetDeviceName(string deviceName);
 	
 	virtual string GetSIPProxyAddress(void);
 	virtual void SetSIPProxyAddress(string address);
+
+	virtual string GetNumberToDial(void);
+	virtual void SetNumberToDial(string numberToDial);
 	
 	virtual bool UseVideo(void);
 	virtual void SetUseVideo(bool useVideo);
+	
+	virtual bool UseP2PMode(void);
+	virtual void SetUseP2PMode(bool useP2PMode);
+	
+	virtual string GetP2PAddress(void);
+	virtual void SetP2PAddress(string p2pAddress);
+	
+	virtual bool IsBatchMode(void);
+	virtual void SetBatchMode(bool useBatchMode);
+	
+	virtual bool IsConfigured(void);
 
 	
 	//string representation of the configuration
@@ -78,11 +92,27 @@ public:
 	
 private:
 	void AddConfigurationSetting(string key, string val);
-	string _userName;
+	string _userNumber;
 	string _userPassword;
 	string _deviceName;
 	string _sipProxyAddress;
+	string _numberToDial;
+	string _p2pAddress;
+	
+	
 	//flag for using audio only during the test
 	bool _useVideo;
-
+	bool _useP2PMode;
+	//flag to tell the test application to run everythign from the config file
+	bool _useBatchMode;
+	
+	static const string USERNUMBER;
+	static const string PASSWORD;
+	static const string SIPADDRESS;
+	static const string DEVICENAME;
+	static const string USEVIDEO;
+	static const string USEP2P;
+	static const string P2PADDRESS;
+	static const string NUMBERTODIAL;
+	static const string USEBATCHMODE;
 };

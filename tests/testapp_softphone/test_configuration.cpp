@@ -44,8 +44,18 @@
 
 #include "test_configuration.h"
 
+const string TestConfiguration::USERNUMBER = "usernumber";
+const string TestConfiguration::PASSWORD = "password";
+const string TestConfiguration::SIPADDRESS = "sipaddress";
+const string TestConfiguration::DEVICENAME = "devicename";
+const string TestConfiguration::USEVIDEO = "usevideo";
+const string TestConfiguration::USEP2P = "usep2p";
+const string TestConfiguration::P2PADDRESS = "p2paddress";
+const string TestConfiguration::NUMBERTODIAL = "numbertodial";
+const string TestConfiguration::USEBATCHMODE = "usebatchmode";
 
-TestConfiguration::TestConfiguration(void):_userName(), _userPassword(), _deviceName(), _sipProxyAddress(), _useVideo(false){
+
+TestConfiguration::TestConfiguration(void):_userNumber(), _userPassword(), _deviceName(), _sipProxyAddress(), _useVideo(false){
 	
 }
 
@@ -103,18 +113,13 @@ bool TestConfiguration::ReadConfigFromFile(string pathToConfigurationFile){
  * is a match then the property variable is set to the value
  **/
 void TestConfiguration::AddConfigurationSetting(string key, string val){
-	const string USERNAME = "username";
-	const string PASSWORD = "password";
-	const string SIPADDRESS = "sipaddress";
-	const string DEVICENAME = "devicename";
-	const string USEVIDEO = "usevideo";
 
 	//convert the key to lowercase
 	string k = key;
 	transform( k.begin(), k.end(), k.begin(),::tolower );
 	
-	if(USERNAME == k){
-		_userName = val;
+	if(USERNUMBER == k){
+		_userNumber = val;
 		return;
 	}
 	
@@ -133,28 +138,63 @@ void TestConfiguration::AddConfigurationSetting(string key, string val){
 		return;
 	}
 	
-	if(USEVIDEO == k){
-			_useVideo = (val == "true");
+	if(NUMBERTODIAL == k){
+		_numberToDial = val;
+		return;
 	}
 	
+	if(USEVIDEO == k){
+		_useVideo = (val == "true");
+		return;
+	}
+	
+	if(USEP2P == k){
+		_useP2PMode = (val == "true");
+		return;
+	}
+	if(P2PADDRESS == k){
+		_p2pAddress = val;
+	}
+	
+	if(USEBATCHMODE == k){
+		_useBatchMode = (val == "true");
+		return;
+	}
+	
+	
+	
+}
+
+/**
+ *  Internal check to see if the configuration object has enough information
+ *  to register and make a call
+ **/
+bool TestConfiguration::IsConfigured(void){
+	//TODO: do we want to add specific sip proxy tests - e.g. CUCM requires a device name, asterisk doesn't etc..
+	if(_useP2PMode){
+		return !(_userNumber.empty());
+	}
+	else{
+		return !(_userNumber.empty() || _sipProxyAddress.empty()); 
+	}
 }
 
 
 /**
  *  Accessor methods
  **/
-string TestConfiguration::GetUserName(void){
-	return _userName;
+string TestConfiguration::GetUserNumber(void){
+	return _userNumber;
 }
-void TestConfiguration::SetUserName(string username){
-	_userName = username;
+void TestConfiguration::SetUserNumber(string usernumber){
+	_userNumber = usernumber;
 }
 
-string TestConfiguration::GetUserPassword(void){
+string TestConfiguration::GetPassword(void){
 	return _userPassword;
 }
 
-void TestConfiguration::SetUserPassword(string password){
+void TestConfiguration::SetPassword(string password){
 	_userPassword = password;
 }
 
@@ -182,23 +222,60 @@ void TestConfiguration::SetUseVideo(bool useVideo){
 	_useVideo = useVideo;
 }
 
+bool TestConfiguration::UseP2PMode(void){
+	return _useP2PMode;
+}
+void TestConfiguration::SetUseP2PMode(bool useP2PMode){
+	_useP2PMode = useP2PMode;
+}
+
+bool TestConfiguration::IsBatchMode(void){
+	return _useBatchMode;
+}
+void TestConfiguration::SetBatchMode(bool useBatchMode){
+	_useBatchMode = useBatchMode;
+}
+
+string TestConfiguration::GetNumberToDial(void){
+	return _numberToDial;
+}
+void TestConfiguration::SetNumberToDial(string numberToDial){
+	_numberToDial = numberToDial;
+}
+
+string TestConfiguration::GetP2PAddress(void){
+	return _p2pAddress;
+}
+
+void TestConfiguration::SetP2PAddress(string p2pAddress){
+	_p2pAddress = p2pAddress;
+}
+
 
 /**
  * returns a string representation of the object
  **/
 string TestConfiguration::toString(void){
-	string stringRepresentation = "Configuration information:";
-	stringRepresentation += "\n user name: ";
-	stringRepresentation += _userName;
-	stringRepresentation += "\n password: ";
-	stringRepresentation += _userPassword;
-	stringRepresentation += "\n device name: ";
-	stringRepresentation += _deviceName;
-	stringRepresentation += "\n SIP proxy: ";
-	stringRepresentation += _sipProxyAddress;
-	stringRepresentation += "\n Use video: ";
-	stringRepresentation += _useVideo ? "true" : "false";
-	stringRepresentation += "\n";
+	string s = "Configuration information:";
+	s += "\n user number: ";
+	s += _userNumber;
+	s += "\n password: ";
+	s += _userPassword;
+	s += "\n device name: ";
+	s += _deviceName;
+	s += "\n SIP proxy: ";
+	s += _sipProxyAddress;
+	s += "\n Use video: ";
+	s += _useVideo ? "true" : "false";
+	s += "\n Number to dial: ";
+	s += _numberToDial;
+	s += "\n Use P2P mode: ";
+	s += _useP2PMode ? "true" : "false";
+	s += "\n P2P address: ";
+	s += _p2pAddress;
+	s += "\n Use batch mode: ";
+	s += _useBatchMode ? "true" : "false";
+	s += "\n";
 	
-	return stringRepresentation;
+	return s;
 }

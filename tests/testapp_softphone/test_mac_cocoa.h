@@ -28,29 +28,14 @@ class WindowManager
 public:
     WindowManager();
     ~WindowManager();
-    //virtual void* GetWindow1();
-    //virtual void* GetWindow2();
-	//added 
-	virtual void* GetVideoWindow();
-	
-	virtual int InitializeWindows();
-	//end added
-    //virtual int CreateWindows(void* window1Title,
-      //                        void* window2Title);
-    //virtual int TerminateWindows();
-    //virtual bool SetTopmostWindow();
+   	virtual void* GetVideoWindow();
+	virtual int InitializeWindow();
 	
 protected:
 	virtual CocoaRenderView* CreateView(NSString* title, NSRect windowDimensions, NSRect viewDimensions);
 
 private:
-	
-  //  CocoaRenderView* _cocoaRenderView1;
-  //  CocoaRenderView* _cocoaRenderView2;
-	//added
-//	CocoaRenderView* _consoleView;
     CocoaRenderView* _videoView;
-//	CocoaRenderView* _outputView;
 };
 
 @interface TestClass : NSObject
@@ -58,7 +43,7 @@ private:
 	
 }
 
--(void)autoTestWithArg:(NSString*)answerFile;;
+-(void)autoTestWithArg:(NSString* )configPath;
 
 @end
 

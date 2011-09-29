@@ -16,7 +16,8 @@ include_dirs = [
   '../../src/common',
   '../../out/include/system',
   '../../third_party/chromium_base',
-  '../../src/common/browser_logging'
+  '../../src/common/browser_logging',
+  '../../ikran'
  ]
 
 ## Add test src files here
@@ -24,9 +25,9 @@ include_dirs = [
 if sys.platform == 'darwin':
   src_files = [
     'Logger.cpp',
-    'sipcc_controller.cc',
     'test_mac_cocoa.cc',
-    'test_main.cc'
+    'test_main.cc',
+	'test_configuration.cpp'
   ]
   include_dirs += [
     webrtcpath + '/src/modules/video_render/main/source/mac'
@@ -179,6 +180,7 @@ elif sys.platform == 'darwin':
     '../..',
     '../../third_party/chromium_base',
     '../../third_party/lib',
+	'../../ikran',
     webrtcpath + '/xcodebuild/Debug',
   ]
   libs += [
@@ -230,7 +232,8 @@ elif sys.platform == 'darwin':
 	'libwebrtc_utility.a',
 	'libwebrtc_video_coding.a',
 	'libwebrtc_vp8.a',
-	'libwebrtc_vplib.a'
+	'libwebrtc_vplib.a',
+	'sipcc_controller.o'
   ]
   env["LINKFLAGS"] += [
     '-framework',
