@@ -1146,8 +1146,12 @@ void CC_SIPCCService::onMediaRestored( int callId )
 {
 }
 
-bool CC_SIPCCService::setVoipPort(int port) {
-	return CCAPI_Config_set_voip_port(port);
+bool CC_SIPCCService::setLocalVoipPort(int port) {
+	return CCAPI_Config_set_local_voip_port(port);
+}
+
+bool CC_SIPCCService::setRemoteVoipPort(int port) {
+	return CCAPI_Config_set_remote_voip_port(port);
 }
 
 bool CC_SIPCCService::setP2PMode(bool mode)  {

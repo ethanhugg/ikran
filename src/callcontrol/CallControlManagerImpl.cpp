@@ -65,6 +65,10 @@ CallControlManagerImpl::CallControlManagerImpl()
   connectionState(ConnectionStatusEnum::eIdle)
 {
     CSFLogInfoS(logTag, "CallControlManagerImpl()");
+
+    // Set config element defaults here
+    localVoipPort = 5060;
+    remoteVoipPort = 5060;
 }
 
 CallControlManagerImpl::~CallControlManagerImpl()
@@ -232,7 +236,8 @@ bool CallControlManagerImpl::startP2PMode(const std::string& user)
     phone->addCCObserver(this);
 
     phone->setP2PMode(true);
-    phone->setVoipPort(5060);
+    phone->setLocalVoipPort(localVoipPort);
+    phone->setRemoteVoipPort(remoteVoipPort);
 
     bool bStarted = phone->startService();
     if (!bStarted) {
@@ -325,6 +330,23 @@ AudioControlPtr CallControlManagerImpl::getAudioControl()
         return phone->getAudioControl();
 
     return AudioControlPtr();
+}
+
+bool CallControlManagerImpl::setProperty(ConfigPropertyKeysEnum::ConfigPropertyKeys key, std::string& value)
+{
+	CSFLogInfoS(logTag, "setProperty(" << value << " )");
+
+	if (key == ConfigPropertyKeysEnum::eLocalVoipPort) {
+		localVoipPort = atoi(value.c_str());
+		if(phone != NULL)
+			phone->setLocalVoipPort(localVoipPort);
+	} else if (key == ConfigPropertyKeysEnum::eLocalVoipPort) {
+		remoteVoipPort = atoi(value.c_str());
+		if(phone != NULL)
+			phone->setRemoteVoipPort(remoteVoipPort);
+	}
+
+	return true;
 }
 
 /*

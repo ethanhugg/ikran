@@ -155,8 +155,13 @@ cc_boolean CCAPI_Config_set_transport(const cc_boolean is_udp) {
 	return TRUE;
 }
 
-cc_boolean CCAPI_Config_set_voip_port(const int port) {
-	config_setup_voip_control_port(port);
+cc_boolean CCAPI_Config_set_local_voip_port(const int port) {
+	config_setup_local_voip_control_port(port);
+	return TRUE;
+}
+
+cc_boolean CCAPI_Config_set_remote_voip_port(const int port) {
+	config_setup_remote_voip_control_port(port);
 	return TRUE;
 }
 

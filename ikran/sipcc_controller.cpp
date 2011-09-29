@@ -62,6 +62,8 @@ SipccController* SipccController::GetInstance()
 
 
 SipccController::SipccController() : device_ptr_(NULL),
+									localVoipPort("5060"),
+									remoteVoipPort("5060"),
 									video_window(0),
 									ccm_ptr_(NULL),
 									observer_(NULL) {
@@ -84,6 +86,11 @@ void SipccController::InitInternal() {
     ccm_ptr_->setLocalIpAddressAndGateway(local_ip_v4_address_,"");
 	//ccm_ptr_->setSIPCCLoggingMask( GSM_DEBUG_BIT | FIM_DEBUG_BIT | SIP_DEBUG_MSG_BIT | CC_APP_DEBUG_BIT | SIP_DEBUG_REG_STATE_BIT );
 	ccm_ptr_->setSIPCCLoggingMask(0); 
+
+	// Set Config properties needed at initilization
+	ccm_ptr_->setProperty(ConfigPropertyKeysEnum::eLocalVoipPort ,localVoipPort);
+	ccm_ptr_->setProperty(ConfigPropertyKeysEnum::eRemoteVoipPort ,remoteVoipPort);
+
 	LOG(ERROR)<<"SipccController:: Authentication user : " << sip_user_;
 	initDone = true;	
 }
@@ -103,17 +110,6 @@ bool SipccController::RegisterInternal() {
 	return true;
 }
 
-bool SipccController::StartP2PInternal() {
-
-	Logger::Instance()->logIt("StartP2PInternal");
-
-	if(ccm_ptr_->startP2PMode(sip_user_) == false) {
-		Logger::Instance()->logIt("StartP2PMode - FAILED ");
-		return false;
-	}
-
-	return true;
-}
 
 int SipccController::StartP2PMode(std::string sipUser) {
 	int result = 0;
@@ -123,31 +119,30 @@ int SipccController::StartP2PMode(std::string sipUser) {
 	GetLocalActiveInterfaceAddress();
 
 	InitInternal();
-    if(StartP2PInternal() == false) {
-        return -1;
-    }
+	if(ccm_ptr_->startP2PMode(sip_user_) == false) {
+		Logger::Instance()->logIt("StartP2PMode - FAILED ");
+		return -1;
+	}
+
 	return result;
 }
 
 void SipccController::PlaceP2PCall(std::string dial_number,  std::string sipDomain) {
 
-	Logger::Instance()->logIt("SipccController::PlaceP2PCall");
+	Logger::Instance()->logIt(" SipccController::PlaceP2PCall");
 	dial_number_ = dial_number;
 	sipDomain_ = sipDomain;
-	if (ccm_ptr_ != NULL) {
-		Logger::Instance()->logIt("Dial Number is");
+	 if (ccm_ptr_ != NULL)
+     {
+		Logger::Instance()->logIt(" Dial Number is ");
 		Logger::Instance()->logIt(dial_number_);
-		Logger::Instance()->logIt("Domain is");
+		Logger::Instance()->logIt(" Domain is ");
 		Logger::Instance()->logIt(sipDomain);
         device_ptr_ = ccm_ptr_->getActiveDevice();
         outgoing_call_ = device_ptr_->createCall();
-		Logger::Instance()->logIt("Setting the external renderer");
-		if(ext_renderer  == 0) {
-			Logger::Instance()->logIt("ext_renderer is NULL in PlaceP2PCall");
-		}        
-        outgoing_call_->setExternalRenderer(0, ext_renderer);
+        outgoing_call_->setExternalRenderer(0,ext_renderer);
         if(outgoing_call_->originateP2PCall(CC_SDP_DIRECTION_SENDRECV, dial_number_, sipDomain_)) {
-			Logger::Instance()->logIt("SipccController::PlaceP2PCall: Call Setup Succeeded");
+			Logger::Instance()->logIt("SipccController::PlaceP2PCall: Call Setup Succeeded ");
         	return ;
         } else {
         }
@@ -237,14 +232,36 @@ Logger::Instance()->logIt(" In Asnwer call ");
         }
 		//defaulting to I420 video format retrieval
 		if(ext_renderer == 0)
-			Logger::Instance()->logIt(" ext_renderer is NULL in PlaceCall");
+			Logger::Instance()->logIt("ext_renderer is NULL in PlaceCall");
 
-	    answerableCall->setExternalRenderer(0,ext_renderer);
+	    answerableCall->setExternalRenderer(0, ext_renderer);
 	} else {
 	}
 }
 
+void SipccController::SetProperty(std::string key, std::string value)
+{
+	Logger::Instance()->logIt("In SetProperty");
+	Logger::Instance()->logIt(key);
+	Logger::Instance()->logIt(value);
 
+	const int length = key.length();
+	for(int i=0; i < length; ++i) {
+		key[i] = std::tolower(key[i]);
+	}
+
+	if (key == "localvoipport") {
+		if (ccm_ptr_ != NULL)
+			ccm_ptr_->setProperty(ConfigPropertyKeysEnum::eLocalVoipPort ,value);
+		else
+			localVoipPort = value;
+	} else if (key == "remotevoipport") {
+		if (ccm_ptr_ != NULL)
+			ccm_ptr_->setProperty(ConfigPropertyKeysEnum::eRemoteVoipPort ,value);
+		else
+			remoteVoipPort = value;
+	}
+}
 
 // Device , Line Events notification handlers
 void SipccController::onDeviceEvent (ccapi_device_event_e deviceEvent, CC_DevicePtr device, CC_DeviceInfoPtr info) {
@@ -397,7 +414,7 @@ bool SipccController::GetLocalActiveInterfaceAddress()
 						reinterpret_cast<const struct sockaddr*>(&source_address),
 						sizeof(source_address));
 	local_ip_v4_address_ = local_ip_address;
-	Logger::Instance()->logIt(" Ip Address Is ");
+	Logger::Instance()->logIt(" IP Address Is ");
 	Logger::Instance()->logIt(local_ip_v4_address_);
 	close(sock_desc_);
 #else

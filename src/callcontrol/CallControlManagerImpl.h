@@ -97,6 +97,8 @@ namespace CSF
         virtual VideoControlPtr getVideoControl();
         virtual AudioControlPtr getAudioControl();
 
+        virtual bool setProperty(ConfigPropertyKeysEnum::ConfigPropertyKeys key, std::string& value);
+
 	private: // Data Storage
 
         // Observers
@@ -126,6 +128,10 @@ namespace CSF
         // All known devices
 		typedef std::map<std::string, PhoneDetailsImplPtr> PhoneDetailsMap;
 		PhoneDetailsMap phoneDetailsMap;
+
+		// Config properties
+		int localVoipPort;
+		int remoteVoipPort;
 
 		// store connection state
 		ConnectionStatusEnum::ConnectionStatus connectionState;

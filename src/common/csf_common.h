@@ -43,6 +43,7 @@
 #include <assert.h>
 #include <memory>
 #include <vector>
+#include <stdlib.h>
 
 /*
 
