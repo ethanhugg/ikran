@@ -87,7 +87,8 @@ void SipccController::InitInternal() {
 	//ccm_ptr_->setSIPCCLoggingMask( GSM_DEBUG_BIT | FIM_DEBUG_BIT | SIP_DEBUG_MSG_BIT | CC_APP_DEBUG_BIT | SIP_DEBUG_REG_STATE_BIT );
 	ccm_ptr_->setSIPCCLoggingMask(0); 
 
-	// Set Config properties needed at initilization
+	// Set Config properties needed at initialization
+	// required as calling setProperty before ccm_ptr is initilized will not set the values
 	ccm_ptr_->setProperty(ConfigPropertyKeysEnum::eLocalVoipPort ,localVoipPort);
 	ccm_ptr_->setProperty(ConfigPropertyKeysEnum::eRemoteVoipPort ,remoteVoipPort);
 

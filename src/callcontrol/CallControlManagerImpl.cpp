@@ -47,6 +47,11 @@
 #include "CSFLog.h"
 #include "csf_common.h"
 
+extern "C"
+{
+#include "config_api.h"
+}
+
 static const char* logTag = "CallControlManager";
 
 static std::string logDestination = "CallControl.log";
@@ -65,10 +70,6 @@ CallControlManagerImpl::CallControlManagerImpl()
   connectionState(ConnectionStatusEnum::eIdle)
 {
     CSFLogInfoS(logTag, "CallControlManagerImpl()");
-
-    // Set config element defaults here
-    localVoipPort = 5060;
-    remoteVoipPort = 5060;
 }
 
 CallControlManagerImpl::~CallControlManagerImpl()
@@ -236,8 +237,6 @@ bool CallControlManagerImpl::startP2PMode(const std::string& user)
     phone->addCCObserver(this);
 
     phone->setP2PMode(true);
-    phone->setLocalVoipPort(localVoipPort);
-    phone->setRemoteVoipPort(remoteVoipPort);
 
     bool bStarted = phone->startService();
     if (!bStarted) {
@@ -337,13 +336,9 @@ bool CallControlManagerImpl::setProperty(ConfigPropertyKeysEnum::ConfigPropertyK
 	CSFLogInfoS(logTag, "setProperty(" << value << " )");
 
 	if (key == ConfigPropertyKeysEnum::eLocalVoipPort) {
-		localVoipPort = atoi(value.c_str());
-		if(phone != NULL)
-			phone->setLocalVoipPort(localVoipPort);
-	} else if (key == ConfigPropertyKeysEnum::eLocalVoipPort) {
-		remoteVoipPort = atoi(value.c_str());
-		if(phone != NULL)
-			phone->setRemoteVoipPort(remoteVoipPort);
+		CCAPI_Config_set_local_voip_port(atoi(value.c_str()));
+	} else if (key == ConfigPropertyKeysEnum::eRemoteVoipPort) {
+		CCAPI_Config_set_remote_voip_port(atoi(value.c_str()));
 	}
 
 	return true;

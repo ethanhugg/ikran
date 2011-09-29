@@ -129,10 +129,6 @@ namespace CSF
 		typedef std::map<std::string, PhoneDetailsImplPtr> PhoneDetailsMap;
 		PhoneDetailsMap phoneDetailsMap;
 
-		// Config properties
-		int localVoipPort;
-		int remoteVoipPort;
-
 		// store connection state
 		ConnectionStatusEnum::ConnectionStatus connectionState;
 
