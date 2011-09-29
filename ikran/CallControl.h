@@ -113,7 +113,9 @@ private:
 	char *m_credentials;
 	char *m_proxy_address;
 	char *m_dial_number;
-	char *m_remote_ip_address;
+	char *m_local_ip_address;
+	char *m_name;
+	char *m_value;
 };
 
 #endif

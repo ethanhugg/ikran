@@ -214,7 +214,11 @@ Ikran.prototype = {
         if (obs) this._media_observer = obs;
         else this._media_observer = function() {};
         this._ikran.answerCall(ctx,obs);
-	}
+	},
+	
+    setProperty: function(name, value) {
+        this._ikran.setProperty(name, value);
+    }	
 
 	
 };

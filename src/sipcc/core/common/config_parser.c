@@ -1536,10 +1536,13 @@ void config_setup_transport(const cc_boolean is_udp) {
 	compare_or_set_int_value(CFGID_TRANSPORT_LAYER_PROT, gTransportLayerProtocol, (const unsigned char *) "transportLayerProtocol");
 }
 
-void config_setup_voip_control_port(const int voipControlPort) {
+void config_setup_local_voip_control_port(const int voipControlPort) {
 	gVoipControlPort = voipControlPort;
-	gCcm1_sip_port = voipControlPort;
 	compare_or_set_int_value(CFGID_VOIP_CONTROL_PORT, voipControlPort, (const unsigned char *) "voipControlPort");
+}
+
+void config_setup_remote_voip_control_port(const int voipControlPort) {
+	gCcm1_sip_port = voipControlPort;
 	compare_or_set_int_value(CFGID_CCM1_SIP_PORT, voipControlPort,(const unsigned char *)"ccm1_sip_port");
 }
 

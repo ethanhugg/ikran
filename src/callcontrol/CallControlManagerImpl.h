@@ -97,6 +97,8 @@ namespace CSF
         virtual VideoControlPtr getVideoControl();
         virtual AudioControlPtr getAudioControl();
 
+        virtual bool setProperty(ConfigPropertyKeysEnum::ConfigPropertyKeys key, std::string& value);
+
 	private: // Data Storage
 
         // Observers
