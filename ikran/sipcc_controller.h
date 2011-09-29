@@ -96,6 +96,8 @@ public:
 	void EndCall();
 	void AnswerCall();
 	
+	void SetProperty(std::string key, std::string value);
+
 	int StartP2PMode(std::string sipUser);
 	void PlaceP2PCall(std::string dial_number,  std::string sipDomain);
 
@@ -135,7 +137,6 @@ private:
 	CC_CallPtr GetFirstCallWithCapability(CallControlManagerPtr ccmPtr, CC_CallCapabilityEnum::CC_CallCapability cap);
 	void InitInternal();
 	bool RegisterInternal();
-	bool StartP2PInternal();
 #ifndef WIN32
 	std::string NetAddressToString(const struct sockaddr*, socklen_t); 
 #endif
@@ -159,6 +160,8 @@ private:
     std::string  preferred_line_;
     CC_DevicePtr device_ptr_;
     CC_CallPtr	outgoing_call_;	
+    std::string localVoipPort;
+    std::string remoteVoipPort;
     
 	//State Variables for Reg and Session
     bool initDone;    

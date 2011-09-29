@@ -47,6 +47,11 @@
 #include "CSFLog.h"
 #include "csf_common.h"
 
+extern "C"
+{
+#include "config_api.h"
+}
+
 static const char* logTag = "CallControlManager";
 
 static std::string logDestination = "CallControl.log";
@@ -232,7 +237,6 @@ bool CallControlManagerImpl::startP2PMode(const std::string& user)
     phone->addCCObserver(this);
 
     phone->setP2PMode(true);
-    phone->setVoipPort(5060);
 
     bool bStarted = phone->startService();
     if (!bStarted) {
@@ -325,6 +329,19 @@ AudioControlPtr CallControlManagerImpl::getAudioControl()
         return phone->getAudioControl();
 
     return AudioControlPtr();
+}
+
+bool CallControlManagerImpl::setProperty(ConfigPropertyKeysEnum::ConfigPropertyKeys key, std::string& value)
+{
+	CSFLogInfoS(logTag, "setProperty(" << value << " )");
+
+	if (key == ConfigPropertyKeysEnum::eLocalVoipPort) {
+		CCAPI_Config_set_local_voip_port(atoi(value.c_str()));
+	} else if (key == ConfigPropertyKeysEnum::eRemoteVoipPort) {
+		CCAPI_Config_set_remote_voip_port(atoi(value.c_str()));
+	}
+
+	return true;
 }
 
 /*

@@ -24,7 +24,10 @@ if (window && window.navigator) {
         answerCall: function(ctx, media_obs) {
             return callAnswer(window.location, ctx, media_obs);
         },
-  	fetchImage: function(isFile) {
+        setProperty: function(name, value) {
+            return callSetProperty(window.location, name, value);
+        },      
+  		fetchImage: function(isFile) {
             return fetchImg(window.location, isFile);
         }
     }
