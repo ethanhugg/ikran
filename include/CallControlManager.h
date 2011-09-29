@@ -150,6 +150,8 @@ namespace CSF
         virtual VideoControlPtr getVideoControl() = 0;
         virtual AudioControlPtr getAudioControl() = 0;
 
+        virtual bool setProperty(ConfigPropertyKeysEnum::ConfigPropertyKeys key, std::string& value) = 0;
+
     protected:
         CallControlManager() {}
     private:

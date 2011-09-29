@@ -176,7 +176,12 @@ void config_setup_transport(const cc_boolean is_udp);
 /*
  * set local voip port defaults to 5060
  */
-void config_setup_voip_control_port(const int voipControlPort);
+void config_setup_local_voip_control_port(const int voipControlPort);
+
+/*
+ * set remote voip port defaults to 5060
+ */
+void config_setup_remote_voip_control_port(const int voipControlPort);
 
 /*
  * set p2p mode on or off

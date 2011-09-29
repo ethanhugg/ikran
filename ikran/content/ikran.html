@@ -20,6 +20,8 @@
 	</div>
 	<div id="p2pDiv">
 	<p>My username or DN: <input type="text" id="p2pmydn" /></p>
+	<p>Local Voip Port: <input type="text" id="p2plocalvoipport" /></p>
+	<p>Remote Voip Port: <input type="text" id="p2premotevoipport" /></p>
 	</div>
 	<p><input type="button" id="regbutton" value="Register\Start Session!"/></p>
 	<p>DN to Call: <input type="text" id="dn" /></p>
@@ -44,6 +46,8 @@
     let mypass = document.getElementById("mypass");
     let mydevice = document.getElementById("mydevice");
     let p2pmydn = document.getElementById("p2pmydn");
+    let p2plocalvoipport = document.getElementById("p2plocalvoipport");
+    let p2premotevoipport = document.getElementById("p2premotevoipport");
     let p2pipaddress = document.getElementById("p2pipaddress");
     let ctx = document.getElementById("thecanvas").getContext("2d");
     
@@ -64,6 +68,8 @@
 		document.getElementById("registerDiv").style.display = 'none';
 		document.getElementById("p2pDiv").style.display = '';
 		document.getElementById("p2pDiv2").style.display = '';
+		p2plocalvoipport.value = '5060';
+		p2premotevoipport.value = '5060';
     }    
     function onSessionStateChange(type, arg) {
 		if(type == "incoming-call") {
@@ -105,6 +111,8 @@
             	Me.registerUser(mydevice.value, mydn.value, mypass.value, regipaddress.value, onSessionStateChange);
             } else {             
             	// Start in P2P Mode
+            	Me.setProperty("localvoipport", p2plocalvoipport.value);
+            	Me.setProperty("remotevoipport", p2premotevoipport.value);
             	Me.startP2PMode(p2pmydn.value, onSessionStateChange);
             }        
             

@@ -120,7 +120,8 @@ namespace CSF
 		virtual void onMediaLost( int callId );
 		virtual void onMediaRestored( int callId );
 
-		virtual bool setVoipPort(int port);
+		virtual bool setLocalVoipPort(int port);
+		virtual bool setRemoteVoipPort(int port);
 		virtual bool setP2PMode(bool mode);
 
         /**
