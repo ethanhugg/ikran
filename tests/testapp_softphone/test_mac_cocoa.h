@@ -18,29 +18,32 @@
 
 #import <Cocoa/Cocoa.h>
 #import "cocoa_render_view.h"
+#include <string>
+
+//added
+using namespace std;
 
 class WindowManager
 {
 public:
     WindowManager();
     ~WindowManager();
-    virtual void* GetWindow1();
-    virtual void* GetWindow2();
-    virtual int CreateWindows(void* window1Title,
-                              void* window2Title);
-    virtual int TerminateWindows();
-    virtual bool SetTopmostWindow();
+   	virtual void* GetVideoWindow();
+	virtual int InitializeWindow();
+	
+protected:
+	virtual CocoaRenderView* CreateView(NSString* title, NSRect windowDimensions, NSRect viewDimensions);
 
 private:
-    CocoaRenderView* _cocoaRenderView1;
-    CocoaRenderView* _cocoaRenderView2;
+    CocoaRenderView* _videoView;
 };
 
 @interface TestClass : NSObject
 {
+	
 }
 
--(void)autoTestWithArg:(NSString*)answerFile;;
+-(void)autoTestWithArg:(NSString* )configPath;
 
 @end
 
