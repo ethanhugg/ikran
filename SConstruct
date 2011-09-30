@@ -16,11 +16,11 @@ suffixName = ""
 componentName = 'enhanced-callcontrol'
 
 # Environment variables
-if 'MOZSDKPATH' in os.environ:
-  mozsdkpath = os.environ['MOZSDKPATH'].rstrip('/').rstrip('\\')
-  print 'Using MOZSDKPATH ' + mozsdkpath
+if 'MOZSRCPATH' in os.environ:
+  mozsrcpath = os.environ['MOZSRCPATH'].rstrip('/').rstrip('\\')
+  print 'Using MOZSRCPATH ' + mozsrcpath
 else:
-  print 'Environment variable MOZSDKPATH must be set to your xulrunner-sdk path'
+  print 'Environment variable MOZSRCPATH must be set to your mozilla-central'
   exit(1)
 
 if 'WEBRTCPATH' in os.environ:
@@ -256,7 +256,7 @@ else:
 Export ('build_env')
 Export ('debug')
 Export ('x64')
-Export ('mozsdkpath')
+Export ('mozsrcpath')
 Export ('webrtcpath')
 
 Export ('suffixName')

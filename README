@@ -27,7 +27,7 @@ src                         [ECC - call control wrapper for SIP stack]
 Required for all platforms:
   Python (www.python.org) -  known to work with 2.6 & 2.7 
   SCons (www.scons.org) - 'sudo apt-get install scons' or 'sudo yum install scons'
-  MOZSDKPATH environment variable pointing to the Gecko2 SDK (6.0 or later)
+  MOZSRCPATH environment variable pointing to the a built source tree of Firefox    
   WEBRTCPATH environment variable pointing to the webrtc source trunk
   
   
@@ -60,11 +60,9 @@ Windows:
 -----------
 2. Building 
 -----------
-  - Get the Gecko2 SDK 6.0 for your platform and target bitlength from 
-	 https://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/6.0/sdk
-  - Extract the package & Set the MOZSDKPATH env variable to point to it
-  - NOTE FOR OSX : If you are compiling 32bit OSX use the 32bit Gecko2 SDK, 
-      but copy in the xpidl executable from the 64bit SDK.
+  - Get and build Mozilla
+      https://developer.mozilla.org/en/Build_Documentation
+      Set the MOZSRCPATH env variable to point to it - to the mozilla-central directory.
   - Build WEBRTC for video and audio engine libraries 
       +  Follow the instructions @ http://www.webrtc.org/reference/getting-started
       +  webtrc version > 595 has been tested. To download a specific version use 

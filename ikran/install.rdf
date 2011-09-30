@@ -4,7 +4,7 @@
   <r:Description about="urn:mozilla:install-manifest">
     <creator>Cisco Systems</creator>
     <description>RTCWeb Try for Communiactions through Browser</description>
-    <homepageURL>https://mozillalabs.com/</homepageURL>
+    <homepageURL>https://github.com/mozilla/ikran</homepageURL>
     <iconURL>chrome://ikran/content/ikran.png</iconURL>
     <id>ikran@rtcweb.com</id>
 
