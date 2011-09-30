@@ -165,6 +165,18 @@ cc_boolean CCAPI_Config_set_remote_voip_port(const int port) {
 	return TRUE;
 }
 
+int CCAPI_Config_get_local_voip_port() {
+	return config_get_local_voip_control_port();
+}
+
+int CCAPI_Config_get_remote_voip_port() {
+	return config_get_remote_voip_control_port();
+}
+
+void CCAPI_Config_get_version(char* version) {
+	config_get_version(version);
+}
+
 cc_boolean CCAPI_Config_checkValidity (int device_handle, const char *cfg_file_name, int from_memory) {
     CCAPP_ERROR("CCAPI_Config_checkValidity - check config file validity \n");
     return is_config_valid((char *)cfg_file_name, from_memory);

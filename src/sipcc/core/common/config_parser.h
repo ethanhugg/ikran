@@ -184,6 +184,21 @@ void config_setup_local_voip_control_port(const int voipControlPort);
 void config_setup_remote_voip_control_port(const int voipControlPort);
 
 /*
+ * get local voip port defaults to 5060
+ */
+int config_get_local_voip_control_port();
+
+/*
+ * get remote voip port defaults to 5060
+ */
+int config_get_remote_voip_control_port();
+
+/*
+ * get ikran version
+ */
+void config_get_version(char* version);
+
+/*
  * set p2p mode on or off
  */
 void config_setup_p2p_mode(const cc_boolean is_p2p);

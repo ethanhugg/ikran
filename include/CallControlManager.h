@@ -151,6 +151,7 @@ namespace CSF
         virtual AudioControlPtr getAudioControl() = 0;
 
         virtual bool setProperty(ConfigPropertyKeysEnum::ConfigPropertyKeys key, std::string& value) = 0;
+        virtual std::string getProperty(ConfigPropertyKeysEnum::ConfigPropertyKeys key) = 0;
 
     protected:
         CallControlManager() {}

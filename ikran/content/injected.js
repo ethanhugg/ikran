@@ -26,7 +26,11 @@ if (window && window.navigator) {
         },
         setProperty: function(name, value) {
             return callSetProperty(window.location, name, value);
-        },      
+        },
+        getProperty: function(name) {
+        	var value = callGetProperty(window.location, name);
+            return value;
+        },              
   		fetchImage: function(isFile) {
             return fetchImg(window.location, isFile);
         }

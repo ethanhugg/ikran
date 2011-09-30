@@ -98,6 +98,7 @@ namespace CSF
         virtual AudioControlPtr getAudioControl();
 
         virtual bool setProperty(ConfigPropertyKeysEnum::ConfigPropertyKeys key, std::string& value);
+        virtual std::string getProperty(ConfigPropertyKeysEnum::ConfigPropertyKeys key);
 
 	private: // Data Storage
 
