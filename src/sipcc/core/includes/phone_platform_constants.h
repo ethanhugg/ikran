@@ -160,7 +160,7 @@
 // CSF
 #define PHONE_MODEL_NUMBER_CSF            "503"
 #define CSF_MODEL                         "CSF"
-#define CCSIP_SIP_CSF_USER_AGENT          "CSF"
+#define CCSIP_SIP_CSF_USER_AGENT          "IKRAN"
 
 // CIUS
 #define PHONE_MODEL_NUMBER_CIUS           "593"

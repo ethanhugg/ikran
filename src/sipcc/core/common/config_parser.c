@@ -1523,6 +1523,9 @@ void config_setup_elements (const char *sipUser, const char *sipPassword, const 
     // Set SIP P2P boolean
     compare_or_set_boolean_value(CFGID_P2PSIP, gP2PSIP, (const unsigned char *) "p2psip");
 
+    // Set product version
+    compare_or_set_string_value(CFGID_VERSION, gVersion, (const unsigned char *) "version");
+
     (void) isSecure; // XXX set but not used
     (void) isValid; // XXX set but not used
 }
@@ -1552,6 +1555,10 @@ int config_get_local_voip_control_port() {
 
 int config_get_remote_voip_control_port() {
 	return gCcm1_sip_port;
+}
+
+void config_get_version(char* version) {
+	strcpy(version, gVersion);
 }
 
 void config_setup_p2p_mode(const cc_boolean is_p2p) {

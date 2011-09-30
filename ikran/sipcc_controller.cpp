@@ -276,7 +276,11 @@ std::string SipccController::GetProperty(std::string key)
 	} else if (key == "remotevoipport") {
 		if (ccm_ptr_ != NULL)
 			returnValue = ccm_ptr_->getProperty(ConfigPropertyKeysEnum::eRemoteVoipPort);
+	} else if (key == "version") {
+		if (ccm_ptr_ != NULL)
+			returnValue = ccm_ptr_->getProperty(ConfigPropertyKeysEnum::eVersion);
 	}
+
 
 	return returnValue;
 }

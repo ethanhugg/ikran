@@ -157,6 +157,7 @@ namespace CSF
 		typedef enum {
 			eLocalVoipPort,
 			eRemoteVoipPort,
+			eVersion,
 			eTransport
 		} ConfigPropertyKeys;
 	}

@@ -316,7 +316,7 @@ SIPTaskInit (void)
     sipPhoneModelNumber[0] = '\0';
     sipHeaderServer[0] = '\0';
 
-    snprintf(sipHeaderUserAgent, SIP_HEADER_SERVER_LEN, "Cisco-");
+    //snprintf(sipHeaderUserAgent, SIP_HEADER_SERVER_LEN, "Cisco-");
 #if defined _COMMUNICATOR_
     strncat(sipHeaderUserAgent, CCSIP_SIP_COMMUNICATOR_USER_AGENT,
             SIP_HEADER_SERVER_LEN - strlen(sipHeaderUserAgent) - 1);
