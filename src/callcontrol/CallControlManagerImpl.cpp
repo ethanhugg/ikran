@@ -344,6 +344,25 @@ bool CallControlManagerImpl::setProperty(ConfigPropertyKeysEnum::ConfigPropertyK
 	return true;
 }
 
+std::string CallControlManagerImpl::getProperty(ConfigPropertyKeysEnum::ConfigPropertyKeys key)
+{
+	CSFLogInfoS(logTag, "getProperty()");
+
+	std::string retValue = "NONESET";
+	if (key == ConfigPropertyKeysEnum::eLocalVoipPort) {
+		int tmpValue = CCAPI_Config_get_local_voip_port();
+		std::stringstream out;
+		out << tmpValue;
+		retValue = out.str();
+	} else if (key == ConfigPropertyKeysEnum::eRemoteVoipPort) {
+		int tmpValue = CCAPI_Config_get_remote_voip_port();
+		std::stringstream out;
+		out << tmpValue;
+		retValue = out.str();
+	}
+
+	return retValue;
+}
 /*
   There are a number of factors that determine PhoneAvailabilityType::PhoneAvailability. The supported states for this enum are:
   { eUnknown, eAvailable, eUnAvailable, eNotAllowed }. eUnknown is the default value, which is set when there is no information

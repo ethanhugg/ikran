@@ -197,6 +197,9 @@ cc_boolean CCAPI_Config_set_server_address(const char *ip_address);
 cc_boolean CCAPI_Config_set_transport(const cc_boolean is_udp);
 cc_boolean CCAPI_Config_set_local_voip_port(const int port);
 cc_boolean CCAPI_Config_set_remote_voip_port(const int port);
+int CCAPI_Config_get_local_voip_port();
+int CCAPI_Config_get_remote_voip_port();
 cc_boolean CCAPI_Config_set_p2p_mode(const cc_boolean is_p2p);
+
 
 #endif  /* _CONFIG_API_H_ */

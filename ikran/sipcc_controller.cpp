@@ -264,6 +264,23 @@ void SipccController::SetProperty(std::string key, std::string value)
 	}
 }
 
+std::string SipccController::GetProperty(std::string key)
+{
+	Logger::Instance()->logIt("In GetProperty");
+	Logger::Instance()->logIt(key);
+
+	string returnValue = "NONESET";
+	if (key == "localvoipport") {
+		if (ccm_ptr_ != NULL)
+			returnValue = ccm_ptr_->getProperty(ConfigPropertyKeysEnum::eLocalVoipPort);
+	} else if (key == "remotevoipport") {
+		if (ccm_ptr_ != NULL)
+			returnValue = ccm_ptr_->getProperty(ConfigPropertyKeysEnum::eRemoteVoipPort);
+	}
+
+	return returnValue;
+}
+
 // Device , Line Events notification handlers
 void SipccController::onDeviceEvent (ccapi_device_event_e deviceEvent, CC_DevicePtr device, CC_DeviceInfoPtr info) {
 }

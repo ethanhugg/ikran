@@ -97,6 +97,7 @@ public:
 	void AnswerCall();
 	
 	void SetProperty(std::string key, std::string value);
+	std::string GetProperty(std::string key);
 
 	int StartP2PMode(std::string sipUser);
 	void PlaceP2PCall(std::string dial_number,  std::string sipDomain);

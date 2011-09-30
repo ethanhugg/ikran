@@ -146,7 +146,15 @@ var IkranObserver = {
                 if (allowed) ikran.setProperty(name, value);
                 else throw "Permission denied";
             });
-        }, "callSetProperty");        
+        }, "callSetProperty"); 
+        sandbox.importFunction(function(loc, name) {
+        	let ret;
+            ikran._verifyPermission(window, loc, function(allowed) {
+                if (allowed) ret =  ikran.getProperty(name);
+                else throw "Permission denied";
+            });
+            return ret;
+        }, "callGetProperty");                
         sandbox.importFunction(function(loc, isFile) {
            let ret;
            ikran._verifyPermission(window, loc, function(allowed) {
