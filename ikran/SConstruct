@@ -336,7 +336,7 @@ elif sys.platform=='linux2':
 
   outputlibname = 'libsessioncontrol.so'
   env["CPPPATH"] += [
-    mozsrcpath + '/obj-i686-pc-linux/dist/include',
+    mozsrcpath + '/obj-i686-pc-linux-gnu/dist/include',
   ]
   env["CPPDEFINES"] += [
     'MOZ_NO_MOZALLOC',
@@ -344,6 +344,7 @@ elif sys.platform=='linux2':
     'IKRAN_LINUX'
   ]
   env["CPPFLAGS"] += [
+    '-std=gnu++0x',
     '-pipe',
     '-Os',
     '-shared',
@@ -381,8 +382,8 @@ elif sys.platform=='linux2':
     ]
 
   libpath += [
-    mozsrcpath + '/obj-i686-pc-linux/dist/lib',
-    mozsrcpath + '/obj-i686-pc-linux/dist/bin',
+    mozsrcpath + '/obj-i686-pc-linux-gnu/dist/lib',
+    mozsrcpath + '/obj-i686-pc-linux-gnu/dist/bin',
     webrtcpath + '/out/Debug/obj.target/src/video_engine',
     webrtcpath + '/out/Debug/obj.target/src/voice_engine',
     webrtcpath + '/out/Debug/obj.target/src/modules',
@@ -470,10 +471,10 @@ elif sys.platform=='linux2':
     ]
 
   # Execute  xpcom commands
-  env.AppendENVPath('PYTHONPATH', mozsrcpath + '/obj-i686-pc-linux/dist/sdk/bin')
-  idlIncludePath =  mozsrcpath + '/obj-i686-pc-linux/dist/idl'
-  xpidl_h_cmd =  'python ' + mozsrcpath + '/obj-i686-pc-linux/dist/sdk/bin/header.py  -I ' + idlIncludePath + ' ./ICallControl.idl -o ICallControl.h'
-  xpidl_tl_cmd = 'python ' + mozsrcpath + '/obj-i686-pc-linux/dist/sdk/bin/typelib.py -I ' + idlIncludePath + ' ./ICallControl.idl -o ICallControl.xpt'
+  env.AppendENVPath('PYTHONPATH', mozsrcpath + '/obj-i686-pc-linux-gnu/dist/sdk/bin')
+  idlIncludePath =  mozsrcpath + '/obj-i686-pc-linux-gnu/dist/idl'
+  xpidl_h_cmd =  'python ' + mozsrcpath + '/obj-i686-pc-linux-gnu/dist/sdk/bin/header.py  -I ' + idlIncludePath + ' ./ICallControl.idl -o ICallControl.h'
+  xpidl_tl_cmd = 'python ' + mozsrcpath + '/obj-i686-pc-linux-gnu/dist/sdk/bin/typelib.py -I ' + idlIncludePath + ' ./ICallControl.idl -o ICallControl.xpt'
   
   env.Execute(xpidl_h_cmd)
   env.Execute(xpidl_tl_cmd)
