@@ -55,7 +55,7 @@ const string TestConfiguration::NUMBERTODIAL = "numbertodial";
 const string TestConfiguration::USEBATCHMODE = "usebatchmode";
 
 
-TestConfiguration::TestConfiguration(void):_userNumber(), _userPassword(), _deviceName(), _sipProxyAddress(), _useVideo(false){
+TestConfiguration::TestConfiguration(void):_userNumber(), _userPassword(), _deviceName(), _sipProxyAddress(), _numberToDial(), _p2pAddress(), _useVideo(false), _useP2PMode(false), _useBatchMode(false){
 	
 }
 
