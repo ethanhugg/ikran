@@ -23,6 +23,7 @@
  *  Enda Mannion <emannion@cisco.com>
  *  Suhas Nandakumar <snandaku@cisco.com>
  *  Ethan Hugg <ehugg@cisco.com>
+ *  Cary Bran <cary.bran@gmail.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -396,8 +397,8 @@ void TestMain::GetP2POrSIP(){
 		}
 	}
 	//clean out any previous configurations
-	if (_state != STATE_REGISTERED) {
-		cout << "Switching to P2P mode unregistering with " << _config->GetSIPProxyAddress() << endl;
+	if (_state == STATE_REGISTERED) {
+		cout << "Switching mode unregistering with " << _config->GetSIPProxyAddress() << endl;
 		//assume this is already registered with CUCM, so unregister
 		SipccController::GetInstance()->UnRegister();
 		_state == STATE_NOT_REGISTERED;
