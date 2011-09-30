@@ -19,7 +19,7 @@
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- *  Webrtc Authors
+ *  Cary Bran <cbran@cisco.com>
  *  Enda Mannion <emannion@cisco.com>
  *  Suhas Nandakumar <snandaku@cisco.com>
  *  Ethan Hugg <ehugg@cisco.com>
@@ -38,71 +38,81 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef TEST_MAIN_H_
-#define TEST_MAIN_H_
-
-#if defined __APPLE__
-
+/*
+ *  This class is responsible for holding the test configuration for the Ikran
+ *  test harness.  
+ *
+ *
+ */
 #include <string>
-#include "sipcc_controller.h"
-#include "test_configuration.h"
 
 using namespace std;
 
-//states that the test app can be in
-#define STATE_NOT_REGISTERED 0
-#define STATE_REGISTERED 1
-#define STATE_IN_CALL 2
-#define STATE_INCOMING_CALL 3
+class TestConfiguration {
 
-//user input 
-#define USER_INPUT_QUIT 0
-#define USER_INPUT_PLACE_CALL 1
-#define USER_INPUT_ANSWER_CALL 2
-#define USER_INPUT_END_CALL 3
-#define USER_INPUT_FILE_CONFIG 4
-#define USER_INPUT_MANUAL_CONFIG 5
-#define USER_INPUT_PRINT_CONFIG 6
-
-class TestMain :
-		public SipccControllerObserver
-{
 public:
-    TestMain();
-	bool BeginOSIndependentTesting(string pathToConfigFile);
-	virtual void OnIncomingCall(string callingPartyName, string callingPartyNumber);
- 	virtual void OnRegisterStateChange(string registrationState);
- 	virtual void OnCallTerminated(); 
-	virtual void OnCallConnected();   
-private:
-	void ManualConfiguration();
-	void LoadConfigurationFromFile();
-	void ReadConfig(string filePath);
-	void Register();
-	void PlaceCall();
-	int  GetUserInput();
-	void ProcessInput(int op);
-	void GetUserPhoneNumber();
-	void GetPhoneNumberToCall();
-	void GetP2PCallAddress();
-	void EndCall();
-	void RegisterSIPProxy();
-	void RegisterP2P();
-	void GetP2POrSIP();	
-	void GetVideoCalling();
-	void GetSIPProxy();
-	void GetPassword();
-	void GetDeviceName();
+	TestConfiguration(void);
 	
 	
+	virtual bool ReadConfigFromFile(string pathToConfigurationFile); 
 	
+	//getters and setters
+	virtual string GetUserNumber(void);
+	virtual void SetUserNumber(string userNumber);
 	
-	int _state;
-	bool videoWinEnabled;	
+	virtual string GetPassword(void);
+	virtual void SetPassword(string password);
 	
-	TestConfiguration* _config;
-	string p2pIPAddress;
-};
+	virtual string GetDeviceName(void);
+	virtual void SetDeviceName(string deviceName);
+	
+	virtual string GetSIPProxyAddress(void);
+	virtual void SetSIPProxyAddress(string address);
 
-#endif
-#endif  // TEST_MAIN_H_
+	virtual string GetNumberToDial(void);
+	virtual void SetNumberToDial(string numberToDial);
+	
+	virtual bool UseVideo(void);
+	virtual void SetUseVideo(bool useVideo);
+	
+	virtual bool UseP2PMode(void);
+	virtual void SetUseP2PMode(bool useP2PMode);
+	
+	virtual string GetP2PAddress(void);
+	virtual void SetP2PAddress(string p2pAddress);
+	
+	virtual bool IsBatchMode(void);
+	virtual void SetBatchMode(bool useBatchMode);
+	
+	virtual bool IsConfigured(void);
+
+	
+	//string representation of the configuration
+	virtual string toString(void);
+	
+private:
+	void AddConfigurationSetting(string key, string val);
+	string _userNumber;
+	string _userPassword;
+	string _deviceName;
+	string _sipProxyAddress;
+	string _numberToDial;
+	string _p2pAddress;
+	
+	
+	//flag for using audio only during the test
+	bool _useVideo;
+	bool _useP2PMode;
+	//flag to tell the test application to run everythign from the config file
+	bool _useBatchMode;
+	
+	static const string USERNUMBER;
+	static const string PASSWORD;
+	static const string SIPADDRESS;
+	static const string DEVICENAME;
+	static const string USEVIDEO;
+	static const string USEP2P;
+	static const string P2PADDRESS;
+	static const string NUMBERTODIAL;
+	static const string USEBATCHMODE;
+};
