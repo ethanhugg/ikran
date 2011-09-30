@@ -27,13 +27,20 @@ if sys.platform == 'darwin':
     'Logger.cpp',
     'test_mac_cocoa.cc',
     'test_main.cc',
-	'test_configuration.cpp'
+    'test_configuration.cpp'
   ]
   include_dirs += [
     webrtcpath + '/src/modules/video_render/main/source/mac'
   ] 
 else:
-   src_files = Glob('*.cpp')
+  src_files = [
+    'EventPrinter.cpp',
+    'Logger.cpp',
+    'WorkerThread.cpp',
+    'InputHandler.cpp',
+    'testapp.cpp',
+    'VideoWindow.cpp'
+  ]
 
 
 
