@@ -316,7 +316,6 @@ SIPTaskInit (void)
     sipPhoneModelNumber[0] = '\0';
     sipHeaderServer[0] = '\0';
 
-    //snprintf(sipHeaderUserAgent, SIP_HEADER_SERVER_LEN, "Cisco-");
 #if defined _COMMUNICATOR_
     strncat(sipHeaderUserAgent, CCSIP_SIP_COMMUNICATOR_USER_AGENT,
             SIP_HEADER_SERVER_LEN - strlen(sipHeaderUserAgent) - 1);
@@ -329,7 +328,7 @@ SIPTaskInit (void)
     // Now add the firmware version
     strncat(sipHeaderUserAgent, "/",
             SIP_HEADER_SERVER_LEN - strlen(sipHeaderUserAgent) - 1);
-    strncat(sipHeaderUserAgent, SIP_FIRMWARE_VERSION,
+    strncat(sipHeaderUserAgent, gVersion,
             SIP_HEADER_SERVER_LEN - strlen(sipHeaderUserAgent) - 1);
     sstrncpy(sipHeaderServer, sipHeaderUserAgent,
             SIP_HEADER_SERVER_LEN);
