@@ -114,6 +114,8 @@
             	Me.setProperty("localvoipport", p2plocalvoipport.value);
             	Me.setProperty("remotevoipport", p2premotevoipport.value);
             	Me.startP2PMode(p2pmydn.value, onSessionStateChange);
+            	var prop = Me.getProperty("localvoipport");
+            	var prop1 = Me.getProperty("remotevoipport");
             }        
             
             msg.innerHTML = "Registered...";

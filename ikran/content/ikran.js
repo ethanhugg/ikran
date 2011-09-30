@@ -218,7 +218,13 @@ Ikran.prototype = {
 	
     setProperty: function(name, value) {
         this._ikran.setProperty(name, value);
-    }	
+    },	
+
+    getProperty: function(name) {
+    	var value = {};
+        this._ikran.getProperty(name, value);
+        return value;
+    }
 
 	
 };

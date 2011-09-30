@@ -394,4 +394,16 @@ CallControl::SetProperty(const char* name,
     return NS_OK;
 }
 
+/*
+ * GetProperty
+ */
+NS_IMETHODIMP
+CallControl::GetProperty(const char* name,
+						 nsAString & value)
+{
+	m_name = const_cast<char*>(name);
+	std::string tmpValue = SipccController::GetInstance()->GetProperty(m_name);
+	value.Assign(NS_ConvertASCIItoUTF16(tmpValue.c_str()));
+    return NS_OK;
+}
 

@@ -176,6 +176,7 @@
 #define CFGID_CCM_EXTERNAL_NUMBER_MASK_STRING  CFGID_BEGIN_INDEX + ROUNDTABLE_INDEX_OFFSET + 103  //tag:<externalNumberMask>
 #define CFGID_MEDIA_IP_ADDR_STRING             CFGID_BEGIN_INDEX + ROUNDTABLE_INDEX_OFFSET + 104  //tag:<videoCapability>
 #define CFGID_P2PSIP_BOOL                      CFGID_BEGIN_INDEX + ROUNDTABLE_INDEX_OFFSET + 105
+#define CFGID_VERSION_STRING                   CFGID_BEGIN_INDEX + ROUNDTABLE_INDEX_OFFSET + 105
 
 /* All non Line specific params should be added above */
 /* All Line specific params should be added below */
@@ -201,7 +202,7 @@
   Keep in mind the following config ids are defined for the first line.
  */
 
-#define CFGID_LINE_FEATURE_INT                 CFGID_P2PSIP_BOOL + 1                        //tag:featureID
+#define CFGID_LINE_FEATURE_INT                 CFGID_VERSION_STRING + 1                        //tag:featureID
 #define CFGID_LINE_INDEX_INT                   CFGID_LINE_FEATURE_INT + CC_MAX_CONFIG_LINES                //tag:lineIndex
 #define CFGID_LINE_MAXNUMCALLS_INT             CFGID_LINE_INDEX_INT + CC_MAX_CONFIG_LINES                  //tag:maxNumCalls
 #define CFGID_LINE_NAME_STRING                 CFGID_LINE_MAXNUMCALLS_INT + CC_MAX_CONFIG_LINES            //tag:name
