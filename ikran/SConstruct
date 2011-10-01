@@ -357,6 +357,7 @@ elif sys.platform=='linux2':
     '-shared',
     '-fshort-wchar',
     '-fPIC',
+    '-fno-rtti',
     '-fno-exceptions',
     '-fno-strict-aliasing',
     '-fno-common',
