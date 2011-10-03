@@ -224,6 +224,10 @@ Ikran.prototype = {
     	var value = {};
         this._ikran.getProperty(name, value);
         return value;
+    },
+    
+    sendDigits: function(digits) {
+    	this._ikran.sendDigits(digits);
     }
 
 	

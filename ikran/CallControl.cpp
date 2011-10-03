@@ -407,3 +407,13 @@ CallControl::GetProperty(const char* name,
     return NS_OK;
 }
 
+/*
+ * SendDigits
+ */
+NS_IMETHODIMP
+CallControl::SendDigits(const char* digits)
+{
+	std::string strDigits = const_cast<char*>(digits);
+	SipccController::GetInstance()->SendDigits(strDigits);
+    return NS_OK;
+}

@@ -29,6 +29,10 @@
 	<p>IP Address to Call: <input type="text" id="p2pipaddress" /></p>
 	</div>
 	<p><input type="button" id="callbutton" value="Place Call !"/></p>
+	<div id="registerDiv2">
+	<p>DTMF Digits: <input type="text" id="dtmfDigits" /></p>
+	<p><input type="button" id="sendDigits" value="Send DTMF Digits"/></p>
+	</div>	
 	<p id="themsg"></p>
 
 </body>
@@ -50,10 +54,13 @@
     let p2premotevoipport = document.getElementById("p2premotevoipport");
     let p2pipaddress = document.getElementById("p2pipaddress");
     let ctx = document.getElementById("thecanvas").getContext("2d");
+    let dtmfdigits = document.getElementById("dtmfDigits");
+    let dtmfbut = document.getElementById("sendDigits");
     
 	function pageLoad() {
 		let registerradio = document.getElementById("regradio").checked = "yes";
 		document.getElementById("registerDiv").style.display = '';
+		document.getElementById("registerDiv2").style.display = 'none';
 		document.getElementById("p2pDiv").style.display = 'none';
 		document.getElementById("p2pDiv2").style.display = 'none';
     	ctx.drawImage(img, 192, 112);
@@ -61,11 +68,13 @@
     }
     function serverRadioClick() {
 		document.getElementById("registerDiv").style.display = '';
+		document.getElementById("registerDiv2").style.display = 'none';
 		document.getElementById("p2pDiv").style.display = 'none';
 		document.getElementById("p2pDiv2").style.display = 'none';
     }
     function p2pRadioClick() {
 		document.getElementById("registerDiv").style.display = 'none';
+		document.getElementById("registerDiv2").style.display = 'none';
 		document.getElementById("p2pDiv").style.display = '';
 		document.getElementById("p2pDiv2").style.display = '';
 		p2plocalvoipport.value = '5060';
@@ -116,6 +125,8 @@
             	Me.startP2PMode(p2pmydn.value, onSessionStateChange);
             	var prop = Me.getProperty("localvoipport");
             	var prop1 = Me.getProperty("remotevoipport");
+            	var prop2 = Me.getProperty("version");
+            	alert(prop2.value);
             }        
             
             msg.innerHTML = "Registered...";
@@ -128,6 +139,7 @@
             callbut.value = " Place Call!";
             msg.innerHTML = "Call Ended...";
 			ReRe = false;
+			document.getElementById("registerDiv2").style.display = 'none';
         } else {
             // Start recording
             ReRe = true;
@@ -140,7 +152,13 @@
             } else {
             	Me.placeP2PCall(dn.value, p2pipaddress.value, ctx, onMediaStateChange);
             }
+            document.getElementById("registerDiv2").style.display = '';
         }
+    }
+    dtmfbut.onclick = function() {
+    	if(ReRe) {
+    		Me.sendDigits(dtmfdigits.value);
+    	}
     }
 
 </script>

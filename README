@@ -30,7 +30,6 @@ Required for all platforms:
   MOZSRCPATH environment variable pointing to the a built source tree of Firefox    
   WEBRTCPATH environment variable pointing to the webrtc source trunk
   
-  
 Linux:
   Built regularly on Ubuntu 10.4 32bit and 64bit
   Built regularly on Ubuntu 11.0.4 32bit and 64bit
@@ -141,7 +140,7 @@ The test application can be used against Cisco Call Manager, Asterisk and kamail
 7. Addon API
 ------------
 The JS API offers support for 
-	SIP Registration, Place Call, HangUp Call & Answer Call
+	SIP Registration, Place Call, HangUp Call, Answer Call, Send DTMF
         P2P Mode, Place P2P Call
 
 window.navigator.service.call obtains handle to session-control 
@@ -162,6 +161,9 @@ significant media state changes suhc as "call-connected",
 
 JS APIs unRegisterUser() and hangupCall() allows de-registration
 & end-call functionalities.
+
+To Send DTMF digits use sendDigits, a call must be active to send DTMF digits.
+sendDigits('123#');
 
 Few Points to Note
 1. One user is suported as registered by instance
