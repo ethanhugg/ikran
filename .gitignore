@@ -3,6 +3,7 @@ sconsbuild.log
 .sconsign.dblite
 
 *.o
+*.obj
 *.lib
 *.dylib
 *.a
