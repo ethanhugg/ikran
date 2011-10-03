@@ -49,6 +49,14 @@ using namespace CSF;
 
 SipccController* SipccController::_instance = 0;
 
+static int transformArray['D'+1] = { 0,         0,         0,         0,         0,         0,         0,         0,         0,         0,     //9
+                          	  	  	 0,         0,         0,         0,         0,         0,         0,         0,         0,         0,     //19
+                          	  	  	 0,         0,         0,         0,         0,         0,         0,         0,         0,         0,     //29
+                          	  	  	 0,         0,         0,         0,         0,         KEY_POUND, 0,         0,         0,         0,     //39
+                          	  	  	 0,         0,         KEY_STAR,  KEY_PLUS,  0,         0,         0,         0,         KEY_0,     KEY_1, //49
+                          	  	  	 KEY_2,     KEY_3,     KEY_4,     KEY_5,     KEY_6,     KEY_7,     KEY_8,     KEY_9,     0,         0,     //59
+                          	  	  	 0,         0,         0,         0,         0,         KEY_A,     KEY_B,     KEY_C,     KEY_D  };         //68
+
 
 //Singleton instance generator
 SipccController* SipccController::GetInstance() 
@@ -281,8 +289,41 @@ std::string SipccController::GetProperty(std::string key)
 			returnValue = ccm_ptr_->getProperty(ConfigPropertyKeysEnum::eVersion);
 	}
 
-
 	return returnValue;
+}
+
+void SipccController::SendDigits(std::string digits)
+{
+	Logger::Instance()->logIt("In SendDigits");
+	Logger::Instance()->logIt(digits);
+
+	if (ccm_ptr_ != NULL) {
+
+		unsigned int i=0;
+		for(i=0; i < digits.length(); i++) {
+			int asciiChar = static_cast<int>(digits[i]);
+
+			if (((asciiChar >= '0') && (asciiChar <= '9')) ||
+				(asciiChar == '#') || (asciiChar == '*') || (asciiChar == '+') ||
+				((asciiChar >= 'A') && (asciiChar <= 'D'))) {
+
+				Logger::Instance()->logIt("Valid DTMF digit");
+
+				cc_digit_t dtmfDigit = (cc_digit_t) transformArray[asciiChar];
+				CC_CallPtr endableCall = GetFirstCallWithCapability(ccm_ptr_, CC_CallCapabilityEnum::canEndCall);
+				if (endableCall != NULL) {
+					if (!endableCall->sendDigit(dtmfDigit)) {
+					}
+				} else {
+					Logger::Instance()->logIt("no active call");
+				}
+			} else {
+				Logger::Instance()->logIt("non DTMF digit");
+			}
+		}
+	} else {
+		Logger::Instance()->logIt("SendDigits: ccm pointer not created");
+	}
 }
 
 // Device , Line Events notification handlers

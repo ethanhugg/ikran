@@ -102,6 +102,8 @@ public:
 	int StartP2PMode(std::string sipUser);
 	void PlaceP2PCall(std::string dial_number,  std::string sipDomain);
 
+	void SendDigits(std::string digits);
+
 	void SetExternalRenderer(void* renderer) {
 		ext_renderer = renderer;
 	}
