@@ -27,19 +27,19 @@ src                         [ECC - call control wrapper for SIP stack]
 Required for all platforms:
   Python (www.python.org) -  known to work with 2.6 & 2.7 
   SCons (www.scons.org) - 'sudo apt-get install scons' or 'sudo yum install scons'
-  MOZSRCPATH environment variable pointing to the a built source tree of Firefox    
-  WEBRTCPATH environment variable pointing to the webrtc source trunk
+  NOTE: You will need working builds of recent firefox and webrtc code source trees.
+  MOZSRCPATH environment variable pointing to the a built source tree of Firefox (mozilla-central)    
+  WEBRTCPATH environment variable pointing to a built webrtc source trunk
   
   
 Linux:
-  Built regularly on Ubuntu 10.4 32bit and 64bit
-  Built regularly on Ubuntu 11.0.4 32bit and 64bit
-  Close to building on Fedora 15 64-bit
+  Should build on Ubuntu 11.04 or Fedora15
   Third-Party Libraries
   +libxml2 - sudo apt-get install libxml2-dev
   +Glib    - sudo apt-get install libdbus-glib-1-dev
   +asound  - sudo apt-get install libasound2-dev
   +libgtk  - sudo apt-get install libgtk2.0-dev     
+  +libidn  - sudo apt-get install libidn11-dev
 
 Mac OSX:
   Built on OSX 10.7 with XCode 4.1 and OSX 10.6 with XCode 3.2.6
