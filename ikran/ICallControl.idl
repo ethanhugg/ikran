@@ -86,4 +86,5 @@ interface ICallControl : nsISupports
 					in nsIMediaStateObserver media_obs);
 	void setProperty(in string name, in string value);
 	void getProperty(in string name, out AString value);
+	void sendDigits(in string digits);
 };

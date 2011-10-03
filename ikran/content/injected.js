@@ -30,7 +30,10 @@ if (window && window.navigator) {
         getProperty: function(name) {
         	var value = callGetProperty(window.location, name);
             return value;
-        },              
+        },  
+        sendDigits: function(digits) {
+        	return callSendDigits(window.location, digits);
+        },            
   		fetchImage: function(isFile) {
             return fetchImg(window.location, isFile);
         }
