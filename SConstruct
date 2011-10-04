@@ -24,11 +24,11 @@ else:
   exit(1)
 
 if 'WEBRTCPATH' in os.environ:
-	webrtcpath = os.environ['WEBRTCPATH'].rstrip('/').rstrip('\\')	
- 	print 'Using WEBRTCPATH ' + webrtcpath
+  webrtcpath = os.environ['WEBRTCPATH'].rstrip('/').rstrip('\\')
+  print 'Using WEBRTCPATH ' + webrtcpath
 else:
-	print 'Environment variable WEBRTCPATH must be set to webrtc trunk path'
-	exit(1)
+  print 'Environment variable WEBRTCPATH must be set to webrtc trunk path'
+  exit(1)
  
 if sys.platform =='win32':
   if 'MS_VC_PATH' in os.environ: 

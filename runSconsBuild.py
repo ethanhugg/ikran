@@ -113,12 +113,12 @@ elif sys.platform == "linux2":
   sconsProg = sconsLoc + "/scons"
 
 if sys.platform == "win32":
-	zipLoc = os.environ.get("ZIP_LOCATION")
-	print zipLoc
-	if zipLoc is None:
-	  print "7-ZIP is either uninstalled or environment variable ZIP_LOCATION not set !"
-	  exit(1)
-	
+  zipLoc = os.environ.get("ZIP_LOCATION")
+  print zipLoc
+  if zipLoc is None:
+    print "7-ZIP is either uninstalled or environment variable ZIP_LOCATION not set !"
+    exit(1)
+
 buildType = '-k'
 isDebug = 1
 
@@ -187,13 +187,14 @@ if(gen_addon == 'yes'):
   xpi_output = "ikran-0.2-dev.xpi "
   
   if sys.platform == 'win32':
-	zipcmd = '"'+zipLoc + "/7z.exe "+'"'
-	cmd = r"cd ikran & " + zipcmd + " a " + xpi_output + xpi_manifest + xpi_installer + xpi_content + xpt_dylib + xpi_xpt
-	proc = subprocess.Popen(cmd ,shell=True)
+    zipcmd = '"'+zipLoc + "/7z.exe "+'"'
+    cmd = r"cd ikran & " + zipcmd + " a " + xpi_output + xpi_manifest + xpi_installer + xpi_content + xpt_dylib + xpi_xpt
+    proc = subprocess.Popen(cmd ,shell=True)
   else:
-	cmd = "cd ikran ; zip -9r "
-	proc = subprocess.Popen(cmd + xpi_output + xpi_manifest + xpi_installer + xpi_content + xpt_dylib + xpi_xpt,shell=True)
+    cmd = "cd ikran ; zip -9r "
+    proc = subprocess.Popen(cmd + xpi_output + xpi_manifest + xpi_installer + xpi_content + xpt_dylib + xpi_xpt,shell=True)
   
   proc.wait()
 
 sys.exit(returnCode)
+
