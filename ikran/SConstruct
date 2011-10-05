@@ -257,7 +257,7 @@ elif sys.platform=='darwin':
     'AudioToolbox',
     '-framework',
     'CoreServices',
-    '-fvisibility=default'	
+    '-fvisibility=default'
   ]
   libpath += [
     '..',
@@ -464,7 +464,7 @@ elif sys.platform=='linux2':
     '-shared',
     '-pthread',
     '-pipe',
-    '-Wl',	
+    '-Wl',
     '-z',
     'muldefs'
   ]
