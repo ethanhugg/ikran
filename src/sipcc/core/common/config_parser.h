@@ -196,7 +196,7 @@ int config_get_remote_voip_control_port();
 /*
  * get ikran version
  */
-void config_get_version(char* version);
+const char* config_get_version();
 
 /*
  * set p2p mode on or off

@@ -384,13 +384,19 @@ CallControl::AnswerCall(nsIDOMCanvasRenderingContext2D *ctx,
  * SetProperty
  */
 NS_IMETHODIMP
-CallControl::SetProperty(const char* name,
-						 const char* value)
+CallControl::SetProperty(nsIPropertyBag2 *prop)
 {
-	m_name = const_cast<char*>(name);
-	m_value = const_cast<char*>(value);
+	nsresult rv;
+	nsAString property;;
 
-	SipccController::GetInstance()->SetProperty(m_name, m_value);
+	rv = prop->GetPropertyAsAString(NS_LITERAL_STRING("localvoipport"), property);
+	if(NS_SUCCEEDED(rv))
+		SipccController::GetInstance()->SetProperty("localvoipport", ToNewUTF8String(property));
+
+	rv = prop->GetPropertyAsAString(NS_LITERAL_STRING("remotevoipport"), property);
+	if(NS_SUCCEEDED(rv))
+		SipccController::GetInstance()->SetProperty("remotevoipport", ToNewUTF8String(property));
+
     return NS_OK;
 }
 
@@ -401,8 +407,8 @@ NS_IMETHODIMP
 CallControl::GetProperty(const char* name,
 						 nsAString & value)
 {
-	m_name = const_cast<char*>(name);
-	std::string tmpValue = SipccController::GetInstance()->GetProperty(m_name);
+	char* strName = const_cast<char*>(name);
+	std::string tmpValue = SipccController::GetInstance()->GetProperty(strName);
 	value.Assign(NS_ConvertASCIItoUTF16(tmpValue.c_str()));
     return NS_OK;
 }
