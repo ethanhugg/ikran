@@ -173,8 +173,8 @@ int CCAPI_Config_get_remote_voip_port() {
 	return config_get_remote_voip_control_port();
 }
 
-void CCAPI_Config_get_version(char* version) {
-	config_get_version(version);
+const char* CCAPI_Config_get_version() {
+	return config_get_version();
 }
 
 cc_boolean CCAPI_Config_checkValidity (int device_handle, const char *cfg_file_name, int from_memory) {

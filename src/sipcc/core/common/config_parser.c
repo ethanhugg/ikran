@@ -1557,8 +1557,8 @@ int config_get_remote_voip_control_port() {
 	return gCcm1_sip_port;
 }
 
-void config_get_version(char* version) {
-	strcpy(version, gVersion);
+const char* config_get_version() {
+	return gVersion;
 }
 
 void config_setup_p2p_mode(const cc_boolean is_p2p) {

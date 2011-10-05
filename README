@@ -140,8 +140,9 @@ The test application can be used against Cisco Call Manager, Asterisk and kamail
 7. Addon API
 ------------
 The JS API offers support for 
-	SIP Registration, Place Call, HangUp Call, Answer Call, Send DTMF
-        P2P Mode, Place P2P Call
+    SIP Registration, Place Call, HangUp Call, Answer Call, Send DTMF
+    P2P Mode, Place P2P Call
+    SetProperty, GetProperty
 
 window.navigator.service.call obtains handle to session-control 
 object. 
@@ -156,14 +157,24 @@ a change in the session state such as "no-registrar","registering",
 On successful registration, one can place call with the below API
 <session-control>.placeCall(dial-number, canvas, mediaObserver);
 where dial-number is number to dial and mediaObserver reports 
-significant media state changes suhc as "call-connected",
+significant media state changes such as "call-connected",
 "call-terminated" as of today.
 
 JS APIs unRegisterUser() and hangupCall() allows de-registration
 & end-call functionalities.
 
+SendDigits API
 To Send DTMF digits use sendDigits, a call must be active to send DTMF digits.
 sendDigits('123#');
+
+SetProperty API
+Available properties are
+localvoipport -- used in P2P mode
+remotevoipport -- used in P2P mode
+e.g.  Me.setProperty({"localvoipport": 5061, "remotevoipport": 5061});
+
+GetProperty API
+e.g.  var version = Me.getProperty("version");
 
 Few Points to Note
 1. One user is suported as registered by instance

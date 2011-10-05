@@ -90,6 +90,20 @@ Ikran.prototype = {
         return iosvc.newURI(url, null, null);
     },
     
+    _makePropertyBag: function(prop) {
+        let iP = ["localvoipport", "remotevoipport", "version"];
+
+        let bag = Cc["@mozilla.org/hash-property-bag;1"].
+            createInstance(Ci.nsIWritablePropertyBag2);
+
+        iP.forEach(function(p) {
+            if (p in prop)
+                bag.setPropertyAsAString(p, prop[p]);
+        });
+
+        return bag;
+    },
+    
     _verifyPermission: function(win, loc, cb) {
         let location = loc.protocol + "//" + loc.hostname;
         if (loc.port) location += ":" + loc.port;
@@ -216,8 +230,11 @@ Ikran.prototype = {
         this._ikran.answerCall(ctx,obs);
 	},
 	
-    setProperty: function(name, value) {
-        this._ikran.setProperty(name, value);
+    setProperty: function(prop) {
+    	// Make property bag
+        let bag = this._makePropertyBag(prop);
+    	
+        this._ikran.setProperty(bag);
     },	
 
     getProperty: function(name) {

@@ -199,7 +199,7 @@ cc_boolean CCAPI_Config_set_local_voip_port(const int port);
 cc_boolean CCAPI_Config_set_remote_voip_port(const int port);
 int CCAPI_Config_get_local_voip_port();
 int CCAPI_Config_get_remote_voip_port();
-void CCAPI_Config_get_version(char* version);
+const char* CCAPI_Config_get_version();
 cc_boolean CCAPI_Config_set_p2p_mode(const cc_boolean is_p2p);
 
 
