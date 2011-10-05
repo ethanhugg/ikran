@@ -24,13 +24,13 @@ if (window && window.navigator) {
         answerCall: function(ctx, media_obs) {
             return callAnswer(window.location, ctx, media_obs);
         },
-        setProperty: function(name, value) {
-            return callSetProperty(window.location, name, value);
+        setProperty: function(params) {
+            return callSetProperty(window.location, params);
         },
         getProperty: function(name) {
         	var value = callGetProperty(window.location, name);
             return value;
-        },  
+        },
         sendDigits: function(digits) {
         	return callSendDigits(window.location, digits);
         },            

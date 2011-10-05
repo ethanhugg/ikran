@@ -360,8 +360,7 @@ std::string CallControlManagerImpl::getProperty(ConfigPropertyKeysEnum::ConfigPr
 		out << tmpValue;
 		retValue = out.str();
 	} else if (key == ConfigPropertyKeysEnum::eVersion) {
-		char* version = NULL;
-		CCAPI_Config_get_version(version);
+		const char* version = CCAPI_Config_get_version();
 		retValue = version;
 	}
 

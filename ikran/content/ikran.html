@@ -120,13 +120,19 @@
             	Me.registerUser(mydevice.value, mydn.value, mypass.value, regipaddress.value, onSessionStateChange);
             } else {             
             	// Start in P2P Mode
-            	Me.setProperty("localvoipport", p2plocalvoipport.value);
-            	Me.setProperty("remotevoipport", p2premotevoipport.value);
+            	var propertyLiteral = {
+            							localvoipport:  p2plocalvoipport.value, 
+            							remotevoipport: p2premotevoipport.value
+            						  };
+            							
+            	Me.setProperty(propertyLiteral);
             	Me.startP2PMode(p2pmydn.value, onSessionStateChange);
             	var prop = Me.getProperty("localvoipport");
             	var prop1 = Me.getProperty("remotevoipport");
             	var prop2 = Me.getProperty("version");
-            	alert(prop2.value);
+            	//alert(prop.value);            	
+            	//alert(prop1.value);
+            	//alert(prop2.value);
             }        
             
             msg.innerHTML = "Registered...";
