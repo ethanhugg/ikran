@@ -46,6 +46,7 @@
 #include <prmem.h>
 #include <plbase64.h>
 #include <prthread.h>
+#include <jmorecfg.h>
 
 #include <nsIPipe.h>
 #include <nsIFileStreams.h>
