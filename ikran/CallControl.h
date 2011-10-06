@@ -52,6 +52,7 @@
 #include <nsIAsyncInputStream.h>
 #include <nsIAsyncOutputStream.h>
 #include <nsIDOMCanvasRenderingContext2D.h>
+#include <nsEmbedString.h>
 
 #include <nsCOMPtr.h>
 #include <nsAutoPtr.h>
