@@ -387,7 +387,7 @@ NS_IMETHODIMP
 CallControl::SetProperty(nsIPropertyBag2 *prop)
 {
 	nsresult rv;
-	nsAString property;;
+	nsEmbedString property;
 
 	rv = prop->GetPropertyAsAString(NS_LITERAL_STRING("localvoipport"), property);
 	if(NS_SUCCEEDED(rv))
