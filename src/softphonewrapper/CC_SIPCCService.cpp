@@ -583,8 +583,6 @@ bool CC_SIPCCService::startService()
 		pVideo->setDSCPValue(136);
     }
 
-    CCAPI_Config_set_transport(false);
-
     bUseConfig = false;
     if (!(bStarted = (CCAPI_Service_start() == CC_SUCCESS)))
     {
