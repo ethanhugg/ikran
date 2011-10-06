@@ -1534,7 +1534,7 @@ void config_setup_server_address (const char *sipDomain) {
 	compare_or_set_string_value(CFGID_CCM1_ADDRESS+0, sipDomain, (const unsigned char *) "ccm1_addr");
 }
 
-void config_setup_transport(const cc_boolean is_udp) {
+void config_setup_transport_udp(const cc_boolean is_udp) {
 	gTransportLayerProtocol = is_udp ? 2 : 4;
 	compare_or_set_int_value(CFGID_TRANSPORT_LAYER_PROT, gTransportLayerProtocol, (const unsigned char *) "transportLayerProtocol");
 }

@@ -92,6 +92,7 @@ Ikran.prototype = {
     
     _makePropertyBag: function(prop) {
         let iP = ["localvoipport", "remotevoipport", "version"];
+        let bP = ["udp", "tcp"];
 
         let bag = Cc["@mozilla.org/hash-property-bag;1"].
             createInstance(Ci.nsIWritablePropertyBag2);
@@ -100,7 +101,11 @@ Ikran.prototype = {
             if (p in prop)
                 bag.setPropertyAsAString(p, prop[p]);
         });
-
+        bP.forEach(function(p) {
+            if (p in prop)
+                bag.setPropertyAsBool(p, prop[p]);
+        });
+        
         return bag;
     },
     

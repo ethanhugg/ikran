@@ -99,6 +99,7 @@ void SipccController::InitInternal() {
 	// required as calling setProperty before ccm_ptr is initilized will not set the values
 	ccm_ptr_->setProperty(ConfigPropertyKeysEnum::eLocalVoipPort ,localVoipPort);
 	ccm_ptr_->setProperty(ConfigPropertyKeysEnum::eRemoteVoipPort ,remoteVoipPort);
+	ccm_ptr_->setProperty(ConfigPropertyKeysEnum::eTransport ,transport);
 
 	LOG(ERROR)<<"SipccController:: Authentication user : " << sip_user_;
 	initDone = true;	
@@ -269,6 +270,11 @@ void SipccController::SetProperty(std::string key, std::string value)
 			ccm_ptr_->setProperty(ConfigPropertyKeysEnum::eRemoteVoipPort ,value);
 		else
 			remoteVoipPort = value;
+	} else if (key == "transport") {
+		if (ccm_ptr_ != NULL)
+			ccm_ptr_->setProperty(ConfigPropertyKeysEnum::eTransport ,value);
+		else
+			transport = value;
 	}
 }
 
