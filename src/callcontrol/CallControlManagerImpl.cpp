@@ -339,6 +339,11 @@ bool CallControlManagerImpl::setProperty(ConfigPropertyKeysEnum::ConfigPropertyK
 		CCAPI_Config_set_local_voip_port(atoi(value.c_str()));
 	} else if (key == ConfigPropertyKeysEnum::eRemoteVoipPort) {
 		CCAPI_Config_set_remote_voip_port(atoi(value.c_str()));
+	} else if (key == ConfigPropertyKeysEnum::eTransport) {
+		if (value == "tcp")
+			CCAPI_Config_set_transport_udp(false);
+		else
+			CCAPI_Config_set_transport_udp(true);
 	}
 
 	return true;

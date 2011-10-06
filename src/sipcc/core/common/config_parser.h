@@ -171,7 +171,7 @@ void config_setup_server_address (const char *sipDomain);
 /*
  * set transport protocol, limited to udp or tcp for now
  */
-void config_setup_transport(const cc_boolean is_udp);
+void config_setup_transport_udp(const cc_boolean is_udp);
 
 /*
  * set local voip port defaults to 5060

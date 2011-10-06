@@ -150,8 +150,8 @@ cc_boolean CCAPI_Config_set_server_address(const char *ip_address) {
 	return TRUE;
 }
 
-cc_boolean CCAPI_Config_set_transport(const cc_boolean is_udp) {
-	config_setup_transport(is_udp);
+cc_boolean CCAPI_Config_set_transport_udp(const cc_boolean is_udp) {
+	config_setup_transport_udp(is_udp);
 	return TRUE;
 }
 

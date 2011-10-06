@@ -194,7 +194,7 @@ cc_boolean fcpFetchReq(int device_handle, char* fcpFileName);
 
 
 cc_boolean CCAPI_Config_set_server_address(const char *ip_address);
-cc_boolean CCAPI_Config_set_transport(const cc_boolean is_udp);
+cc_boolean CCAPI_Config_set_transport_udp(const cc_boolean is_udp);
 cc_boolean CCAPI_Config_set_local_voip_port(const int port);
 cc_boolean CCAPI_Config_set_remote_voip_port(const int port);
 int CCAPI_Config_get_local_voip_port();

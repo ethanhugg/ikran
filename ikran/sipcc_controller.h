@@ -165,6 +165,7 @@ private:
     CC_CallPtr	outgoing_call_;	
     std::string localVoipPort;
     std::string remoteVoipPort;
+    std::string transport;
     
 	//State Variables for Reg and Session
     bool initDone;    
