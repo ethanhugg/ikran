@@ -4,26 +4,28 @@ import sys
 Import('build_env')
 Import('debug')
 Import('webrtcpath')
+Import('mozsrcpath')
 Import('x64')
 
-include_dirs = Split("""
-            .
-            config
-            callcontrol
-            common
-            common/socket
-            common/thread
-            media
-            softphonewrapper
-            ../include
-            sipcc/include
-            sipcc/cpr/include
-            ../contrib/common
-            common/browser_logging                  
-            ..
-            ../third_party
-            ../third_party/chromium_base
-            """)
+include_dirs = [
+  '.',
+  'config',
+  'callcontrol',
+  'common',
+  'common/socket',
+  'common/thread',
+  'media',
+  'softphonewrapper',
+  '../include',
+  'sipcc/include',
+  'sipcc/cpr/include',
+  '../contrib/common',
+  'common/browser_logging',                  
+  '..',
+  '../third_party',
+  '../third_party/chromium_base',
+  'mozsrcpath + '/ipc/chromium/src',
+]
 
 if sys.platform =='win32':
   include_dirs += ['../third_party/libxml2/include']
@@ -32,10 +34,10 @@ else:
 
 
 src_files = Glob('config/*.cpp') + \
-      Glob('callcontrol/*.cpp') + \
-      Glob('common/*.cpp') + \
-      Glob('common/thread/*.cpp') + \
-      Glob('softphonewrapper/*.cpp')
+  Glob('callcontrol/*.cpp') + \
+  Glob('common/*.cpp') + \
+  Glob('common/thread/*.cpp') + \
+  Glob('softphonewrapper/*.cpp')
   
 
 src_files += Glob('media/*.cpp')  
