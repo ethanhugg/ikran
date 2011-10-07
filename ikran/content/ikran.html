@@ -117,12 +117,19 @@
             msg.innerHTML = "Atempting 2 Register...";
             
             if (registerradio.checked) {
+                       	var propertyLiteral = {
+            							tcp: true
+            						  };
+            							
+            	Me.setProperty(propertyLiteral);
+            	
             	Me.registerUser(mydevice.value, mydn.value, mypass.value, regipaddress.value, onSessionStateChange);
             } else {             
             	// Start in P2P Mode
             	var propertyLiteral = {
             							localvoipport:  p2plocalvoipport.value, 
-            							remotevoipport: p2premotevoipport.value
+            							remotevoipport: p2premotevoipport.value,
+            							udp: true
             						  };
             							
             	Me.setProperty(propertyLiteral);
