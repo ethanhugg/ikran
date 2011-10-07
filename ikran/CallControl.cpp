@@ -397,13 +397,17 @@ CallControl::SetProperty(nsIPropertyBag2 *prop)
 	if(NS_SUCCEEDED(rv))
 		SipccController::GetInstance()->SetProperty("remotevoipport", ToNewUTF8String(property));
 
+#ifdef WIN32
+	bool transport;
+#else
 	PRBool transport;
+#endif
     rv = prop->GetPropertyAsBool(NS_LITERAL_STRING("udp"), &transport);
-    if(NS_SUCCEEDED(rv) && transport == PR_TRUE) {
+    if(NS_SUCCEEDED(rv) && transport == true) {
     	SipccController::GetInstance()->SetProperty("transport", "udp");
     } else {
     	rv = prop->GetPropertyAsBool(NS_LITERAL_STRING("tcp"), &transport);
-    	if(NS_SUCCEEDED(rv) && transport == PR_TRUE)
+    	if(NS_SUCCEEDED(rv) && transport == true)
     		SipccController::GetInstance()->SetProperty("transport", "tcp");
     }
 
