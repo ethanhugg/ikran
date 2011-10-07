@@ -24,7 +24,7 @@ include_dirs = [
   '..',
   '../third_party',
   '../third_party/chromium_base',
-  'mozsrcpath + '/ipc/chromium/src',
+  mozsrcpath + '/ipc/chromium/src',
 ]
 
 if sys.platform =='win32':
