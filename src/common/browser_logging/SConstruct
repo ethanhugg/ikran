@@ -4,40 +4,21 @@ import sys
 
 Import('build_env')
 Import('debug')
+Import('mozsrcpath')
 Import('x64')
 
-include_dirs = Split("""
-		.
-		include
-		../../../third_party/chromium_base
-		""")
+include_dirs = [
+  '.',
+  'include',
+  '../../../third_party/chromium_base',
+  mozsrcpath + '/ipc/chromium/src'
+]
 
 src_files = Glob('*.cpp')
 
 
 env = build_env.Clone(CPPPATH=include_dirs)
 
-if(sys.platform == 'win32'):
-	if int(debug):
-		print "Building for windows with debug"
-		env.Library('browser_logging', src_files)
-	else:
-		print "Building for windows without debug"
-		env.Library('browser_logging', src_files)	
+env.Library('browser_logging', src_files)
 
-if sys.platform=='linux2':		
-	if int(debug):
-		print "Building for linux with debug"
-		env.Library('browser_logging', src_files)
-	else:
-		print "Building for linux without debug"
-		env.Library('browser_logging', src_files)
-
-if sys.platform=='darwin':		
-	if int(debug):
-		print "Building for darwin with debug"
-		env.Library('browser_logging', src_files)
-	else:
-		print "Building for darwin without debug"
-		env.Library('browser_logging', src_files)
 

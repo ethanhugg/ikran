@@ -17,6 +17,7 @@ include_dirs = [
   '../src/common',
   '../out/include/system',
   '../third_party/chromium_base',
+  mozsrcpath + '/ipc/chromium/src',
   '../src/common/browser_logging',
   webrtcpath + '/src',
   webrtcpath + '/src/video_engine/main/interface',

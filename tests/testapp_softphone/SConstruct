@@ -1,11 +1,12 @@
 Import('build_env')
 import os, sys
 
-Import ('debug')
-Import ('x64')
-Import ('componentName')
-Import ('suffixName')
+Import('debug')
+Import('x64')
+Import('componentName')
+Import('suffixName')
 Import('webrtcpath')
+Import('mozsrcpath')
 
 
 ## Add Tests folders here
@@ -16,6 +17,7 @@ include_dirs = [
   '../../src/common',
   '../../out/include/system',
   '../../third_party/chromium_base',
+  mozsrcpath + '/ipc/chromium/src',
   '../../src/common/browser_logging',
   '../../ikran'
  ]
