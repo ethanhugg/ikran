@@ -397,7 +397,7 @@ CallControl::SetProperty(nsIPropertyBag2 *prop)
 	if(NS_SUCCEEDED(rv))
 		SipccController::GetInstance()->SetProperty("remotevoipport", ToNewUTF8String(property));
 
-	boolean transport = false;
+	bool transport;
     rv = prop->GetPropertyAsBool(NS_LITERAL_STRING("udp"), &transport);
     if(NS_SUCCEEDED(rv) && transport == true) {
     	SipccController::GetInstance()->SetProperty("transport", "udp");
