@@ -397,7 +397,7 @@ CallControl::SetProperty(nsIPropertyBag2 *prop)
 	if(NS_SUCCEEDED(rv))
 		SipccController::GetInstance()->SetProperty("remotevoipport", ToNewUTF8String(property));
 
-#ifdef WIN32
+#if defined(WIN32) || defined(__x86_64__)
 	bool transport;
 #else
 	PRBool transport;
