@@ -218,13 +218,12 @@ Ikran.prototype = {
     },
     
     hangupCall: function() {
-
         this._ikran.hangupCall();
-
     },
     
     unregisterUser: function() {
         this._ikran.unregisterUser();
+        this._session = false;
     },
 
     answerCall: function(ctx, obs) {

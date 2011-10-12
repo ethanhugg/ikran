@@ -77,8 +77,7 @@ bool IsUserAdmin();
 bool IsVistaOrNewer();
 #endif
 
-class WebrtcAudioStream
-{
+class WebrtcAudioStream {
 public:
 	WebrtcAudioStream(int _streamId, int _channelId):
 		streamId(_streamId), channelId(_channelId),
@@ -117,25 +116,22 @@ WebrtcAudioProvider::WebrtcAudioProvider( WebrtcMediaProvider* provider )
 
 int WebrtcAudioProvider::init()
 {
-	LOG_WEBRTC_INFO( logTag, "VoEAudioProvider::init");
+	LOG_WEBRTC_INFO( logTag, "WebrtcAudioProvider::init");
 
-	if (voeVoice != NULL)
-	{
-		LOG_WEBRTC_ERROR( logTag, "VoEAudioProvider::init : already initialized");
+	if (voeVoice != NULL) {
+		LOG_WEBRTC_ERROR( logTag, "WebrtcAudioProvider::init : already initialized");
 		return -1;
 	}
 
     voeVoice = webrtc::VoiceEngine::Create();
-	if (voeVoice== NULL)
-	{
-		LOG_WEBRTC_ERROR( logTag, "VoEAudioProvider():VoiceEngine::Create failed");
+	if (voeVoice == NULL) {
+		LOG_WEBRTC_ERROR( logTag, "WebrtcAudioProvider():VoiceEngine::Create failed");
 		return -1;
 	}
 
 	voeBase = webrtc::VoEBase::GetInterface( voeVoice );
-	if (voeBase== NULL)
-	{
-		LOG_WEBRTC_ERROR( logTag, "VoEAudioProvider(): VoEBase::GetInterface failed");
+	if (voeBase == NULL) {
+		LOG_WEBRTC_ERROR( logTag, "WebrtcAudioProvider(): VoEBase::GetInterface failed");
 		return -1;
 	}
 
@@ -143,14 +139,15 @@ int WebrtcAudioProvider::init()
 	char versionbuf[VERSIONBUFLEN];
 	voeBase->GetVersion(versionbuf);
 	LOG_WEBRTC_INFO( logTag, "%s", versionbuf );
-//	voeBase->voeVE_SetObserver( *this );
+	//voeBase->voeVE_SetObserver( *this );
 
 //#ifdef ENABLE_WEBRTC_AUDIO_TRACE
-	LOG_WEBRTC_ERROR( logTag, "VoEAudioProvider(): Enabling Trace ");
-	voeVoice->SetTraceFilter(webrtc::kTraceAll);
-	voeVoice->SetTraceFile( "voeaudiotrace.out" );
-	voeVoice->SetTraceCallback(this);
+	//LOG_WEBRTC_ERROR( logTag, "VoEAudioProvider(): Enabling Trace ");
+	//voeVoice->SetTraceFilter(webrtc::kTraceAll);
+	//voeVoice->SetTraceFile( "voeaudiotrace.out" );
+	//voeVoice->SetTraceCallback(this);
 //#endif
+
 	voeDTMF = webrtc::VoEDtmf::GetInterface( voeVoice );
 	voeFile = webrtc::VoEFile::GetInterface( voeVoice );
 	voeHw =   webrtc::VoEHardware::GetInterface( voeVoice );
@@ -159,9 +156,8 @@ int WebrtcAudioProvider::init()
 	voeVoiceQuality = webrtc::VoEAudioProcessing::GetInterface( voeVoice );
     voeEncryption = webrtc::VoEEncryption::GetInterface(voeVoice);
 
-	if ((!voeDTMF) || (!voeFile) || (!voeHw) ||(!voeNetwork) || (!voeVolumeControl) || (!voeVoiceQuality) || (!voeEncryption)) 
-	{
-		LOG_WEBRTC_ERROR( logTag, "VoEAudioProvider(): voeVE_GetInterface failed voeDTMF=%p voeFile=%p voeHw=%p voeNetwork=%p voeVolumeControl=%p voeVoiceQuality=%p voeEncryption=%p",
+	if ((!voeDTMF) || (!voeFile) || (!voeHw) ||(!voeNetwork) || (!voeVolumeControl) || (!voeVoiceQuality) || (!voeEncryption)) {
+		LOG_WEBRTC_ERROR( logTag, "WebrtcAudioProvider(): voeVE_GetInterface failed voeDTMF=%p voeFile=%p voeHw=%p voeNetwork=%p voeVolumeControl=%p voeVoiceQuality=%p voeEncryption=%p",
 		voeDTMF,voeFile,voeHw,voeNetwork,voeVolumeControl,voeVoiceQuality,voeEncryption);
 		return -1;
 	}
@@ -169,27 +165,22 @@ int WebrtcAudioProvider::init()
 	codecSelector.init(voeVoice, false, true);
 	voeBase->Init();
 
-
 	localRingChannel = voeBase->CreateChannel();
 	localToneChannel = voeBase->CreateChannel();
 
-/*	
+    /*
 	Set up Voice Quality Enhancement Parameters
-*/
+    */
 	webrtc::AgcConfig webphone_agc_config = {3,9,1};
 	voeVoiceQuality->SetAgcConfig(webphone_agc_config); 
 	voeVoiceQuality->SetAgcStatus(true, webrtc::kAgcFixedDigital);
-
-
 	voeVoiceQuality->SetNsStatus(true, webrtc::kNsModerateSuppression);
-//	voeVoiceQuality->voeVE_SetECStatus(true, EC_AEC);
 
 	// get default device names
 	int nDevices, error = 0;
 	//returning the first found recording and playout device name
 	error = voeHw->GetNumOfRecordingDevices(nDevices);	
-	for(int i = 0; i < nDevices; i++)
-	{
+	for(int i = 0; i < nDevices; i++) {
 		char name[128];
 		char guid[128];
 		memset(name,0,128);
@@ -198,26 +189,23 @@ int WebrtcAudioProvider::init()
 		if(error == 0) {
 			recordingDevice = name;
 		} else {
-			LOG_WEBRTC_ERROR( logTag, "VoEAudioProvider: GetRecordingDeviceNamefailed: Error: %d", voeBase->LastError() );
-
+			LOG_WEBRTC_ERROR( logTag, "WebrtcAudioProvider: GetRecordingDeviceNamefailed: Error: %d", voeBase->LastError() );
 		}	
 	}
 	
 	//playout
 	nDevices = 0;
 	error = voeHw->GetNumOfPlayoutDevices(nDevices);
-	for(int i=0; i < nDevices; i++)
-	{
+	for(int i=0; i < nDevices; i++) {
 		char pname[128], pguid[128];
 		memset(pname,0,128);
 		memset(pguid,0,128);
 		if ( voeHw->GetPlayoutDeviceName( i, pname, pguid ) == 0 ) {
 			playoutDevice = pname;
 		} else {
-				LOG_WEBRTC_ERROR( logTag, "VoEAudioProvider: GetlayoutDeviceNamefailed: Error: %d", voeBase->LastError() );
+				LOG_WEBRTC_ERROR( logTag, "WebrtcAudioProvider: GetlayoutDeviceNamefailed: Error: %d", voeBase->LastError() );
 		}
 	}
-	
 
     LOG_WEBRTC_DEBUG( logTag, "local IP: \"%s\"", localIP.c_str());
     LOG_WEBRTC_DEBUG( logTag, "RecordingDeviceName: \"%s\"", recordingDevice.c_str());
@@ -226,38 +214,38 @@ int WebrtcAudioProvider::init()
 	return 0;
 }
 
-WebrtcAudioProvider::~WebrtcAudioProvider()
-{
-	LOG_WEBRTC_INFO( logTag, "VoEAudioProvider::~VoEAudioProvider");
+WebrtcAudioProvider::~WebrtcAudioProvider() {
+	LOG_WEBRTC_INFO( logTag, "WebrtcAudioProvider::~WebrtcAudioProvider");
 
 	int num_ifs=0;
 	stopping = true;
 	// tear down in reverse order, for symmetry
 	codecSelector.release();
 
-
 	voeBase->DeleteChannel( localToneChannel );
 	voeBase->DeleteChannel( localRingChannel );
 	voeBase->Terminate();
-	voeBase->Release();
 
+	if(voeBase->Release() !=0) {
+		LOG_WEBRTC_ERROR( logTag, "~WebrtcAudioProvider(): voeBase->Release failed");
+	}
 	
 	if ((num_ifs=voeDTMF->Release())!=0)
-		LOG_WEBRTC_ERROR( logTag, "~VoEAudioProvider(): voeDTMF->Release failed, num_ifs left= %d",num_ifs);
+		LOG_WEBRTC_ERROR( logTag, "~WebrtcAudioProvider(): voeDTMF->Release failed, num_ifs left= %d",num_ifs);
 	if ((num_ifs=voeFile->Release())!=0)
-		LOG_WEBRTC_ERROR( logTag, "~VoEAudioProvider(): voeFile->Release failed, num_ifs left= %d ",num_ifs);
+		LOG_WEBRTC_ERROR( logTag, "~WebrtcAudioProvider(): voeFile->Release failed, num_ifs left= %d ",num_ifs);
 	if((num_ifs=voeHw->Release())!=0)
-		LOG_WEBRTC_ERROR( logTag, "~VoEAudioProvider(): voeHw->Release failed, num_ifs left= %d " ,num_ifs);
+		LOG_WEBRTC_ERROR( logTag, "~WebrtcAudioProvider(): voeHw->Release failed, num_ifs left= %d " ,num_ifs);
 	if((num_ifs=voeNetwork->Release())!=0)
-		LOG_WEBRTC_ERROR( logTag, "~VoEAudioProvider(): voeNetwork->Release() failed, num_ifs left= %d" ,num_ifs);
+		LOG_WEBRTC_ERROR( logTag, "~WebrtcAudioProvider(): voeNetwork->Release() failed, num_ifs left= %d" ,num_ifs);
 	if((num_ifs=voeVolumeControl->Release())!=0)
-		LOG_WEBRTC_ERROR( logTag, "~VoEAudioProvider(): voeVolumeControl->Release() failed, num_ifs left= %d" ,num_ifs);
+		LOG_WEBRTC_ERROR( logTag, "~WebrtcAudioProvider(): voeVolumeControl->Release() failed, num_ifs left= %d" ,num_ifs);
 	if((num_ifs=voeVoiceQuality->Release())!=0)
-		LOG_WEBRTC_ERROR( logTag, "~VoEAudioProvider(): voeVoiceQuality->Release() failed, num_ifs left= %d ",num_ifs );
+		LOG_WEBRTC_ERROR( logTag, "~WebrtcAudioProvider(): voeVoiceQuality->Release() failed, num_ifs left= %d ",num_ifs );
     if((num_ifs=voeEncryption->Release())!=0)
-        LOG_WEBRTC_ERROR( logTag, "~VoEAudioProvider(): voeEncryption->Release() failed, num_ifs left= %d ",num_ifs );
-	if(webrtc::VoiceEngine::Delete( voeVoice )==false)
-		LOG_WEBRTC_ERROR( logTag, "~VoEAudioProvider(): voeVoiceEngine::Delete failed" );
+        LOG_WEBRTC_ERROR( logTag, "~WebrtcAudioProvider(): voeEncryption->Release() failed, num_ifs left= %d ",num_ifs );
+	if(webrtc::VoiceEngine::Delete( voeVoice, true ) == false)
+		LOG_WEBRTC_ERROR( logTag, "~WebrtcAudioProvider(): voeVoiceEngine::Delete failed" );
 
 	delete toneGen;
 	toneGen = NULL;
@@ -276,11 +264,10 @@ WebrtcAudioProvider::~WebrtcAudioProvider()
 	voeBase = NULL;
     voeEncryption = NULL;
 
-	LOG_WEBRTC_INFO( logTag, "VoEAudioProvider::shutdown done");
+	LOG_WEBRTC_INFO( logTag, "WebrtcAudioProvider::shutdown done");
 }
 
-std::vector<std::string> WebrtcAudioProvider::getRecordingDevices()
-{
+std::vector<std::string> WebrtcAudioProvider::getRecordingDevices() {
 	base::AutoLock lock(m_lock);
 	char name[128];
 	char guid[128];
@@ -290,16 +277,14 @@ std::vector<std::string> WebrtcAudioProvider::getRecordingDevices()
 	std::vector<std::string> deviceList;
     voeHw->GetNumOfRecordingDevices(nRec);
 
-	for ( int i = 0; i < nRec; i++ )
-	{
+	for ( int i = 0; i < nRec; i++ ) {
 		if ( voeHw->GetRecordingDeviceName( i, name, guid ) == 0 )
 			deviceList.push_back( name );
 	}
 	return deviceList;
 }
 
-std::vector<std::string> WebrtcAudioProvider::getPlayoutDevices()
-{
+std::vector<std::string> WebrtcAudioProvider::getPlayoutDevices() {
 	base::AutoLock lock(m_lock);
 	char name[128];
 	char guid[128];
@@ -308,16 +293,14 @@ std::vector<std::string> WebrtcAudioProvider::getPlayoutDevices()
 	memset(name,0,128);
 	memset(guid,0,128);
 	voeHw->GetNumOfPlayoutDevices( nPlay);
-	for ( int i = 0; i < nPlay; i++ )
-	{
+	for ( int i = 0; i < nPlay; i++ ) {
 		if ( voeHw->GetPlayoutDeviceName( i, name, guid ) == 0 )
 			deviceList.push_back( name );
 	}
 	return deviceList;
 }
 
-bool WebrtcAudioProvider::setRecordingDevice( const std::string& device )
-{
+bool WebrtcAudioProvider::setRecordingDevice( const std::string& device ) {
 	base::AutoLock lock(m_lock);
 	char name[128];
 	char guid[128];
@@ -329,37 +312,30 @@ bool WebrtcAudioProvider::setRecordingDevice( const std::string& device )
 	voeHw->GetNumOfPlayoutDevices(  nPlay );
 
 	// find requested recording device
-	for ( recordingIndex = 0; recordingIndex < nRec; recordingIndex++ )
-	{
-		if ( voeHw->GetRecordingDeviceName( recordingIndex, name, guid ) == 0 )
-		{
+	for ( recordingIndex = 0; recordingIndex < nRec; recordingIndex++ ) {
+		if ( voeHw->GetRecordingDeviceName( recordingIndex, name, guid ) == 0 ) {
 			if ( device.compare( name ) == 0 ) break;
 		}
 	}
-	if ( recordingIndex == nRec )	// we didn't find the requested device, fail
-	{
-		return false;
+	if ( recordingIndex == nRec ) {
+		return false;  // we didn't find the requested device, fail
 	}
 
 	// find existing playout device, to preserve its index
 	// search downward until we reach the default device
 	name[0] = '\0';
-	for ( playoutIndex = nPlay - 1; playoutIndex >= -1; playoutIndex-- )
-	{
-		if ( voeHw->GetPlayoutDeviceName( playoutIndex, name, guid ) == 0 )
-		{
+	for ( playoutIndex = nPlay - 1; playoutIndex >= -1; playoutIndex-- ) {
+		if ( voeHw->GetPlayoutDeviceName( playoutIndex, name, guid ) == 0 ) {
 			if ( playoutDevice.compare( name ) == 0 ) break;
 		}
 		else name[0] = '\0';
 	}
-	if ( playoutIndex < -1 )	// we didn't find the current device, use default
-	{
-		playoutIndex = -1;
+	if ( playoutIndex < -1 ) {
+		playoutIndex = -1; // we didn't find the current device, use default
 	}
 
 	if ( voeHw->SetRecordingDevice( recordingIndex ) == 0 
-			&& voeHw->SetPlayoutDevice( playoutIndex) == 0 )
-	{
+			&& voeHw->SetPlayoutDevice( playoutIndex) == 0 ) {
 		recordingDevice = device;
 		playoutDevice = name;	// the current name
 		return true;
@@ -367,8 +343,7 @@ bool WebrtcAudioProvider::setRecordingDevice( const std::string& device )
 	return false;
 }
 
-bool WebrtcAudioProvider::setPlayoutDevice( const std::string& device )
-{
+bool WebrtcAudioProvider::setPlayoutDevice( const std::string& device ) {
 	base::AutoLock lock(m_lock);
 	char name[128];
 	char guid[128];
@@ -379,38 +354,31 @@ bool WebrtcAudioProvider::setPlayoutDevice( const std::string& device )
 	voeHw->GetNumOfPlayoutDevices(  nPlay );
 
 	// find requested playout device
-	for ( playoutIndex = 0; playoutIndex < nPlay; playoutIndex++ )
-	{
-		if ( voeHw->GetPlayoutDeviceName( playoutIndex, name, guid ) == 0 )
-		{
+	for ( playoutIndex = 0; playoutIndex < nPlay; playoutIndex++ ) {
+		if ( voeHw->GetPlayoutDeviceName( playoutIndex, name, guid ) == 0 ) {
 			if ( device.compare( name ) == 0 ) break;
 		}
 	}
-	if ( playoutIndex == nPlay )	// we didn't find the requested device, fail
-	{
-		return false;
+	if ( playoutIndex == nPlay ) {
+		return false; // we didn't find the requested device, fail
 	}
 
 	// find existing recording device, to preserve its index
 	// search downward until we reach the default device
 	name[0] = '\0';
 	guid[0] = '\0';
-	for ( recordingIndex = nRec - 1; recordingIndex >= -1; recordingIndex-- )
-	{
-		if ( voeHw->GetRecordingDeviceName( recordingIndex, name, guid ) == 0 )
-		{
+	for ( recordingIndex = nRec - 1; recordingIndex >= -1; recordingIndex-- ) {
+		if ( voeHw->GetRecordingDeviceName( recordingIndex, name, guid ) == 0 ) {
 			if ( recordingDevice.compare( name ) == 0 ) break;
 		}
 		else name[0] = '\0';
 	}
-	if ( recordingIndex < -1 )	// we didn't find the current device, use default
-	{
-		recordingIndex = -1;
+	if ( recordingIndex < -1 ) {
+		recordingIndex = -1; // we didn't find the current device, use default
 	}
 
 	if ( voeHw->SetRecordingDevice( recordingIndex ) == 0 &&
-			voeHw->SetPlayoutDevice( playoutIndex) == 0 )
-	{
+			voeHw->SetPlayoutDevice( playoutIndex) == 0 ) {
 		playoutDevice = device;
 		recordingDevice = name;	// the current name
 		return true;
@@ -418,11 +386,9 @@ bool WebrtcAudioProvider::setPlayoutDevice( const std::string& device )
 	return false;
 }
 
-WebrtcAudioStreamPtr WebrtcAudioProvider::getStreamByChannel( int channel )
-{
+WebrtcAudioStreamPtr WebrtcAudioProvider::getStreamByChannel( int channel ) {
 	base::AutoLock lock(streamMapMutex);
-	for( std::map<int, WebrtcAudioStreamPtr>::const_iterator it = streamMap.begin(); it != streamMap.end(); it++ )
-	{
+	for( std::map<int, WebrtcAudioStreamPtr>::const_iterator it = streamMap.begin(); it != streamMap.end(); it++ ) {
 		WebrtcAudioStreamPtr stream = it->second;
 		if(stream->channelId == channel)
 			return stream;
@@ -430,38 +396,32 @@ WebrtcAudioStreamPtr WebrtcAudioProvider::getStreamByChannel( int channel )
 	return WebrtcAudioStreamPtr();
 }
 
-WebrtcAudioStreamPtr WebrtcAudioProvider::getStream( int streamId )
-{
+WebrtcAudioStreamPtr WebrtcAudioProvider::getStream( int streamId ) {
 	base::AutoLock lock(streamMapMutex);
 	std::map<int, WebrtcAudioStreamPtr>::const_iterator it = streamMap.find( streamId );
 	return ( it != streamMap.end() ) ? it->second : WebrtcAudioStreamPtr();
 }
 
-int WebrtcAudioProvider::getChannelForStreamId( int streamId )
-{
+int WebrtcAudioProvider::getChannelForStreamId( int streamId ) {
 	WebrtcAudioStreamPtr stream = getStream(streamId);
 	return ( stream != NULL ) ? stream->channelId : -1;
 }
 
-int WebrtcAudioProvider::getCodecList( CodecRequestType requestType )
-{
+int WebrtcAudioProvider::getCodecList( CodecRequestType requestType ) {
 	base::AutoLock lock(m_lock);
 	return codecSelector.advertiseCodecs(requestType);
 }
 
-int WebrtcAudioProvider::rxAlloc( int groupId, int streamId, int requestedPort )
-{
+int WebrtcAudioProvider::rxAlloc( int groupId, int streamId, int requestedPort ) {
 	base::AutoLock lock(m_lock);
 	LOG_WEBRTC_INFO( logTag, "rxAllocAudio: groupId=%d, streamId=%d, requestedPort=%d", groupId, streamId, requestedPort  );
 	int channel = voeBase->CreateChannel();
-	if ( channel == -1 )
-	{
+	if ( channel == -1 ) {
 		LOG_WEBRTC_ERROR( logTag, "rxAllocAudio: CreateChannel failed, error %d", voeBase->LastError() );
 		return 0;
 	}
 	LOG_WEBRTC_DEBUG( logTag, "rxAllocAudio: Created channel %d", channel );
 	voeNetwork->SetPeriodicDeadOrAliveStatus(channel, true);
-
 
 	int beginPort;		// where we started
 	int tryPort;		// where we are now
@@ -475,15 +435,12 @@ int WebrtcAudioProvider::rxAlloc( int groupId, int streamId, int requestedPort )
 
 	const char * pLocalAddr = NULL;
 
-	if (localIP.size() > 0)
-	{
+	if (localIP.size() > 0) {
 		pLocalAddr = localIP.c_str();
 	}
 
-	do
-	{
-		if ( voeBase->SetLocalReceiver( channel, tryPort, webrtc::kVoEDefault, pLocalAddr ) == 0 )
-		{
+	do {
+		if ( voeBase->SetLocalReceiver( channel, tryPort, webrtc::kVoEDefault, pLocalAddr ) == 0 ) {
 			int port, RTCPport;
 			char ipaddr[64];
 			ipaddr[0]='\0';
@@ -492,8 +449,7 @@ int WebrtcAudioProvider::rxAlloc( int groupId, int streamId, int requestedPort )
 			localIP = ipaddr;
 			LOG_WEBRTC_DEBUG( logTag, "rxAllocAudio: IPAddr: %d", ipaddr );
 			LOG_WEBRTC_DEBUG( logTag, "rxAllocAudio: Allocated port %d", tryPort );
-			WebrtcAudioStreamPtr stream(new WebrtcAudioStream(streamId, channel));
-			{
+			WebrtcAudioStreamPtr stream(new WebrtcAudioStream(streamId, channel)); {
 				base::AutoLock lock(streamMapMutex);
 				streamMap[streamId] = stream;
 			}
@@ -504,14 +460,12 @@ int WebrtcAudioProvider::rxAlloc( int groupId, int streamId, int requestedPort )
 		int errCode = voeBase->LastError();
 		if ( errCode == VE_SOCKET_ERROR ||			
 			 errCode == VE_BINDING_SOCKET_TO_LOCAL_ADDRESS_FAILED ||
-			errCode == VE_RTCP_SOCKET_ERROR )	    
-        {
+			errCode == VE_RTCP_SOCKET_ERROR ) {
 	        tryPort += 2;
 	        if ( tryPort >= endPort )
 	        	tryPort = startPort;
         }
-		else
-		{
+		else {
 			LOG_WEBRTC_ERROR( logTag, "rxAllocAudio: SetLocalReceiver returned error %d", errCode );
 			voeBase->DeleteChannel( channel );
 			return 0;
@@ -524,13 +478,11 @@ int WebrtcAudioProvider::rxAlloc( int groupId, int streamId, int requestedPort )
 	return 0;
 }
 
-int WebrtcAudioProvider::rxOpen( int groupId, int streamId, int requestedPort, int listenIp, bool isMulticast )
-{
+int WebrtcAudioProvider::rxOpen( int groupId, int streamId, int requestedPort, int listenIp, bool isMulticast ) {
 	base::AutoLock lock(m_lock);
 	LOG_WEBRTC_INFO( logTag, "rxOpenAudio: groupId=%d, streamId=%d", groupId, streamId );
 	int channel = getChannelForStreamId( streamId );
-	if ( channel >= 0 )
-	{
+	if ( channel >= 0 ) {
 		LOG_WEBRTC_DEBUG( logTag, "rxOpenAudio: return requestedPort=%d", requestedPort );
 		return requestedPort;
 	}
@@ -538,53 +490,44 @@ int WebrtcAudioProvider::rxOpen( int groupId, int streamId, int requestedPort, i
 }
 
 int WebrtcAudioProvider::rxStart( int groupId, int streamId, int payloadType, int packPeriod, int localPort,
-		int rfc2833PayloadType, EncryptionAlgorithm algorithm, unsigned char* key, int keyLen, unsigned char* salt, int saltLen, int mode, int party )
-{
+		int rfc2833PayloadType, EncryptionAlgorithm algorithm, unsigned char* key, int keyLen, unsigned char* salt, int saltLen, int mode, int party ) {
 	base::AutoLock lock(m_lock);
 	LOG_WEBRTC_INFO( logTag, "rxStartAudio: groupId=%d, streamId=%d", groupId, streamId );
 	int channel = getChannelForStreamId( streamId );
-	if ( channel >= 0 )
-	{
+	if ( channel >= 0 ) {
 		int dynamicPayloadType = -1;
 
-	    if (CHECK_DYNAMIC_PAYLOAD_TYPE(payloadType))
-	    {
+	    if (CHECK_DYNAMIC_PAYLOAD_TYPE(payloadType)) {
 	        dynamicPayloadType = EXTRACT_DYNAMIC_PAYLOAD_TYPE(payloadType);
 	        payloadType = CLEAR_DYNAMIC_PAYLOAD_TYPE(payloadType);
 	    }
 
-	    if (dynamicPayloadType != -1)
-	    {
+	    if (dynamicPayloadType != -1) {
 			webrtc::CodecInst codec;
 
-			if (codecSelector.select(payloadType, dynamicPayloadType, packPeriod, codec) != 0)
-			{
+			if (codecSelector.select(payloadType, dynamicPayloadType, packPeriod, codec) != 0) {
 				LOG_WEBRTC_ERROR( logTag, "rxStartAudio cannot select codec (payloadType=%d, packPeriod=%d)",
 						payloadType, packPeriod );
 				return -1;
 			}
 
-			if (codecSelector.setReceive(channel, codec) != 0)
-			{
+			if (codecSelector.setReceive(channel, codec) != 0) {
 				LOG_WEBRTC_ERROR( logTag, "rxStartAudio cannot set receive codec to channel=%d", channel );
 				return -1;
 			}
 	    }
 
-        switch(algorithm)
-        {
+        switch(algorithm) {
             case EncryptionAlgorithm_NONE:
                 LOG_WEBRTC_DEBUG( logTag, "rxStartAudio: using non-secure RTP for channel %d", channel);
                 break;
 
-            case EncryptionAlgorithm_AES_128_COUNTER:
-            {
+            case EncryptionAlgorithm_AES_128_COUNTER: {
                 unsigned char key[WEBRTC_KEY_LENGTH];
 
                 LOG_WEBRTC_DEBUG( logTag, "rxStartAudio: using secure RTP for channel %d", channel);
 
-                if(!provider->getKey(key, keyLen, salt, saltLen, key, sizeof(key)))
-                {
+                if(!provider->getKey(key, keyLen, salt, saltLen, key, sizeof(key))) {
                     LOG_WEBRTC_ERROR( logTag, "rxStartAudio: failed to generate key on channel %d", channel );
                     return -1;
                 }
@@ -592,31 +535,25 @@ int WebrtcAudioProvider::rxStart( int groupId, int streamId, int payloadType, in
                 if(voeEncryption->EnableSRTPReceive(channel,
                     webrtc::kCipherAes128CounterMode,
                     WEBRTC_CIPHER_LENGTH,
-                    webrtc::kAuthNull, 0, 0, webrtc::kEncryption, key) != 0)
-                {
+                    webrtc::kAuthNull, 0, 0, webrtc::kEncryption, key) != 0) {
                     LOG_WEBRTC_ERROR( logTag, "rxStartAudio: voeVE_EnableSRTPReceive on channel %d failed", channel );
                     memset(key, 0x00, sizeof(key));
                     return -1;
                 }
 
                 memset(key, 0x00, sizeof(key));
-
                 break;
             }  
         }
 
-	    if (voeBase->StartReceive( channel ) == -1)
-	    {
+	    if (voeBase->StartReceive( channel ) == -1) {
 	    	LOG_WEBRTC_ERROR( logTag, "rxStartAudio: cannot start listen on channel %d", channel );
 	    	return -1;
 	    }
-	
-	
 
 	    LOG_WEBRTC_DEBUG( logTag, "rxStartAudio: Listening on channel %d", channel );
 
-		if (voeBase->StartPlayout( channel ) == -1)
-		{
+		if (voeBase->StartPlayout( channel ) == -1) {
 			LOG_WEBRTC_ERROR( logTag, "rxStartAudio: cannot start playout on channel %d, stop listen", channel );
 			//voeBase->voeVE_StopListen( channel );
 		}
@@ -627,20 +564,17 @@ int WebrtcAudioProvider::rxStart( int groupId, int streamId, int payloadType, in
 		LOG_WEBRTC_DEBUG( logTag, "rxStartAudio: Playing on channel %d", channel );
 		return 0;
 	}
-	else
-	{
+	else {
 		LOG_WEBRTC_ERROR( logTag, "rxStartAudio: getChannelForStreamId failed streamId %d",streamId );
 	}
 	return -1;
 }
 
-void WebrtcAudioProvider::rxClose( int groupId, int streamId )
-{
+void WebrtcAudioProvider::rxClose( int groupId, int streamId ) {
 	base::AutoLock lock(m_lock);
 	LOG_WEBRTC_INFO( logTag, "rxCloseAudio: groupId=%d, streamId=%d", groupId, streamId );
 	int channel = getChannelForStreamId( streamId );
-	if ( channel >= 0 )
-	{
+	if ( channel >= 0 ) {
 		WebrtcAudioStreamPtr stream = getStream(streamId);
 		if(stream != NULL)
 			stream->isRxStarted = false;
@@ -654,19 +588,15 @@ void WebrtcAudioProvider::rxRelease( int groupId, int streamId, int port )
 	base::AutoLock lock(m_lock);
 	LOG_WEBRTC_INFO( logTag, "rxReleaseAudio: groupId=%d, streamId=%d", groupId, streamId );
 	int channel = getChannelForStreamId( streamId );
-	if ( channel >= 0 )
-	{
+	if ( channel >= 0 ) {
 		voeBase->StopReceive( channel );
-		voeBase->DeleteChannel( channel );
-		{
+		voeBase->DeleteChannel( channel ); {
 			base::AutoLock lock(streamMapMutex);
 			streamMap.erase(streamId);
 		}
-
 		LOG_WEBRTC_DEBUG( logTag, "rxReleaseAudio: Delete channel %d, release port %d", channel, port);
 	}
-	else
-	{
+	else {
 		LOG_WEBRTC_ERROR( logTag, "rxReleaseAudio: getChannelForStreamId failed streamId %d",streamId );
 	}
 }
@@ -675,17 +605,14 @@ const unsigned char m_iGQOSServiceType =0x00000003;
 
 int WebrtcAudioProvider::txStart( int groupId, int streamId, int payloadType, int packPeriod, bool vad, short tos,
 		char* remoteIpAddr, int remotePort, int rfc2833PayloadType, EncryptionAlgorithm algorithm, unsigned char* key, int keyLen,
-		unsigned char* salt, int saltLen, int mode, int party )
-{
+		unsigned char* salt, int saltLen, int mode, int party ) {
 	base::AutoLock lock(m_lock);
 	LOG_WEBRTC_INFO( logTag, "txStartAudio: groupId=%d, streamId=%d", groupId, streamId);
 	int channel = getChannelForStreamId( streamId );
-	if ( channel >= 0 )
-	{
+	if ( channel >= 0 ) {
 		int dynamicPayloadType = -1;
 
-	    if (CHECK_DYNAMIC_PAYLOAD_TYPE(payloadType))
-	    {
+	    if (CHECK_DYNAMIC_PAYLOAD_TYPE(payloadType)) {
 	        dynamicPayloadType = EXTRACT_DYNAMIC_PAYLOAD_TYPE(payloadType);
 	        payloadType = CLEAR_DYNAMIC_PAYLOAD_TYPE(payloadType);
 	    }
@@ -693,36 +620,31 @@ int WebrtcAudioProvider::txStart( int groupId, int streamId, int payloadType, in
 	    webrtc::CodecInst codec;
 
 		// select codec from payload type
-		if (codecSelector.select(payloadType, dynamicPayloadType, packPeriod, codec) != 0)
-		{
+		if (codecSelector.select(payloadType, dynamicPayloadType, packPeriod, codec) != 0) {
 			LOG_WEBRTC_ERROR( logTag, "txStartAudio cannot select codec (payloadType=%d, packPeriod=%d)",
 					payloadType, packPeriod );
 			return -1;
 		}
 
 		// apply codec to channel
-		if (codecSelector.setSend(channel, codec,payloadType,vad) != 0)
-		{
+		if (codecSelector.setSend(channel, codec,payloadType,vad) != 0) {
 			LOG_WEBRTC_ERROR( logTag, "txStartAudio cannot set send codec on channel=%d", channel );
 			 LOG_WEBRTC_ERROR( logTag, "VoEAudioProvider: Error: %d", voeBase->LastError() );
 			
 			return -1;
 		}
 
-        switch(algorithm)
-        {
+        switch(algorithm) {
             case EncryptionAlgorithm_NONE:
                 LOG_WEBRTC_DEBUG( logTag, "txStartAudio: using non-secure RTP for channel %d", channel);
                 break;
 
-            case EncryptionAlgorithm_AES_128_COUNTER:
-            {
+            case EncryptionAlgorithm_AES_128_COUNTER: {
                 unsigned char key[WEBRTC_KEY_LENGTH];
 
                 LOG_WEBRTC_DEBUG( logTag, "txStartAudio: using secure RTP for channel %d", channel);
 
-                if(!provider->getKey(key, keyLen, salt, saltLen, key, sizeof(key)))
-                {
+                if(!provider->getKey(key, keyLen, salt, saltLen, key, sizeof(key))) {
                     LOG_WEBRTC_ERROR( logTag, "txStartAudio: failed to generate key on channel %d", channel );
                     return -1;
                 }
@@ -730,8 +652,7 @@ int WebrtcAudioProvider::txStart( int groupId, int streamId, int payloadType, in
                 if(voeEncryption->EnableSRTPSend(channel,
                     webrtc::kCipherAes128CounterMode,
                     WEBRTC_CIPHER_LENGTH,
-                    webrtc::kAuthNull, 0, 0, webrtc::kEncryption, key) != 0)
-                {
+                    webrtc::kAuthNull, 0, 0, webrtc::kEncryption, key) != 0) {
                     LOG_WEBRTC_ERROR( logTag, "txStartAudio:EnableSRTPSend on channel %d failed", channel );
                     memset(key, 0x00, sizeof(key));
                     return -1;
@@ -746,19 +667,15 @@ int WebrtcAudioProvider::txStart( int groupId, int streamId, int payloadType, in
         unsigned char dscpSixBit = DSCPValue>>2;
 		voeBase->SetSendDestination( channel, remotePort, remoteIpAddr );
 #ifdef WIN32
-		if (IsVistaOrNewer())
-		{
+		if (IsVistaOrNewer()) {
 			LOG_WEBRTC_DEBUG( logTag, "Vista or later");
-			if(voeNetwork->SetSendTOS(channel, dscpSixBit, false )==-1)
-			{
+			if(voeNetwork->SetSendTOS(channel, dscpSixBit, false ) == -1) {
 				LOG_WEBRTC_DEBUG( logTag, "openIngressChannel():voeVE_SetSendTOS() returned error");
 			}
 			LOG_WEBRTC_DEBUG( logTag, " Wrapper::openIngressChannel:- voeVE_SetSendTOS(), useSetSockOpt = false");
 		}
-		else
-		{
-			if(voeNetwork->SetSendTOS(channel, dscpSixBit, true )==-1)
-			{
+		else {
+			if(voeNetwork->SetSendTOS(channel, dscpSixBit, true ) == -1) {
 				LOG_WEBRTC_DEBUG( logTag, "openIngressChannel():voeVE_SetSendTOS() returned error");
 			}
 			LOG_WEBRTC_DEBUG( logTag, "Wrapper::openIngressChannel:- voeVE_SetSendTOS(), useSetSockOpt = true");
@@ -773,39 +690,33 @@ int WebrtcAudioProvider::txStart( int groupId, int streamId, int payloadType, in
 		LOG_WEBRTC_DEBUG( logTag, "txStartAudio: Sending to %s:%d on channel %d", remoteIpAddr, remotePort, channel );
 		return 0;
 	}
-	else
-	{
+	else {
 			LOG_WEBRTC_ERROR( logTag, "txStartAudio: getChannelForStreamId failed streamId %d",streamId );
 			return -1;
 	}
-
 }
 
-void WebrtcAudioProvider::txClose( int groupId, int streamId )
-{
+void WebrtcAudioProvider::txClose( int groupId, int streamId ) {
 	base::AutoLock lock(m_lock);
 	LOG_WEBRTC_INFO( logTag, "txCloseAudio: groupId=%d, streamId=%d", groupId, streamId);
 	int channel = getChannelForStreamId( streamId );
-	if ( channel >= 0 )
-	{
+	if ( channel >= 0 ) {
 		WebrtcAudioStreamPtr stream = getStream(streamId);
 		if(stream != NULL)
 			stream->isTxStarted = false;
 		voeBase->StopSend( channel );
 		LOG_WEBRTC_DEBUG( logTag, "txCloseAudio: Stop transmit on channel %d", channel );
 	}
-	else
-	{
+	else {
 		LOG_WEBRTC_ERROR( logTag, "txClose: getChannelForStreamId failed streanId %d",streamId );
 
 	}
 }
-int WebrtcAudioProvider::toneStart( ToneType type, ToneDirection direction, int alertInfo, int groupId, int streamId, bool useBackup )
-{
+
+int WebrtcAudioProvider::toneStart( ToneType type, ToneDirection direction, int alertInfo, int groupId, int streamId, bool useBackup ) {
 	base::AutoLock lock(m_lock);
 	LOG_WEBRTC_INFO( logTag, "mediaToneStart: tone=%d, direction=%d, groupId=%d, streamId=%d", type, direction, groupId, streamId );
-	if(toneGen != NULL)
-	{
+	if(toneGen != NULL) {
 		LOG_WEBRTC_INFO( logTag, "mediaToneStart: tone already in progress - stop current tone [using dodgy parameters] and replace it." );
 		toneStop(type, groupId, streamId);
 	}
@@ -815,8 +726,7 @@ int WebrtcAudioProvider::toneStart( ToneType type, ToneDirection direction, int 
 	return 0;
 }
 
-int WebrtcAudioProvider::toneStop( ToneType type, int groupId, int streamId )
-{
+int WebrtcAudioProvider::toneStop( ToneType type, int groupId, int streamId ) {
 	base::AutoLock lock(m_lock);
 	LOG_WEBRTC_INFO( logTag, "mediaToneStop: tone=%d, groupId=%d, streamId=%d", type, groupId, streamId );
 	if ( voeFile->IsPlayingFileLocally( localToneChannel ) == 1 ) {
@@ -832,12 +742,9 @@ int WebrtcAudioProvider::ringStart( int lineId, RingMode mode, bool once )
 {
 	base::AutoLock lock(m_lock);
 	LOG_WEBRTC_INFO( logTag, "mediaRingStart: line=%d, mode=%d, once=%d", lineId, mode, once );
-	if(ringGen != NULL)
-	{
+	if(ringGen != NULL) {
 		LOG_WEBRTC_INFO( logTag, "mediaRingStart: ringing already in progress - do nothing." );
 		return 0;
-		//ringStop(lineId);  No longer stopping ringer here because of DE2412.
-		//                   Now we let the original ringer continue, and blame skittles for not stopping the ringer first.
 	}
 	ringGen = new WebrtcRingGenerator( mode, once );
 	ringGen->SetScaleFactor(ringerVolume);
@@ -846,12 +753,10 @@ int WebrtcAudioProvider::ringStart( int lineId, RingMode mode, bool once )
 	return 0;
 }
 
-int WebrtcAudioProvider::ringStop( int lineId )
-{
+int WebrtcAudioProvider::ringStop( int lineId ) {
 	base::AutoLock lock(m_lock);
 	LOG_WEBRTC_INFO( logTag, "mediaRingStop: line=%d", lineId );
-	if ( voeFile->IsPlayingFileLocally( localRingChannel ) == 1 )
-	{
+	if ( voeFile->IsPlayingFileLocally( localRingChannel ) == 1 ) {
 		voeBase->StopPlayout( localRingChannel );
 		voeFile->StopPlayingFileLocally( localRingChannel );
 	}
@@ -860,24 +765,20 @@ int WebrtcAudioProvider::ringStop( int lineId )
 	return 0;
 }
 
-int WebrtcAudioProvider::sendDtmf( int streamId, int digit)
-{
+int WebrtcAudioProvider::sendDtmf( int streamId, int digit) {
 	base::AutoLock lock(m_lock);
-	// TODO Get from config
+
 	int rfc2833Payload=101;
-	
     int channel = getChannelForStreamId( streamId );
 	
-	if(channel >= 0)
-	{
+	if(channel >= 0) {
 		voeDTMF->SetDtmfFeedbackStatus(true);
 		voeDTMF->SetSendTelephoneEventPayloadType(channel, rfc2833Payload); // Need to get rfc2833Payload
 		voeDTMF->SendTelephoneEvent(channel, digit);
 		return 0;
 	}
-    else
-    {
-    	LOG_WEBRTC_INFO( logTag, "failed to map stream to channel");
+    else {
+    	LOG_WEBRTC_INFO( logTag, "sendDtmf() failed to map stream to channel");
     }
 
 	return -1;
@@ -891,26 +792,21 @@ bool WebrtcAudioProvider::mute( int streamId, bool mute )
     int channel = getChannelForStreamId( streamId );
     bool returnVal = false;
 
-    if ( channel >= 0 )
-    {
-		if (voeVolumeControl->SetInputMute(channel, mute) != -1)
-		{
+    if ( channel >= 0 ) {
+		if (voeVolumeControl->SetInputMute(channel, mute) != -1) {
 			returnVal= true;
 		}
-		else
-		{
-			LOG_WEBRTC_INFO( logTag, "VoE retuned failure from SetInputMute");
+		else {
+			LOG_WEBRTC_INFO( logTag, "mute returned failure from SetInputMute");
 		}
     }
-    else
-    {
+    else {
     	LOG_WEBRTC_INFO( logTag, "failed to map stream to channel");
     }
     return returnVal;
 }
 
-bool WebrtcAudioProvider::isMuted( int streamId )
-{
+bool WebrtcAudioProvider::isMuted( int streamId ) {
 	base::AutoLock lock(m_lock);
 	bool mute=false;
 
@@ -918,109 +814,87 @@ bool WebrtcAudioProvider::isMuted( int streamId )
 	return mute;
 }
 
-bool WebrtcAudioProvider::setDefaultVolume( int volume )
-{
+bool WebrtcAudioProvider::setDefaultVolume( int volume ) {
 	base::AutoLock lock(m_lock);
 	defaultVolume = volume;
     return true;
 }
 
-int WebrtcAudioProvider::getDefaultVolume()
-{
+int WebrtcAudioProvider::getDefaultVolume() {
 	base::AutoLock lock(m_lock);
     return defaultVolume;
 }
 
-bool WebrtcAudioProvider::setRingerVolume( int volume )
-{
+bool WebrtcAudioProvider::setRingerVolume( int volume ) {
 	base::AutoLock lock(m_lock);
 	LOG_WEBRTC_INFO( logTag, "setRingerVolume: volume=%d", volume );
-	if (voeVolumeControl->SetChannelOutputVolumeScaling(localRingChannel, volume * 0.01f) != -1)
-	{
+	if (voeVolumeControl->SetChannelOutputVolumeScaling(localRingChannel, volume * 0.01f) != -1) {
 		ringerVolume = volume;
-		if(ringGen != NULL)
-		{
+		if(ringGen != NULL) {
 			ringGen->SetScaleFactor(ringerVolume);
 		}
 		return true;
 	}
-	else
-	{
-		LOG_WEBRTC_INFO( logTag, "VoE retuned failure from SetChannelOutputVolumeScaling");
+	else {
+		LOG_WEBRTC_INFO( logTag, "setRingerVolume() returned failure from SetChannelOutputVolumeScaling");
 		return false;
 	}
 }
 
-int WebrtcAudioProvider::getRingerVolume()
-{
+int WebrtcAudioProvider::getRingerVolume() {
 	base::AutoLock lock(m_lock);
     return ringerVolume;
 }
 
-bool WebrtcAudioProvider::setVolume( int streamId, int volume )
-{
-	//Lock lock(&mutex);
+bool WebrtcAudioProvider::setVolume( int streamId, int volume ) {
 	LOG_WEBRTC_INFO( logTag, "setVolume: streamId=%d, volume=%d", streamId, volume );
 	int channel = getChannelForStreamId( streamId );
 	bool returnVal = false;
 
-	if ( channel >= 0 )
-	{
+	if ( channel >= 0 ) {
 		// Input is scaled 0-100.  voe scale is 0.0f - 1.0f.  (Larger values are allowable but liable to distortion)
-		if (voeVolumeControl->SetChannelOutputVolumeScaling(channel, volume * 0.01f) != -1)
-		{
+		if (voeVolumeControl->SetChannelOutputVolumeScaling(channel, volume * 0.01f) != -1) {
 			returnVal = true;
 		}
-		else
-		{
-			LOG_WEBRTC_INFO( logTag, "VoE retuned failure from SetChannelOutputVolumeScaling");
+		else {
+			LOG_WEBRTC_INFO( logTag, "setVolume() retuned failure from SetChannelOutputVolumeScaling");
 		}
 	}
-	else
-	{
+	else {
 		LOG_WEBRTC_INFO( logTag, "failed to map stream to channel");
 	}
 	return returnVal;
 }
 
-int  WebrtcAudioProvider::getVolume( int streamId )
-{
+int  WebrtcAudioProvider::getVolume( int streamId ) {
 	base::AutoLock lock(m_lock);
 	float voeVolume = 0;
 
-	if(voeVolumeControl->GetChannelOutputVolumeScaling(getChannelForStreamId(streamId), voeVolume) != -1)
-	{
+	if(voeVolumeControl->GetChannelOutputVolumeScaling(getChannelForStreamId(streamId), voeVolume) != -1) {
 		// Output is scaled 0-100.  voe scale is 0.0f - 1.0f.
 		float volume = voeVolume * 100.0f; // Scale to 0-100 for presentation.
 		return (int)(volume + 0.5f);		// And round neatly.
 	}
-	else
-	{
-		LOG_WEBRTC_INFO( logTag, "VoE retuned failure from GetChannelOutputVolumeScaling");
+	else {
+		LOG_WEBRTC_INFO( logTag, "getVolume retuned failure from GetChannelOutputVolumeScaling");
 		return -1;
 	}
 }
 
 // voeVoiceEngineObserver
-void WebrtcAudioProvider::Print(const webrtc::TraceLevel level, const char* message, const int length)
-{
-		if (strstr(message, "eventNumber=") != NULL || strstr(message, "DTMF event ") != NULL)
-			return;
-		//if ( length > 0 ) LOG_WEBRTC_INFO( logTag, "voe %s", message );
+void WebrtcAudioProvider::Print(const webrtc::TraceLevel level, const char* message, const int length) {
+	if (strstr(message, "eventNumber=") != NULL || strstr(message, "DTMF event ") != NULL)
+		return;
 }
 
-void WebrtcAudioProvider::CallbackOnError(const int errCode, const int channel)
-{
-	LOG_WEBRTC_ERROR( logTag, "voe ERROR %d on channel %d", errCode, channel );
+void WebrtcAudioProvider::CallbackOnError(const int errCode, const int channel) {
+	LOG_WEBRTC_ERROR( logTag, "CallbackOnError() ERROR %d on channel %d", errCode, channel );
 }
 
-void WebrtcAudioProvider::OnPeriodicDeadOrAlive(int channel, bool isAlive)
-{
+void WebrtcAudioProvider::OnPeriodicDeadOrAlive(int channel, bool isAlive) {
 	WebrtcAudioStreamPtr stream = getStreamByChannel(channel);
-	if(stream != NULL && (stream->isRxStarted || stream->isTxStarted))
-	{
-		if(stream->isAlive != isAlive)
-		{
+	if(stream != NULL && (stream->isRxStarted || stream->isTxStarted)) {
+		if(stream->isAlive != isAlive) {
 			LOG_WEBRTC_INFO( logTag, "voe channel %d is %s", channel, (isAlive ? "alive" : "dead") );
 			stream->isAlive = isAlive;
 			// TODO should use postEvent and rely on Engine to drive dispatch.
@@ -1038,59 +912,44 @@ void WebrtcAudioProvider::OnPeriodicDeadOrAlive(int channel, bool isAlive)
 	}
 }
 #ifdef WIN32 
-bool IsUserAdmin()
-{	
+bool IsUserAdmin() {
 	BOOL bAdm = TRUE;
 	SID_IDENTIFIER_AUTHORITY NtAuthority = SECURITY_NT_AUTHORITY;
 	PSID AdministratorsGroup; 
 	bAdm = AllocateAndInitializeSid(
-		&NtAuthority,
-		2,
-		SECURITY_BUILTIN_DOMAIN_RID,
-		DOMAIN_ALIAS_RID_ADMINS,
-		0, 0, 0, 0, 0, 0,
-		&AdministratorsGroup); 
-	if(bAdm) 
-	{
-		if (!CheckTokenMembership( NULL, AdministratorsGroup, &bAdm)) 
-		{
+									&NtAuthority,
+									2,
+									SECURITY_BUILTIN_DOMAIN_RID,
+									DOMAIN_ALIAS_RID_ADMINS,
+									0, 0, 0, 0, 0, 0,
+									&AdministratorsGroup);
+	if(bAdm)  {
+		if (!CheckTokenMembership( NULL, AdministratorsGroup, &bAdm)) {
 			bAdm = FALSE;
 		} 
 		//Free the memory for PSID structure;
 		FreeSid(AdministratorsGroup); 
 	}
 	return (bAdm == TRUE);
-	
 }
 
 bool IsVistaOrNewer()
 {
-
     OSVERSIONINFOEX osVersion;
-	// Initialize the OSVERSIONINFOEX structure.
-
 	ZeroMemory(&osVersion, sizeof(OSVERSIONINFOEX));
-
     osVersion.dwOSVersionInfoSize   = sizeof(osVersion);
 
     if (GetVersionEx((LPOSVERSIONINFO)&osVersion)) {
 
         // Determine if this is Windows Vista or newer
-
-        // Note the >= check
-
         if (osVersion.dwMajorVersion >= 6) {
-
             // Vista
             return TRUE;
-
         }
-
     } 
 
 	//Lets proceed with XP as OS.
     return FALSE;
-
 }
 #endif
 } // namespace CSF
