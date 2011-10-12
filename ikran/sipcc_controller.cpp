@@ -185,6 +185,7 @@ void SipccController::UnRegister() {
             ccm_ptr_->disconnect();
             ccm_ptr_->destroy();
             ccm_ptr_ = NULL_PTR(CallControlManager);
+            _instance = 0;
 	}
 	return;
 }

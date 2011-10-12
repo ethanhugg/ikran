@@ -71,8 +71,7 @@ namespace CSF
 
     class WebrtcAudioProvider : public AudioControl, AudioTermination, webrtc::VoiceEngineObserver,
             webrtc::VoEConnectionObserver
-            ,webrtc::TraceCallback
-            {
+            ,webrtc::TraceCallback {
     friend class WebrtcVideoProvider;
 
     public:
