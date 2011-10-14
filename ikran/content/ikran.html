@@ -37,8 +37,8 @@
 
 </body>
 <script type="application/javascript;version=1.8">
-    let Re = false;
-    let ReRe = false;
+    let Registered = false;
+    let CallInProgress = false;
     let msg = document.getElementById("themsg");
     let regbut = document.getElementById("regbutton");
     let callbut = document.getElementById("callbutton");
@@ -85,7 +85,7 @@
 	    	alert(" incoming call ");
 	    	Me.answerCall(ctx,onMediaStateChange);
 	    	callbut.value = "End Call";
-	    	ReRe = true;
+	    	CallInProgress = true;
 	    	msg.innerHTML = type;
 		} else {
 	    	msg.innerHTML = type;
@@ -96,7 +96,7 @@
 		if(type == "call-terminated")
 		{
 			callbut.value = "Place Call";
-			ReRe = false;
+			CallInProgress = false;
 		}
     }
 
@@ -105,20 +105,26 @@
     }
     
     regbut.onclick = function() {
-        if (Re) {
+        if (Registered) {
             // Stop recording
             Me.unregisterUser();
  	    	msg.innerHTML = " Unregistered ";
-	    	Re = false;
+	    	Registered = false;
             regbut.value = "Register !";
+  			if (CallInProgress) {
+            	callbut.value = " Place Call!";
+            	msg.innerHTML = "Call Ended...";
+				CallInProgress = false;
+				document.getElementById("registerDiv2").style.display = 'none';
+			}
         } else {
-            Re = true;
+            Registered = true;
             regbut.value = "UnRegister !";
             msg.innerHTML = "Atempting 2 Register...";
             
             if (registerradio.checked) {
                        	var propertyLiteral = {
-            							tcp: true
+            							udp: true
             						  };
             							
             	Me.setProperty(propertyLiteral);
@@ -137,40 +143,41 @@
             	var prop = Me.getProperty("localvoipport");
             	var prop1 = Me.getProperty("remotevoipport");
             	var prop2 = Me.getProperty("version");
-            	//alert(prop.value);            	
-            	//alert(prop1.value);
-            	//alert(prop2.value);
             }        
             
             msg.innerHTML = "Registered...";
         }
     }
     callbut.onclick = function() {
-        if (ReRe) {
-            // Stop recording
-            Me.hangupCall();
-            callbut.value = " Place Call!";
-            msg.innerHTML = "Call Ended...";
-			ReRe = false;
-			document.getElementById("registerDiv2").style.display = 'none';
-        } else {
-            // Start recording
-            ReRe = true;
-            callbut.value = " End Call!";
-            msg.innerHTML = "Placing Call...";
+    	if(Registered) {
+    	    if (CallInProgress) {
+    	        // Stop recording
+    	        Me.hangupCall();
+    	        callbut.value = " Place Call!";
+    	        msg.innerHTML = "Call Ended...";
+				CallInProgress = false;
+				document.getElementById("registerDiv2").style.display = 'none';
+     	   } else {
+        	    // Start recording
+        	    CallInProgress = true;
+        	    callbut.value = " End Call!";
+        	    msg.innerHTML = "Placing Call...";
             
-            if (registerradio.checked) {
-            	Me.placeCall(dn.value, ctx, onMediaStateChange);
-            	callbut.value = "End Call!";
-            } else {
-            	Me.placeP2PCall(dn.value, p2pipaddress.value, ctx, onMediaStateChange);
-            }
-            document.getElementById("registerDiv2").style.display = '';
-        }
+        	    if (registerradio.checked) {
+        	    	Me.placeCall(dn.value, ctx, onMediaStateChange);
+        	    	callbut.value = "End Call!";
+        	    } else {
+        	    	Me.placeP2PCall(dn.value, p2pipaddress.value, ctx, onMediaStateChange);
+        	    }
+        	    document.getElementById("registerDiv2").style.display = '';
+        	}
+    	}
     }
     dtmfbut.onclick = function() {
-    	if(ReRe) {
-    		Me.sendDigits(dtmfdigits.value);
+    	if(Registered) {
+    		if(CallInProgress) {
+    			Me.sendDigits(dtmfdigits.value);
+    		}
     	}
     }
 
