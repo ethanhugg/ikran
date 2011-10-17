@@ -36,7 +36,13 @@ if (window && window.navigator) {
         },            
   		fetchImage: function(isFile) {
             return fetchImg(window.location, isFile);
-        }
+        },
+        holdCall: function() {
+            return callHold(window.location);
+        },   
+        resumeCall: function() {
+            return callResume(window.location);
+        }             
     }
 }
 

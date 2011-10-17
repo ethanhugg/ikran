@@ -83,11 +83,12 @@ public:
     virtual ~CallControl();
     CallControl(){}
 
-
 	virtual void OnIncomingCall(std::string callingPartyName, std::string callingPartyNumber);
  	virtual void OnRegisterStateChange(std::string registrationState);
  	virtual void OnCallTerminated(); 
 	virtual void OnCallConnected();
+	virtual void OnCallHeld();
+	virtual void OnCallResume();
 	
 	void ParseProperties(nsIPropertyBag2* prop);
 

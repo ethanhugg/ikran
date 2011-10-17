@@ -174,6 +174,20 @@ void CallControl::OnCallConnected()
     ));
 } 
 
+void CallControl::OnCallHeld()
+{
+	 NS_DispatchToMainThread(new MediaCallback(
+        mediaObserver, "call-held", ""
+    ));
+}
+
+void CallControl::OnCallResume()
+{
+	 NS_DispatchToMainThread(new MediaCallback(
+        mediaObserver, "call-resumed", ""
+    ));
+}
+
 /*
  * Start ikran session
  * Performs SIP registration 
@@ -207,6 +221,7 @@ CallControl::RegisterUser(
 	int res = SipccController::GetInstance()->Register(m_user_device, m_user, m_credentials, m_proxy_address);
 	if(res == 0) {
 		m_registered = PR_TRUE;	
+		m_session = PR_FALSE;
     	return NS_OK;
 	}
 	else
@@ -241,6 +256,7 @@ CallControl::StartP2PMode(
 	int res = SipccController::GetInstance()->StartP2PMode(m_user);
 	if(res == 0) {
 		m_registered = PR_TRUE;
+		m_session = PR_FALSE;
     	return NS_OK;
 	}
 	else
@@ -263,7 +279,8 @@ CallControl::UnregisterUser()
     
 	SipccController::GetInstance()->RemoveSipccControllerObserver();
 	SipccController::GetInstance()->UnRegister();
-	m_registered = PR_FALSE;	
+	m_registered = PR_FALSE;
+	m_session = PR_FALSE;
     return NS_OK;
 }
 
@@ -431,5 +448,40 @@ CallControl::SendDigits(const char* digits)
 {
 	std::string strDigits = const_cast<char*>(digits);
 	SipccController::GetInstance()->SendDigits(strDigits);
+    return NS_OK;
+}
+
+/*
+ * Hold Call
+ */
+NS_IMETHODIMP
+CallControl::HoldCall()
+{
+	if(!m_session) {
+		Logger::Instance()->logIt("HoldCall: no call is in progress");
+        NS_DispatchToMainThread(new MediaCallback(
+            mediaObserver, "error", " no call in progress"
+        ));
+        return NS_ERROR_FAILURE;
+	}
+	SipccController::GetInstance()->HoldCall();
+    return NS_OK;
+}
+
+
+/*
+ * Resume Call
+ */
+NS_IMETHODIMP
+CallControl::ResumeCall()
+{
+	if(!m_session) {
+		Logger::Instance()->logIt("ResumeCall: no call is in progress");
+        NS_DispatchToMainThread(new MediaCallback(
+            mediaObserver, "error", " no call in progress"
+        ));
+        return NS_ERROR_FAILURE;
+	}
+	SipccController::GetInstance()->ResumeCall();
     return NS_OK;
 }
