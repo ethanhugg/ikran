@@ -99,7 +99,6 @@ if sys.platform =='win32':
     'atls.lib',  
     'avrt.lib', 
     'DelayImp.lib', 
-    'ddraw.lib',
     'dmoguids.lib',
     'msdmo.lib', 
     'WinMM.lib',

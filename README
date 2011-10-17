@@ -67,6 +67,7 @@ Windows:
       +  webtrc version > 595 has been tested. To download a specific version use 
 		gclient sync --revision 595 
       +  Set WEBRTCPATH to point to it : export WEBRTCPATH=/Users/XTM/HTML5/webrtc/trunk
+  - On Windows copy libxml2_MTd.lib from https://public.me.com/ethanhugg to /third_party/lib
   - Instead of using scons directly, use runSconsBuild.py like this
     'python runSconsBuild.py debug' or
     'python runSconsBuild.py clean'
