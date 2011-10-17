@@ -43,10 +43,8 @@ elif sys.platform =='linux2':
 buildResult=env.Library(componentName + suffixName, src_files )
 if sys.platform =='win32':  
   env.Install("./out/lib/", componentName + suffixName + ".lib")
-  env.Install("./out/lib/", 'third_party\lib\ddraw.lib')
 else:
   env.Install("./out/lib/", "lib" + componentName + suffixName + ".a")
-      
       
 # function to help write the linux_export directory
 def build_export(target, source, env):
