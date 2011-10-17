@@ -93,6 +93,7 @@
 	    	callbut.value = "End Call";
 	    	CallInProgress = true;
 	    	msg.innerHTML = type;
+	    	document.getElementById("registerDiv2").style.display = '';
 		} else {
 	    	msg.innerHTML = type;
 	    	if(type == "registration-failed") {
@@ -103,19 +104,17 @@
     }
     function onMediaStateChange(type, arg) {
 		msg.innerHTML = type;
-		if(type == "call-terminated")
-		{
+		if(type == "call-terminated") {
 			callbut.value = "Place Call";
 			CallInProgress = false;
     		document.getElementById("hold").style.display = '';
-    		document.getElementById("resume").style.display = 'none';			
+    		document.getElementById("resume").style.display = 'none';	
+    		document.getElementById("registerDiv2").style.display = 'none';
 		}
-		if(type == "call-held")
-		{
+		if(type == "call-held") {
 			msg.innerHTML = "Call held";
 		}		
-		if(type == "call-resumed")
-		{
+		if(type == "call-resumed") {
 			msg.innerHTML = "";
 		}		
     }
