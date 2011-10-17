@@ -253,14 +253,20 @@ if noaddon == 'yes':
 else:
   print "Building browser addon"
   
-Export ('build_env')
-Export ('debug')
-Export ('x64')
-Export ('mozsrcpath')
-Export ('webrtcpath')
+chromiumbaseincludepath = 'third_party'
+chromiumbaselibpath = 'third_party'
+#chromiumbaseincludepath = mozsrcpath + '/ipc/chromium/src'
+#chromiumbaselibpath = mozsrcpath + '/ipc/chromium/src'
 
-Export ('suffixName')
-Export ('componentName')
+Export('build_env')
+Export('debug')
+Export('x64')
+Export('mozsrcpath')
+Export('webrtcpath')
+Export('chromiumbaseincludepath')
+Export('chromiumbaselibpath')
+Export('suffixName')
+Export('componentName')
 
 SCRIPT_FILES = [ 
 
