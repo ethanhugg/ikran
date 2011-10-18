@@ -74,6 +74,8 @@ public:
  	virtual void OnRegisterStateChange(string registrationState);
  	virtual void OnCallTerminated(); 
 	virtual void OnCallConnected();   
+	virtual void OnCallHeld();
+	virtual void OnCallResume();
 private:
 	void ManualConfiguration();
 	void LoadConfigurationFromFile();

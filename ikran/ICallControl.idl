@@ -87,4 +87,6 @@ interface ICallControl : nsISupports
 	void setProperty(in nsIPropertyBag2 prop);
 	void getProperty(in string name, out AString value);
 	void sendDigits(in string digits);
+	void holdCall();
+	void resumeCall();
 };

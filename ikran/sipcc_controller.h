@@ -78,6 +78,8 @@ public:
 	virtual void OnRegisterStateChange(std::string registrationState) = 0;
  	virtual void OnCallTerminated() = 0;   // do we specify if terminated is local or remote
 	virtual void OnCallConnected() = 0;
+	virtual void OnCallHeld() = 0;
+	virtual void OnCallResume() = 0;
 	
 };
 
@@ -103,6 +105,8 @@ public:
 	void PlaceP2PCall(std::string dial_number,  std::string sipDomain);
 
 	void SendDigits(std::string digits);
+	void HoldCall();
+	void ResumeCall();
 
 	void SetExternalRenderer(void* renderer) {
 		ext_renderer = renderer;
