@@ -127,6 +127,20 @@ typedef struct {
                                REQ_SUPP_PARAM_SDP_ANAT      ","   \
                                REQ_SUPP_PARAM_NOREFERSUB
 
+/*
+ * The REQ_SUPP_PARAM_EXTENED_REFER is only used in Cisco CCM environment.
+ * The tag is no longer in IANA.
+ */
+#define SIP_CISCO_SUPPORTED_TAGS REQ_SUPP_PARAM_EXTENED_REFER         "," \
+                                 REQ_SUPP_PARAM_CISCO_CALLINFO        "," \
+                                 REQ_SUPP_PARAM_CISCO_ESCAPECODES     "," \
+                                 REQ_SUPP_PARAM_CISCO_MONREC
+
+#define SIP_CISCO_SUPPORTED_REG_TAGS  \
+     SIP_RFC_SUPPORTED_TAGS       "," \
+     SIP_CISCO_SUPPORTED_TAGS
+
+
 boolean sipSPISendInvite(ccsipCCB_t *ccb,
                          sipInviteType_t inviteType,
                          boolean initInvite);
