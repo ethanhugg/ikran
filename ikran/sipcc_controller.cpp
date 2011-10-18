@@ -317,7 +317,7 @@ void SipccController::SendDigits(std::string digits)
 				Logger::Instance()->logIt("Valid DTMF digit");
 
 				cc_digit_t dtmfDigit = (cc_digit_t) transformArray[asciiChar];
-				CC_CallPtr endableCall = GetFirstCallWithCapability(ccm_ptr_, CC_CallCapabilityEnum::canEndCall);
+				CC_CallPtr endableCall = GetFirstCallWithCapability(ccm_ptr_, CC_CallCapabilityEnum::canSendDigit);
 				if (endableCall != NULL) {
 					if (!endableCall->sendDigit(dtmfDigit)) {
 					}
@@ -331,6 +331,42 @@ void SipccController::SendDigits(std::string digits)
 	} else {
 		Logger::Instance()->logIt("SendDigits: ccm pointer not created");
 	}
+}
+
+void SipccController::HoldCall() {
+
+	Logger::Instance()->logIt("In HoldCall");
+	if (ccm_ptr_ != NULL) {
+		CC_CallPtr endableCall = GetFirstCallWithCapability(ccm_ptr_, CC_CallCapabilityEnum::canHold);
+		if (endableCall != NULL) {
+			if (!endableCall->hold(CC_HOLD_REASON_NONE)) {
+				Logger::Instance()->logIt("HoldCall failed");
+			}
+		} else {
+			Logger::Instance()->logIt("HoldCall no active call");
+		}
+	} else {
+		Logger::Instance()->logIt("HoldCall: ccm pointer not created");
+	}
+
+}
+
+void SipccController::ResumeCall() {
+
+	Logger::Instance()->logIt("In ResumeCall");
+	if (ccm_ptr_ != NULL) {
+		CC_CallPtr endableCall = GetFirstCallWithCapability(ccm_ptr_, CC_CallCapabilityEnum::canResume);
+		if (endableCall != NULL) {
+			if (!endableCall->resume(CC_SDP_DIRECTION_SENDRECV)) {
+				Logger::Instance()->logIt("ResumeCall failed");
+			}
+		} else {
+			Logger::Instance()->logIt("ResumeCall no active call");
+		}
+	} else {
+		Logger::Instance()->logIt("ResumeCall: ccm pointer not created");
+	}
+
 }
 
 // Device , Line Events notification handlers
@@ -378,9 +414,17 @@ void SipccController::onCallEvent (ccapi_call_event_e callEvent, CC_CallPtr call
 			if(observer_ != NULL)
             	observer_->OnCallConnected();
 		} else if (info->getCallState() == RINGOUT ) {
-			Logger::Instance()->logIt("SipccController::onCallEvent CONNECTED");
+			Logger::Instance()->logIt("SipccController::onCallEvent RINGOUT");
+		// <em>	if(observer_ != NULL)
+            	// <em> observer_->OnCallConnected();
+		} else if (info->getCallState() == HOLD ) {
+			Logger::Instance()->logIt("SipccController::onCallEvent HOLD");
 			if(observer_ != NULL)
-            	observer_->OnCallConnected();
+				observer_->OnCallHeld();
+		} else if (info->getCallState() == RESUME ) {
+			Logger::Instance()->logIt("SipccController::onCallEvent RESUME");
+			if(observer_ != NULL)
+				observer_->OnCallResume();
 		}
     }
 }

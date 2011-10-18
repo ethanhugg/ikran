@@ -98,6 +98,12 @@ void TestMain::OnCallConnected(){
 	_state = STATE_IN_CALL;
 }
 
+void TestMain::OnCallHeld(){
+}
+
+void TestMain::OnCallResume(){
+}
+
 TestMain::TestMain(){
 	_config = new TestConfiguration();
 	_state = STATE_NOT_REGISTERED;
