@@ -345,7 +345,7 @@ validateHostName (char *str, char *dn)
 static const char *
 sipGetSupportedOptionList (ccsipCCB_t *ccb, sipMethod_t sipmethod)
 {
-	return (SIP_RFC_SUPPORTED_TAGS);
+	return (SIP_CISCO_SUPPORTED_REG_TAGS);
 }
 
 /*
