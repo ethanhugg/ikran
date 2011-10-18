@@ -249,9 +249,15 @@ Ikran.prototype = {
     
     sendDigits: function(digits) {
     	this._ikran.sendDigits(digits);
-    }
+    },
 
-	
+    holdCall: function() {
+    	this._ikran.holdCall();
+    },
+
+    resumeCall: function() {
+    	this._ikran.resumeCall();
+    },	
 };
 
 var EXPORTED_SYMBOLS = ["Ikran"];

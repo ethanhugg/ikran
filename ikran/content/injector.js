@@ -160,7 +160,23 @@ var IkranObserver = {
                 if (allowed) ikran.sendDigits(digits);
                 else throw "Permission denied";
             });
-        }, "callSendDigits");                        
+        }, "callSendDigits");   
+        sandbox.importFunction(function(loc) {
+            let ret;
+            ikran._verifyPermission(window, loc, function(allowed) {
+                if (allowed) ret = ikran.holdCall();
+                else throw "Permission denied";
+            });
+            return ret;
+        }, "callHold");
+        sandbox.importFunction(function(loc) {
+            let ret;
+            ikran._verifyPermission(window, loc, function(allowed) {
+                if (allowed) ret = ikran.resumeCall();
+                else throw "Permission denied";
+            });
+            return ret;
+        }, "callResume");                                     
         sandbox.importFunction(function(loc, isFile) {
            let ret;
            ikran._verifyPermission(window, loc, function(allowed) {
