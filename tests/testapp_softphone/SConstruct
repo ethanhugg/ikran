@@ -7,6 +7,14 @@ Import('componentName')
 Import('suffixName')
 Import('webrtcpath')
 Import('mozsrcpath')
+Import('chromiumbaseincludepath')
+Import('chromiumbaselibpath')
+
+if(chromiumbaseincludepath == 'third_party'):
+  chromiumbaseincludepath = '../../third_party/chromium_base'
+
+if(chromiumbaselibpath == 'third_party'):
+  chromiumbaselibpath = '../../third_party/chromium_base'
 
 
 ## Add Tests folders here
@@ -16,8 +24,7 @@ include_dirs = [
   '../../src/sipcc/include',
   '../../src/common',
   '../../out/include/system',
-  '../../third_party/chromium_base',
-  mozsrcpath + '/ipc/chromium/src',
+  chromiumbaseincludepath,
   '../../src/common/browser_logging',
   '../../ikran'
  ]
@@ -77,7 +84,7 @@ if sys.platform =='win32':
     ms_vc_atlmfc_lib_dir,
     ms_dx_sdk_dir,
     '../../third_party/lib',
-    '../../third_party/chromium_base',
+    chromiumbaselibpath,
     '../../src/common/browser_logging',
     webrtcpath + '/Debug/lib'
   ]
@@ -186,7 +193,7 @@ elif sys.platform == 'darwin':
   ]
   libpath += [
     '../..',
-    '../../third_party/chromium_base',
+    chromiumbaselibpath,
     '../../third_party/lib',
     '../../ikran',
     webrtcpath + '/xcodebuild/Debug',
@@ -267,7 +274,7 @@ elif sys.platform == 'darwin':
   ]
 elif sys.platform=='linux2':
   libpath += [
-    '../../third_party/chromium_base',
+    chromiumbaselibpath,
     '../../third_party/lib',
   ]
   if x64 == 'yes':

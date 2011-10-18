@@ -7,6 +7,14 @@ Import('mozsrcpath')
 Import('componentName')
 Import('suffixName')
 Import('webrtcpath')
+Import('chromiumbaseincludepath')
+Import('chromiumbaselibpath')
+
+if(chromiumbaseincludepath == 'third_party'):
+  chromiumbaseincludepath = '../third_party/chromium_base'
+
+if(chromiumbaselibpath == 'third_party'):
+  chromiumbaselibpath = '../third_party/chromium_base'
 
 ## Add Tests folders here
 # Temp using absolute paths
@@ -16,8 +24,7 @@ include_dirs = [
   '../src/sipcc/include',
   '../src/common',
   '../out/include/system',
-  '../third_party/chromium_base',
-  mozsrcpath + '/ipc/chromium/src',
+  chromiumbaseincludepath,
   '../src/common/browser_logging',
   webrtcpath + '/src',
   webrtcpath + '/src/video_engine/main/interface',
@@ -72,7 +79,7 @@ if sys.platform =='win32':
     ms_vc_atlmfc_lib_dir,
     ms_dx_sdk_dir,
     '../third_party/lib',
-    '../third_party/chromium_base',
+    chromiumbaselibpath,
     '../src/common/browser_logging',
     mozobjpath + '/dist/lib',
     mozobjpath + '/dist/bin',
@@ -261,7 +268,7 @@ elif sys.platform=='darwin':
   ]
   libpath += [
     '..',
-    '../third_party/chromium_base',
+    chromiumbaselibpath,
     '../third_party/lib',
     mozobjpath + '/dist/sdk/lib',
     mozobjpath + '/dist/sdk/bin',
@@ -375,7 +382,7 @@ elif sys.platform=='linux2':
     'xpcom-config.h'
   ]
   libpath += [
-    '../third_party/chromium_base',
+    chromiumbaselibpath,
     '../third_party/lib',
     '/usr/include'
   ]

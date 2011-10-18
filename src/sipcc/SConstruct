@@ -5,6 +5,10 @@ Import('build_env')
 Import('debug')
 Import('x64')
 Import('mozsrcpath')
+Import('chromiumbaseincludepath')
+
+if(chromiumbaseincludepath == 'third_party'):
+  chromiumbaseincludepath = '../../third_party/chromium_base'
 
 use_msvc_dll = ARGUMENTS.get('use_msvc_dll', 1)     ##1 = MSVC C RT as a DLL rather than a static lib (libc)
 use_msvc_dll=0
@@ -13,8 +17,7 @@ targetPlatform = ARGUMENTS.get('platform', sys.platform)
 
 include_dirs = [
   '.',
-  '../../third_party/chromium_base',
-  mozsrcpath + '/ipc/chromium/src',
+  chromiumbaseincludepath,
   '../common/browser_logging',
   'cpr/include',
   'core/includes',
