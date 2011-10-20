@@ -170,6 +170,7 @@ private:
     std::string localVoipPort;
     std::string remoteVoipPort;
     std::string transport;
+    cc_sdp_direction_t videoDirection;
     
 	//State Variables for Reg and Session
     bool initDone;    
