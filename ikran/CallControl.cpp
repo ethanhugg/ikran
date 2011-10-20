@@ -424,6 +424,14 @@ CallControl::SetProperty(nsIPropertyBag2 *prop)
     		SipccController::GetInstance()->SetProperty("transport", "tcp");
     }
 
+	bool video;
+	rv = prop->GetPropertyAsBool(NS_LITERAL_STRING("video"), &video);
+	if(NS_SUCCEEDED(rv) && video == false) {
+		SipccController::GetInstance()->SetProperty("video", "false");
+	} else if(NS_SUCCEEDED(rv) && video == true) {
+		SipccController::GetInstance()->SetProperty("video", "true");
+	}
+
     return NS_OK;
 }
 
