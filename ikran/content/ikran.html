@@ -146,7 +146,8 @@
             
             if (registerradio.checked) {
                        	var propertyLiteral = {
-            							udp: true
+            							udp: true,
+            							video: false
             						  };
             							
             	ikranService.setProperty(propertyLiteral);
@@ -186,6 +187,12 @@
         	    CallInProgress = true;
         	    callbut.value = " End Call!";
         	    msg.innerHTML = "Placing Call...";
+        	    
+        	    var propertyLiteral = {
+            							video: true
+            						  };
+            							
+            	ikranService.setProperty(propertyLiteral);  
             
         	    if (registerradio.checked) {
         	    	ikranService.placeCall(dn.value, ctx, onMediaStateChange);
