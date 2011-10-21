@@ -301,13 +301,8 @@ elif sys.platform=='linux2':
     'pthread',
     'z', 
     'idn', 
-    'dl', 
-    'rt',
     'xml2', 
     'asound',
-    'Xext',
-    'X11',
-    'glib-2.0',
     'chromium',
     'libvideo_engine_core.a',
     'libvoice_engine_core.a',
@@ -346,7 +341,12 @@ elif sys.platform=='linux2':
     'libG722.a',
     'libPCM16B.a',
     'libprotobuf_lite.a',
-    'libsystem_wrappers.a'
+    'libsystem_wrappers.a',
+    'glib-2.0',
+    'X11',
+    'Xext',
+    'rt',
+    'dl'
   ]
   env["LINKFLAGS"] += [
     '-z',

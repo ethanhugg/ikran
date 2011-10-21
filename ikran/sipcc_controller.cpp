@@ -72,6 +72,7 @@ SipccController* SipccController::GetInstance()
 SipccController::SipccController() : device_ptr_(NULL),
 									localVoipPort("5060"),
 									remoteVoipPort("5060"),
+									videoDirection(CC_SDP_DIRECTION_SENDRECV),
 									video_window(0),
 									ccm_ptr_(NULL),
 									observer_(NULL) {
@@ -151,7 +152,7 @@ void SipccController::PlaceP2PCall(std::string dial_number,  std::string sipDoma
         device_ptr_ = ccm_ptr_->getActiveDevice();
         outgoing_call_ = device_ptr_->createCall();
         outgoing_call_->setExternalRenderer(0,ext_renderer);
-        if(outgoing_call_->originateP2PCall(CC_SDP_DIRECTION_SENDRECV, dial_number_, sipDomain_)) {
+        if(outgoing_call_->originateP2PCall(videoDirection, dial_number_, sipDomain_)) {
 			Logger::Instance()->logIt("SipccController::PlaceP2PCall: Call Setup Succeeded ");
         	return ;
         } else {
@@ -206,7 +207,7 @@ void SipccController::PlaceCall(std::string dial_number) {
 			Logger::Instance()->logIt(" ext_renderer is NULL in PlaceCall");
 		}
 		outgoing_call_->setExternalRenderer(0,ext_renderer);
-        if(outgoing_call_->originateCall(CC_SDP_DIRECTION_SENDRECV, dial_number_)) {
+        if(outgoing_call_->originateCall(videoDirection, dial_number_)) {
 			Logger::Instance()->logIt("SipccController::PlaceCall: Call Setup Succeeded ");
         	return ;
         } else {
@@ -237,7 +238,7 @@ Logger::Instance()->logIt(" In Asnwer call ");
 		CC_CallPtr answerableCall = GetFirstCallWithCapability(ccm_ptr_, CC_CallCapabilityEnum::canAnswerCall);
 	
 		if (answerableCall != NULL) {		
-			if (!answerableCall->answerCall(CC_SDP_DIRECTION_SENDRECV)) {
+			if (!answerableCall->answerCall(videoDirection)) {
 			}
 		} else {
         }
@@ -276,6 +277,11 @@ void SipccController::SetProperty(std::string key, std::string value)
 			ccm_ptr_->setProperty(ConfigPropertyKeysEnum::eTransport ,value);
 		else
 			transport = value;
+	}  else if (key == "video") {
+		if (value == "true")
+			videoDirection = CC_SDP_DIRECTION_SENDRECV;
+		else
+			videoDirection = CC_SDP_DIRECTION_INACTIVE;
 	}
 }
 

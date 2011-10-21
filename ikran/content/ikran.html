@@ -25,11 +25,11 @@
 	</div>
 	<p><input type="button" id="regbutton" value="Register\Start Session!"/></p>
 	<p>DN to Call: <input type="text" id="dn" /></p>
-	<div id="p2pDiv2">
+	<div id="p2pControls">
 	<p>IP Address to Call: <input type="text" id="p2pipaddress" /></p>
 	</div>
 	<p><input type="button" id="callbutton" value="Place Call !"/></p>
-	<div id="registerDiv2">
+	<div id="registerControls">
 	<p>DTMF Digits: <input type="text" id="dtmfDigits" /></p>
 	<p><input type="button" id="sendDigits" value="Send DTMF Digits"/></p>
 	<p><input type="button" id="hold" value="Hold Call"/></p>
@@ -64,25 +64,25 @@
     
 	function pageLoad() {
 		let registerradio = document.getElementById("regradio").checked = "yes";
-		document.getElementById("registerDiv").style.display = '';
-		document.getElementById("registerDiv2").style.display = 'none';
-		document.getElementById("p2pDiv").style.display = 'none';
-		document.getElementById("p2pDiv2").style.display = 'none';
-		document.getElementById("resume").style.display = 'none';
+		showElement("registerDiv", true);
+		showElement("registerControls", false);
+		showElement("p2pDiv", false);
+		showElement("p2pControls", false);
+		showElement("resume", false);
     	ctx.drawImage(img, 192, 112);
     	serverRadioClick();
     }
     function serverRadioClick() {
-		document.getElementById("registerDiv").style.display = '';
-		document.getElementById("registerDiv2").style.display = 'none';
-		document.getElementById("p2pDiv").style.display = 'none';
-		document.getElementById("p2pDiv2").style.display = 'none';
+    	showElement("registerDiv", true);
+    	showElement("registerControls", false);
+    	showElement("p2pDiv", false);
+    	showElement("p2pControls", false);
     }
     function p2pRadioClick() {
-		document.getElementById("registerDiv").style.display = 'none';
-		document.getElementById("registerDiv2").style.display = 'none';
-		document.getElementById("p2pDiv").style.display = '';
-		document.getElementById("p2pDiv2").style.display = '';
+    	showElement("registerDiv", false);
+    	showElement("registerControls", false);
+    	showElement("p2pDiv", true);
+    	showElement("p2pControls", true);
 		p2plocalvoipport.value = '5060';
 		p2premotevoipport.value = '5060';
     }    
@@ -93,6 +93,7 @@
 	    	callbut.value = "End Call";
 	    	CallInProgress = true;
 	    	msg.innerHTML = type;
+	    	showElement("registerControls", true);
 		} else {
 	    	msg.innerHTML = type;
 	    	if(type == "registration-failed") {
@@ -103,19 +104,17 @@
     }
     function onMediaStateChange(type, arg) {
 		msg.innerHTML = type;
-		if(type == "call-terminated")
-		{
+		if(type == "call-terminated") {
 			callbut.value = "Place Call";
 			CallInProgress = false;
-    		document.getElementById("hold").style.display = '';
-    		document.getElementById("resume").style.display = 'none';			
+			showElement("hold", true);
+			showElement("resume", false);
+			showElement("registerControls", false);
 		}
-		if(type == "call-held")
-		{
+		if(type == "call-held") {
 			msg.innerHTML = "Call held";
 		}		
-		if(type == "call-resumed")
-		{
+		if(type == "call-resumed") {
 			msg.innerHTML = "";
 		}		
     }
@@ -137,7 +136,7 @@
             		callbut.value = " Place Call!";
             		msg.innerHTML = "Call Ended...";
 					CallInProgress = false;
-					document.getElementById("registerDiv2").style.display = 'none';
+					showElement("registerControls", false);
 				}
 			}
         } else {
@@ -147,7 +146,8 @@
             
             if (registerradio.checked) {
                        	var propertyLiteral = {
-            							udp: true
+            							udp: true,
+            							video: false
             						  };
             							
             	ikranService.setProperty(propertyLiteral);
@@ -179,7 +179,7 @@
     	        	callbut.value = " Place Call!";
     	        	msg.innerHTML = "Call Ended...";
 					CallInProgress = false;
-					document.getElementById("registerDiv2").style.display = 'none';
+					showElement("registerControls", false);
 			  	} else if (CallHeld) {	
   					alert("Resume Call first");
   				}	
@@ -187,6 +187,12 @@
         	    CallInProgress = true;
         	    callbut.value = " End Call!";
         	    msg.innerHTML = "Placing Call...";
+        	    
+        	    var propertyLiteral = {
+            							video: true
+            						  };
+            							
+            	ikranService.setProperty(propertyLiteral);  
             
         	    if (registerradio.checked) {
         	    	ikranService.placeCall(dn.value, ctx, onMediaStateChange);
@@ -194,7 +200,7 @@
         	    } else {
         	    	ikranService.placeP2PCall(dn.value, p2pipaddress.value, ctx, onMediaStateChange);
         	    }
-        	    document.getElementById("registerDiv2").style.display = '';
+        	    showElement("registerControls", true);
         	}
     	}
     }
@@ -210,8 +216,8 @@
     		if(CallInProgress) {
     			ikranService.holdCall();
     			CallHeld = true;
-    			document.getElementById("hold").style.display = 'none';
-    			document.getElementById("resume").style.display = '';
+    			showElement("hold", false);
+    			showElement("resume", true);
     		}
     	}
     }
@@ -220,10 +226,16 @@
     		if(CallInProgress) {
     			ikranService.resumeCall();
     			CallHeld = false;
-    			document.getElementById("hold").style.display = '';
-    			document.getElementById("resume").style.display = 'none';
+    			showElement("hold", true);
+    			showElement("resume", false);
     		}
     	}
+    }
+    function showElement(element, show) {
+    	if (show == true)
+    		document.getElementById(element).style.display = '';
+    	else
+    		document.getElementById(element).style.display = 'none';
     }
 </script>
 </html>
