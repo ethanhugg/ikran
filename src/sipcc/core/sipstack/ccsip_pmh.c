@@ -3919,7 +3919,7 @@ sippmh_generate_authorization (sip_author_t *sip_author)
             strncat(buffer, buffer3, MAX_SIP_HEADER_LENGTH - strlen(buffer) - 1);
             cpr_free(buffer3);
         }
-        if (strlen(sip_author->qop) > 0) {
+        if (strlen(sip_author->qop) > 1) {
             char *buffer4;
 
             buffer4 = (char *) cpr_malloc(MAX_URI_LENGTH);
@@ -4086,7 +4086,7 @@ sippmh_parse_authenticate (const char *input_char)
     /* loop through string until all fields have been handled */
 
     while (input) {
-        char **ptr;
+        char **ptr = NULL;
 
         if (strncasecmp(input, AUTHENTICATION_DOMAIN, 6) == 0) {
             input += 6;
