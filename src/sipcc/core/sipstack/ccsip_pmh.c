@@ -3919,7 +3919,7 @@ sippmh_generate_authorization (sip_author_t *sip_author)
             strncat(buffer, buffer3, MAX_SIP_HEADER_LENGTH - strlen(buffer) - 1);
             cpr_free(buffer3);
         }
-        if (strlen(sip_author->qop) > 1) {
+        if (sip_author->qop) {
             char *buffer4;
 
             buffer4 = (char *) cpr_malloc(MAX_URI_LENGTH);
@@ -3994,7 +3994,6 @@ sippmh_parse_authenticate (const char *input_char)
     boolean good_params;
     boolean qop_found = FALSE;
     char *trash;
-    char qopValue = '\0';
 
 /*
  * Basic:
@@ -4031,7 +4030,6 @@ sippmh_parse_authenticate (const char *input_char)
         cpr_free(input);
         return NULL;
     }
-    sip_authen->qop = &qopValue;
 
     sip_authen->str_start = input;
     SKIP_WHITE_SPACE(input);
@@ -4108,7 +4106,7 @@ sippmh_parse_authenticate (const char *input_char)
             ptr = &(sip_authen->nonce);
         } else if (strncasecmp(input, "qop", 3) == 0) {
             input += 3;
-            strcpy(sip_authen->qop, *ptr);
+            ptr = &(sip_authen->qop);
             qop_found = TRUE;
         } else {
             /*
