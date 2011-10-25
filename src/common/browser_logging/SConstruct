@@ -6,15 +6,12 @@ Import('build_env')
 Import('debug')
 Import('mozsrcpath')
 Import('x64')
-Import('chromiumbaseincludepath')
-
-if(chromiumbaseincludepath == 'third_party'):
-  chromiumbaseincludepath = '../../../third_party/chromium_base'
 
 include_dirs = [
   '.',
   'include',
-  chromiumbaseincludepath
+  mozsrcpath + '/nsprpub/pr/include',
+  mozsrcpath + '/obj-ff-dbg/dist/include'
 ]
 
 src_files = Glob('*.cpp')
