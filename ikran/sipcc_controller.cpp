@@ -363,7 +363,7 @@ void SipccController::ResumeCall() {
 	if (ccm_ptr_ != NULL) {
 		CC_CallPtr endableCall = GetFirstCallWithCapability(ccm_ptr_, CC_CallCapabilityEnum::canResume);
 		if (endableCall != NULL) {
-			if (!endableCall->resume(CC_SDP_DIRECTION_SENDRECV)) {
+			if (!endableCall->resume(videoDirection)) {
 				Logger::Instance()->logIt("ResumeCall failed");
 			}
 		} else {
