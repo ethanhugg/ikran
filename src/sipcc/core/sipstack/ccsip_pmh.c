@@ -4084,7 +4084,7 @@ sippmh_parse_authenticate (const char *input_char)
     /* loop through string until all fields have been handled */
 
     while (input) {
-        char **ptr;
+        char **ptr = NULL;
 
         if (strncasecmp(input, AUTHENTICATION_DOMAIN, 6) == 0) {
             input += 6;
@@ -4171,6 +4171,7 @@ sippmh_parse_authenticate (const char *input_char)
                 }
             }
         }
+
         input = strchr(input, COMMA);
         if (!input) {
             good_params = sippmh_validate_authenticate(sip_authen);
@@ -4187,6 +4188,7 @@ sippmh_parse_authenticate (const char *input_char)
         *input++ = 0;
         SKIP_WHITE_SPACE(input);
     }
+    
     sippmh_free_authen(sip_authen);
     return NULL;
 }
