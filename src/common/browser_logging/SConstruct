@@ -11,7 +11,6 @@ include_dirs = [
   '.',
   'include',
   mozsrcpath + '/nsprpub/pr/include',
-  mozsrcpath + '/obj-ff-dbg/dist/include'
 ]
 
 if sys.platform == 'win32':
@@ -31,8 +30,8 @@ elif sys.platform == 'linux2':
     include_dirs += [
       mozsrcpath + '/obj-i686-pc-linux-gnu/dist/include'
     ]
-src_files = Glob('*.cpp')
 
+src_files = Glob('*.cpp')
 
 env = build_env.Clone(CPPPATH=include_dirs)
 

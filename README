@@ -104,7 +104,9 @@ NOTES:
 6. Using the Test Application
 -----------------------------
 Use the command line test application to exercise the SIP stack.
-The test application can be used against Cisco Call Manager, Asterisk and kamailio.
+The test application can be used against Cisco Call Manager, Asterisk and Kamailio (OpenSER).
+The test application requires the nspr4 library in your dynamic library path.  It is 
+  easiest just to copy libnspr4.dylib/.so/.dll into the testapp directory from mozilla-central.
 
  Run the Test Application from the command line with no parameters
    ./tests/testapp_softphone/TestApp_SoftPhone
