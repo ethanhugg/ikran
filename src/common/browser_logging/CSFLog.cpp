@@ -42,62 +42,50 @@
 #include <string.h>
 #include <stdarg.h>
 
-#include "base/logging.h"
-#include "base/file_path.h"
-#include "base/path_service.h"
-#include "base/at_exit.h"
-#include "base/command_line.h"
+#include "prlog.h"
 
+
+static PRLogModuleInfo *gLogModuleInfo = NULL;
 
 bool InitChromeLogging(int argc, char** argv)
 {
-    // Manages the destruction of singletons.
-    base::AtExitManager exit_manager;
-
-#ifdef NDEBUG
-    logging::LoggingDestination destination = logging::LOG_ONLY_TO_FILE;
-#else
-    logging::LoggingDestination destination = logging::LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG;
-#endif
-
-    CommandLine::Init(argc, argv);
-
-	FilePath log_filename;
-	PathService::Get(base::DIR_EXE, &log_filename);
-	log_filename = log_filename.AppendASCII("sip.log");
-	logging::InitLogging(
-				log_filename.value().c_str(),
-				destination,
-				logging::LOCK_LOG_FILE,
-				logging::DELETE_OLD_LOG_FILE,
-				logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
-
-	return true;
+  return true;
 }
 
 
 void CSFLogV(CSFLogLevel priority, const char* sourceFile, int sourceLine, const char* tag , const char* format, va_list args)
 {
-
-	char buffer[1024];
-
 #ifdef STDOUT_LOGGING
-		printf("%s\n:",tag);
-		vprintf(format, args);
+  printf("%s\n:",tag);
+  vprintf(format, args);
 #else
-		vsnprintf(buffer, 1024, format, args);
-		if (priority == CSF_LOG_CRITICAL)
-			LOG(ERROR) << tag << " " << buffer;
-		if (priority == CSF_LOG_ERROR)
-			LOG(ERROR) << tag << " " << buffer;
-		if (priority == CSF_LOG_WARNING)
-			LOG(WARNING) << tag << " " << buffer;
-		if (priority == CSF_LOG_INFO)
-			LOG(INFO) << tag << " " << buffer;
-		if (priority == CSF_LOG_NOTICE)
-			LOG(ERROR) << tag << " " << buffer;
-		if (priority == CSF_LOG_DEBUG)
-			LOG(INFO) << tag << " " << buffer;
+  
+#define MAX_MESSAGE_LENGTH 1024
+  char message[MAX_MESSAGE_LENGTH];
+    
+  vsnprintf(message, MAX_MESSAGE_LENGTH, format, args);
+  
+  if (gLogModuleInfo == NULL)
+    gLogModuleInfo = PR_NewLogModule("ikran");
+    
+  switch(priority)
+  {
+    case CSF_LOG_CRITICAL:
+    case CSF_LOG_ERROR:
+      PR_LOG(gLogModuleInfo, PR_LOG_ERROR, ("%s %s", tag, message));
+      break;
+    case CSF_LOG_WARNING:
+    case CSF_LOG_INFO:
+    case CSF_LOG_NOTICE:
+      PR_LOG(gLogModuleInfo, PR_LOG_WARNING, ("%s %s", tag, message));
+      break;
+    case CSF_LOG_DEBUG:
+      PR_LOG(gLogModuleInfo, PR_LOG_DEBUG, ("%s %s", tag, message));
+      break;
+    default:
+      PR_LOG(gLogModuleInfo, PR_LOG_ALWAYS, ("%s %s", tag, message));
+  }
+  
 #endif
 
 }
@@ -105,9 +93,9 @@ void CSFLogV(CSFLogLevel priority, const char* sourceFile, int sourceLine, const
 void CSFLog( CSFLogLevel priority, const char* sourceFile, int sourceLine, const char* tag , const char* format, ...)
 {
 	va_list ap;
-    va_start(ap, format);
+  va_start(ap, format);
 	
-    CSFLogV(priority, sourceFile, sourceLine, tag, format, ap);
-    va_end(ap);
+  CSFLogV(priority, sourceFile, sourceLine, tag, format, ap);
+  va_end(ap);
 }
 
