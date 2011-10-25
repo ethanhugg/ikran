@@ -49,6 +49,7 @@ static PRLogModuleInfo *gLogModuleInfo = NULL;
 
 bool InitChromeLogging(int argc, char** argv)
 {
+  return true;
 }
 
 
@@ -81,7 +82,7 @@ void CSFLogV(CSFLogLevel priority, const char* sourceFile, int sourceLine, const
     case CSF_LOG_DEBUG:
       PR_LOG(gLogModuleInfo, PR_LOG_DEBUG, ("%s %s", tag, message));
       break;
-    defalt:
+    default:
       PR_LOG(gLogModuleInfo, PR_LOG_ALWAYS, ("%s %s", tag, message));
   }
   

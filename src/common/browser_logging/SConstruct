@@ -14,6 +14,23 @@ include_dirs = [
   mozsrcpath + '/obj-ff-dbg/dist/include'
 ]
 
+if sys.platform == 'win32':
+  include_dirs += [
+    mozsrcpath + '\\obj-i686-pc-mingw32\\dist\\include'
+  ]
+elif sys.platform == 'darwin':
+  include_dirs += [
+    mozsrcpath + '/obj-ff-dbg/dist/include'
+  ]
+elif sys.platform == 'linux2':
+  if x64 == 'yes':
+    include_dirs += [
+      mozsrcpath + '/obj-x86_64-unknown-linux-gnu/dist/include'
+    ]
+  else:
+    include_dirs += [
+      mozsrcpath + '/obj-i686-pc-linux-gnu/dist/include'
+    ]
 src_files = Glob('*.cpp')
 
 
