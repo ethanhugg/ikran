@@ -59,6 +59,7 @@ libs = []
 env = build_env.Clone(CPPPATH=include_dirs)
 
 if sys.platform =='win32':
+  mozobjpath = mozsrcpath + '\\obj-i686-pc-mingw32'
   env["CPPDEFINES"] += [
     'WIN32',
     '_CONSOLE',
@@ -86,10 +87,13 @@ if sys.platform =='win32':
     '../../third_party/lib',
     chromiumbaselibpath,
     '../../src/common/browser_logging',
+    mozobjpath + '/dist/lib',
+    mozobjpath + '/dist/bin',
     webrtcpath + '/Debug/lib'
   ]
   libs += [
     componentName + suffixName + '.lib',
+    'nspr4.lib',
     'winmm.lib',
     'kernel32.lib',
     'user32.lib',
@@ -185,6 +189,7 @@ if sys.platform =='win32':
       '/DEBUG '
      ]
 elif sys.platform == 'darwin':
+  mozobjpath = mozsrcpath + '/obj-ff-dbg'
   env["CPPFLAGS"] += [
     '-W',
     '-Wno-error',
@@ -196,10 +201,13 @@ elif sys.platform == 'darwin':
     chromiumbaselibpath,
     '../../third_party/lib',
     '../../ikran',
+    mozobjpath + '/dist/sdk/lib',
+    mozobjpath + '/dist/sdk/bin',
     webrtcpath + '/xcodebuild/Debug',
   ]
   libs += [
     componentName + suffixName,
+    'nspr4',
     'ssl',
     'crypto',
     'apr-1',
@@ -273,6 +281,11 @@ elif sys.platform == 'darwin':
     'Cocoa'
   ]
 elif sys.platform=='linux2':
+  if x64 == 'yes':
+    mozobjpath = mozsrcpath + '/obj-x86_64-unknown-linux-gnu'
+  else:
+    mozobjpath = mozsrcpath + '/obj-i686-pc-linux-gnu'
+
   libpath += [
     chromiumbaselibpath,
     '../../third_party/lib',
@@ -286,18 +299,21 @@ elif sys.platform=='linux2':
       '/usr/lib'
     ]
   libpath += [
-     webrtcpath + '/out/Debug/obj.target/src/video_engine',
-     webrtcpath + '/out/Debug/obj.target/src/voice_engine',
-     webrtcpath + '/out/Debug/obj.target/src/modules',
-     webrtcpath + '/out/Debug/obj.target/src/common_video',
-     webrtcpath + '/out/Debug/obj.target/third_party/libvpx',
-     webrtcpath + '/out/Debug/obj.target/third_party/libjpeg_turbo',
-     webrtcpath + '/out/Debug/obj.target/src/common_audio',
-     webrtcpath + '/out/Debug/obj.target/third_party/protobuf',
-     webrtcpath + '/out/Debug/obj.target/src/system_wrappers/source'
+    mozobjpath + '/dist/lib',
+    mozobjpath + '/dist/bin',
+    webrtcpath + '/out/Debug/obj.target/src/video_engine',
+    webrtcpath + '/out/Debug/obj.target/src/voice_engine',
+    webrtcpath + '/out/Debug/obj.target/src/modules',
+    webrtcpath + '/out/Debug/obj.target/src/common_video',
+    webrtcpath + '/out/Debug/obj.target/third_party/libvpx',
+    webrtcpath + '/out/Debug/obj.target/third_party/libjpeg_turbo',
+    webrtcpath + '/out/Debug/obj.target/src/common_audio',
+    webrtcpath + '/out/Debug/obj.target/third_party/protobuf',
+    webrtcpath + '/out/Debug/obj.target/src/system_wrappers/source'
   ]
   libs += [
     componentName + suffixName, 
+    'nspr4',
     'pthread',
     'z', 
     'idn', 

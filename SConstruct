@@ -60,6 +60,7 @@ build_env["CPPDEFINES"] = [
   '_NO_LOG4CXX', 
   'USE_SSLEAY', 
   'LIBXML_STATIC', 
+  'FORCE_PR_LOG',
   '_CPR_USE_EXTERNAL_LOGGER'
 ]
 
@@ -102,10 +103,10 @@ elif sys.platform=='darwin':
     ]    
     
   build_env["CPPDEFINES"] += [
-#    'NO_WEBRTC_VIDEO',
     'SIP_OS_OSX', 
     'OSX', 
     'GIPS_VER=3410', 
+    'FORCE_PR_LOG',
     '_FORTIFY_SOURCE=2'
   ]
   
@@ -163,11 +164,11 @@ elif sys.platform=='linux2':
       '-march=i486'
     ] 
   build_env["CPPDEFINES"] += [
-#    'NO_WEBRTC_VIDEO',
     '_GNU_SOURCE', 
     'SIP_OS_LINUX', 
     'LINUX', 
     'GIPS_VER=3510', 
+    'FORCE_PR_LOG',
     'SECLIB_OPENSSL'
   ]
   build_env["LINKFLAGS"] = [
