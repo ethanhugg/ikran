@@ -1491,7 +1491,6 @@ static int runMainLoop ()
 
 static void initLogging(int argc, char** argv)
 {
-	InitChromeLogging(argc, argv);
 }
 
 int main(int argc, char** argv)

@@ -44,14 +44,7 @@
 
 #include "prlog.h"
 
-
 static PRLogModuleInfo *gLogModuleInfo = NULL;
-
-bool InitChromeLogging(int argc, char** argv)
-{
-  return true;
-}
-
 
 void CSFLogV(CSFLogLevel priority, const char* sourceFile, int sourceLine, const char* tag , const char* format, va_list args)
 {

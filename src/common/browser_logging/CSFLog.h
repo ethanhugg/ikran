@@ -58,8 +58,6 @@ typedef enum{
 } CSFLogLevel;
 
 
-bool InitChromeLogging(int argc, char** argv);
-
 
 /**
 * CSFLogError - same as CSFLogCritical but for ERROR log level
