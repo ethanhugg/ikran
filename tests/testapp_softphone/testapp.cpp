@@ -38,9 +38,10 @@
  * ***** END LICENSE BLOCK ***** */
 
 #include <sys/timeb.h>
+#include <stdarg.h>
 
 #include "csf_common.h"
-#include "CSFLog.h"
+#include "CSFLogStream.h"
 #include "debug-psipcc-types.h"
 #include "base/time.h"
 #include "base/threading/platform_thread.h"

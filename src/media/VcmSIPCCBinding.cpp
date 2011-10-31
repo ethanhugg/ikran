@@ -48,6 +48,7 @@
 #include "csf_common.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 
 extern "C" {
 #include "ccsdp.h"
