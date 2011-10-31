@@ -67,7 +67,7 @@ extern "C" {
 
 #include "csf_common.h"
 
-#include "CSFLog.h"
+#include "CSFLogStream.h"
 static const char* logTag = "CC_SIPCCService";
 
 using namespace std;

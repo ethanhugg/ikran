@@ -39,7 +39,7 @@
 
 #include "CC_Common.h"
 
-#include "CSFLog.h"
+#include "CSFLogStream.h"
 
 #include "CSFMediaProvider.h"
 #include "CSFAudioTermination.h"

@@ -38,7 +38,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 #include "CSFVideoControlWrapper.h"
-#include "CSFLog.h"
+#include "CSFLogStream.h"
 
 static const char* logTag = "VcmSipccBinding";
 

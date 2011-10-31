@@ -48,7 +48,7 @@ extern "C"
 #include "ccapi_call_info.h"
 }
 
-#include "CSFLog.h"
+#include "CSFLogStream.h"
 static const char* logTag = "CC_SIPCCCallInfo";
 
 using namespace std;

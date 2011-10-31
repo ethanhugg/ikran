@@ -51,6 +51,8 @@
  *
  */
 
+#include <iostream>
+
 #include "test_main.h"
 #include "test_mac_cocoa.h"
 

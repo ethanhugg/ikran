@@ -44,7 +44,7 @@
 #include "CC_SIPCCLineInfo.h"
 #include "CC_SIPCCCallInfo.h"
 #include "CallControlManagerImpl.h"
-#include "CSFLog.h"
+#include "CSFLogStream.h"
 #include "csf_common.h"
 
 extern "C"

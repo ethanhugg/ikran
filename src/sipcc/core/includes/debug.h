@@ -43,6 +43,7 @@
 #include "cpr_types.h"
 #include "plat_api.h"
 #include "phone_debug.h"
+#include "CSFLog.h"
 
 typedef cc_int32_t (*debug_callback)(cc_int32_t argc, const char *argv[]);
 typedef cc_int32_t (*show_callback)(cc_int32_t argc, const char *argv[]);
@@ -154,21 +155,8 @@ void bind_test_keyword(const char *keyword, const char *abrv, boolean hidden,
                        const char *help);
 testevent_t TESTGetEvent(void);
 
-/*
- * For all other phones, debug output should go to printf()
- * There is no Jindo shell on these phones
- */
-#ifdef SIP_OS_WINDOWS
-#define debugif_printf printf
-#define debugif_add_keyword(a, b)
-#define debugif_open_sip_cmd_file()
-#else
-int debugif_printf(const char *_format, ...);
-void debugif_add_new_keyword(const char *, const char *);
-void debugif_open_sip_cmd_file(void);
-void debugif_add_keyword(const char *, const char *);
-#endif
+// Send debug output to CSFLog
+#define debugif_printf(format, ...) CSFLogDebug("debugif", format, ## __VA_ARGS__ )
 
 
-int debugif_printf_response(int responseType,const char *_format, ...);
 #endif /* _DEBUG_INCLUDED_H */
