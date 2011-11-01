@@ -61,7 +61,6 @@ build_env["CPPDEFINES"] = [
   'USE_SSLEAY', 
   'LIBXML_STATIC', 
   'FORCE_PR_LOG',
-  '_CPR_USE_EXTERNAL_LOGGER'
 ]
 
 if sys.platform =='win32':

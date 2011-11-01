@@ -46,10 +46,4 @@
 
 #define snprintf _snprintf
 
-#if defined (_CPR_USE_EXTERNAL_LOGGER_)
-  typedef void (*plog_msg_function_cpr)(int logLevel, const char * pFormat, va_list args);
-
-  void cprRegisterLogger (plog_msg_function_cpr pLoggerFunction);
-#endif
-
 #endif
