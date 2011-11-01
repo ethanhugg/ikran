@@ -44,7 +44,7 @@
 #include <set>
 
 #include "csf_common.h"
-#include "CSFLog.h"
+#include "CSFLogStream.h"
 #include "CC_Device.h"
 #include "CC_DeviceInfo.h"
 #include "CC_FeatureInfo.h"

@@ -37,11 +37,11 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#include "CSFLog.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
 
+#include "CSFLog.h"
 #include "prlog.h"
 
 static PRLogModuleInfo *gLogModuleInfo = NULL;

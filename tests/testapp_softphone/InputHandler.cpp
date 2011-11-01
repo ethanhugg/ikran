@@ -40,7 +40,7 @@
 #include "InputHandler.h"
 
 #include "csf_common.h"
-#include "CSFLog.h"
+#include "CSFLogStream.h"
 #include <iostream>
 #ifndef WIN32
 #include <stdio.h>
