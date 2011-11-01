@@ -43,6 +43,7 @@
 #include <stdio.h>
 #include "cpr_types.h"
 #include "cpr_win_stdio.h"
+#include "CSFLog.h"
 
 typedef enum
 {
