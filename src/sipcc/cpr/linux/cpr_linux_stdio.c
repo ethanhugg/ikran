@@ -39,11 +39,7 @@
 
 #include "cpr_stdio.h"
 #include "cpr_string.h"
-#ifdef CPR_CSF_LOG
 #include "CSFLog.h"
-#else
-#include <sys/syslog.h>
-#endif
 
 /**
  * @def LOG_MAX
@@ -61,7 +57,7 @@
  */
 
 /**
- * Debug message sent to syslog(#LOG_DEBUG)
+ * Debug message
  *
  * @param _format  format string
  * @param ...      variable arg list
@@ -84,13 +80,13 @@ buginf (const char *_format, ...)
         return rc;
     }
 
-  printf ("%s", fmt_buf);	/* tbd: keep this until syslog is in place */
+  CSFLogDebug("cpr", "%s", fmt_buf);
 
   return rc;
 }
 
 /**
- * Debug message sent to syslog(#LOG_DEBUG) that can be larger than #LOG_MAX
+ * Debug message that can be larger than #LOG_MAX
  *
  * @param str - a fixed constant string
  *
@@ -121,18 +117,17 @@ buginf_msg (const char *str)
         } while (len > LOG_MAX);
 
         if (len) {
-            printf("%s", (char *)p);
-            
+          CSFLogDebug("cpr", "%s", (char *)p);
         }
     } else {
-        printf("%s", (char *) str);
+      CSFLogDebug("cpr", "%s", (char *) str);
     }
 
     return 0;
 }
 
 /**
- * Error message sent to syslog(#LOG_ERR)
+ * Error message
  *
  * @param _format  format string
  * @param ...     variable arg list
@@ -155,12 +150,12 @@ err_msg (const char *_format, ...)
         return;
     }
 
-    printf ("%s", fmt_buf);
+    CSFLogError("cpr", "%s", fmt_buf);
 }
 
 
 /**
- * Notice message sent to syslog(#LOG_INFO)
+ * Notice message
  *
  * @param _format  format string
  * @param ...     variable arg list
@@ -183,6 +178,6 @@ notice_msg (const char *_format, ...)
         return;
     }
 
-    printf("%s", fmt_buf); /* tbd: remove once syslog in place */
+    CSFLogInfo("cpr", "%s", fmt_buf);
 }
 
