@@ -44,9 +44,9 @@
 class OutgoingRoapThread : public base::SimpleThread
 {
 private:
-  OutgoingRoap* _outgoing;
+  OutgoingRoap _outgoing;
 public:
-  OutgoingRoapThread(OutgoingRoap* outgoing) : base::SimpleThread("OutgoingRoapThread") {_outgoing = outgoing;};
+  OutgoingRoapThread() : base::SimpleThread("OutgoingRoapThread") {};
   virtual void Run();
 };
 

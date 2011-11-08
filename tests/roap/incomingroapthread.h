@@ -47,15 +47,14 @@
 class IncomingRoapThread : public base::SimpleThread
 {
 private:
-  IncomingRoap* _incoming;
+  IncomingRoap _incoming;
   bool _shutdown;
 private:
   void initialize();
   string nextMessage();
-  map<string,string> parse(string message);
-  void InsertNameValue(map<string,string>* pMap, const char* name, const char* value);
+  void HandleMessage(map<string, string> message);
 public:
-  IncomingRoapThread(IncomingRoap* incoming) : base::SimpleThread("IncomingRoapThread") {_incoming= incoming; _shutdown= false;};
+  IncomingRoapThread() : base::SimpleThread("IncomingRoapThread") {_shutdown= false;};
   virtual void Run();
   void shutdown() {_shutdown= true;}
 };

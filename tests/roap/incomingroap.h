@@ -45,6 +45,7 @@ using namespace std;
 class IncomingRoap
 {
 public:
+  void Init(string localIp, string user, string password, string device);
   void Offer(string callerSessionId, string seq, string sdp);
   void Answer(string callerSessionId, string calleeSessionId, string seq, string sdp);
   void OK(string callerSessionId, string calleeSessionId, string seq);

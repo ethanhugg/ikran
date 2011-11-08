@@ -39,6 +39,11 @@
 
 #include "incomingroap.h"
 
+void IncomingRoap::Init(string localIp, string user, string password, string device)
+{
+  
+}
+
 void IncomingRoap::Offer(string callerSessionId, string seq, string sdp)
 {
   

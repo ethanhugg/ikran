@@ -37,44 +37,17 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#include <sys/timeb.h>
-#include <stdarg.h>
+#pragma once
 
-#include "csf_common.h"
-#include "CSFLogStream.h"
-#include "debug-psipcc-types.h"
-#include "base/time.h"
-#include "base/threading/platform_thread.h"
-#include "base/threading/simple_thread.h"
-#include "base/synchronization/waitable_event.h"
-#include "base/synchronization/lock.h"
-
-#include <algorithm>
-#include <fstream>
-#include <iostream>
+#include <string>
 #include <map>
+using namespace std;
 
-#include "incomingroap.h"
-#include "outgoingroap.h"
-#include "incomingroapthread.h"
-#include "outgoingroapthread.h"
-
-static const char* logTag = "RoapProxy";
-
-
-
-int main(int argc, char**argv)
+class JsonParser
 {
-  IncomingRoapThread incomingThread;
-  OutgoingRoapThread outgoingThread;
-  
-  CSFLogDebugS(logTag, "ROAP Proxy Start");
+private:
+  static void InsertNameValue(map<string,string>* pMap, const char* name, const char* value);
+public:
+  static map<string,string> Parse(string message);
+};
 
-  incomingThread.Start();
-  outgoingThread.Start();
-  
-  incomingThread.Join();
-  outgoingThread.Join();
-  
-  CSFLogDebugS(logTag, "ROAP Proxy End");
-}

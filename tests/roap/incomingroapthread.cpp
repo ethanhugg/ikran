@@ -42,13 +42,13 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
 #include "CSFLogStream.h"
+#include "jsonparser.h"
 #include "incomingroapthread.h"
 
 static const char* logTag = "RoapProxy";
 
 void IncomingRoapThread::initialize()
 {
-  
 }
 
 string IncomingRoapThread::nextMessage()
@@ -58,171 +58,69 @@ string IncomingRoapThread::nextMessage()
   return next;
 }
 
-map<string, string> IncomingRoapThread::parse(string message)
+void IncomingRoapThread::HandleMessage(map<string, string> message)
 {
-  const int state_outside = 0;
-  const int state_toplevel = 1;
-  const int state_inname = 2;
-  const int state_value = 3;
-  const int state_instringvalue = 4;
-  const int state_inintvalue = 5;
-  const int state_done = 6;
-  const int state_error = 7;
+  map<string,string>::iterator it;
   
-  map<string,string> result;
-  int state = state_outside;
-  string currentName;
-  string currentValue;
-  
-  unsigned index;
-  for (index = 0; 
-       (index < message.length()) && (state != state_done) && (state != state_error); 
-       index++)
+  it = message.find("messageType");
+  if (it == message.end())
   {
-    char nextChar = message[index];
+    CSFLogDebugS(logTag, "messageType not found");
+  }
+  else
+  {
+    string messageType = (*it).second;
+    CSFLogDebugS(logTag, "messageType is " << messageType);
     
-    switch (state)
+    if (messageType.compare("INIT") == 0)
     {
-      case state_outside:
-        switch (nextChar)
-        {
-          case '{':
-            state = state_toplevel;
-            break;
-          case ' ':
-          case '\r':
-          case '\n':
-          case '\t':
-            break;
-          default:
-            CSFLogDebugS(logTag, "Parse error looking for '{'");
-            state = state_error;
-        }
-        break;
-      case state_toplevel:
-        switch (nextChar)
-        {
-          case '}':
-            state = state_done;
-            break;
-          case '\"':
-            state = state_inname;
-            break;
-          case ' ':
-          case '\r':
-          case '\n':
-          case '\t':
-          case ',':
-            break;
-          default:
-            CSFLogDebugS(logTag, "Invalid char looking for name: " << nextChar);
-            state = state_error;
-        }
-        break;
-      case state_inname:
-        switch (nextChar)
-        {
-          case '\"':
-            state = state_value;
-            break;
-          default:
-            currentName += nextChar;
-            break;
-        }
-        break;
-      case state_value:
-        switch (nextChar)
-        {
-          case ':':
-          case ' ':
-          case '\r':
-          case '\n':
-          case '\t':
-            break;
-          case '\"':
-            state = state_instringvalue;
-            break;
-          case '0':
-          case '1':
-          case '2':
-          case '3':
-          case '4':
-          case '5':
-          case '6':
-          case '7':
-          case '8':
-          case '9':
-            currentValue += nextChar;
-            state = state_inintvalue;
-            break;
-          default:
-            CSFLogDebugS(logTag, "Invalid char looking for value start: " << nextChar);
-            state = state_error;
-        }
-        break;
-      case state_instringvalue:
-        switch (nextChar)
-        {
-          case '\"':
-            state = state_toplevel;
-            // Got name and value, add to map
-            InsertNameValue(&result, currentName.c_str(), currentValue.c_str());
-            currentName.clear();
-            currentValue.clear();
-            break;
-          default:
-            currentValue += nextChar;
-            break;
-        }
-        break;
-      case state_inintvalue:
-        switch (nextChar)
-        {
-          case ' ':
-          case '\r':
-          case '\n':
-          case '\t':
-            break;
-          case ',':
-            state = state_toplevel;
-            // Got name and value, add to map
-            InsertNameValue(&result, currentName.c_str(), currentValue.c_str());
-            currentName.clear();
-            currentValue.clear();
-            break;
-          case '0':
-          case '1':
-          case '2':
-          case '3':
-          case '4':
-          case '5':
-          case '6':
-          case '7':
-          case '8':
-          case '9':
-            currentValue += nextChar;
-            break;
-          default:
-            CSFLogDebugS(logTag, "Invalid char looking for int value: " << nextChar);
-            state = state_error;
-            break;
-        }
-        break;
-      case state_done:
-        break;
-      default:
-        CSFLogDebugS(logTag, "Unknown State: " << state);
-        break;
+      
+    }
+    else if (messageType.compare("OFFER") == 0)
+    {
+      map<string,string>::iterator itCallerSessionId = message.find("callerSessionId");
+      map<string,string>::iterator itSeq = message.find("seq");
+      map<string,string>::iterator itSdp = message.find("sdp");
+      
+      if (itCallerSessionId == message.end())
+      {
+        CSFLogDebugS(logTag, "OFFER is missing callerSessionId");  
+      }
+      else if (itSeq == message.end())
+      {
+        CSFLogDebugS(logTag, "OFFER is missing seq");  
+      }
+      else if (itSdp == message.end())
+      {
+        CSFLogDebugS(logTag, "OFFER is missing sdp");  
+      }
+      else
+      {
+        string callerSessionId = (*itCallerSessionId).second;
+        string seq = (*itSeq).second;
+        string sdp = (*itSdp).second;
+
+        CSFLogDebugS(logTag, "Calling OFFER");
+        _incoming.Offer(callerSessionId, seq, sdp);
+      }
+    }
+    else if (messageType.compare("ANSWER") == 0)
+    {
+    
+    }
+    else if (messageType.compare("OK") == 0)
+    {
+      
+    }
+    else if (messageType.compare("TENTATIVE_ANSWER") == 0)
+    {
+      
+    }
+    else
+    {
+      CSFLogDebugS(logTag, "Unknown messageType: " << messageType);
     }
   }
-  
-  return result;
-}
-
-void IncomingRoapThread::InsertNameValue(map<string,string>* pMap, const char* name, const char* value)
-{
-  CSFLogDebugS(logTag, "Adding name/value " << name << " : " << value);
-  pMap->insert(pair<string,string>(name, value));
 }
 
 void IncomingRoapThread::Run()
@@ -231,15 +129,18 @@ void IncomingRoapThread::Run()
   
   CSFLogDebugS(logTag, "IncomingRoapThread Start");
 
+  // TEMP TEST
   string test;
-  test += "{ \"one\":\"won\", \"two\":2232, \"three\":\"fwee\" }";
-  map<string,string> result = parse(test);
+  test += "{ \"messageType\":\"OFFER\", \"callerSessionId\":\"1234567890\", \"seq\":123, \"sdp\":\"sdpstuff\" }";
+  map<string,string> message = JsonParser::Parse(test);
   map<string,string>::iterator it;
-  for (it=result.begin(); it != result.end(); it++)
+  for (it=message.begin(); it != message.end(); it++)
   {
     CSFLogDebugS(logTag, "name/value map: " << (*it).first << " and " << (*it).second << " -- ");
   }
+  HandleMessage(message);
   shutdown();
+  // END TEMP TEST
   
   initialize();
   
@@ -249,7 +150,7 @@ void IncomingRoapThread::Run()
     
     if (next.length() > 0)
     {
-      parse(next);
+      map<string,string> messageMap = JsonParser::Parse(next);
     }
   }
   
