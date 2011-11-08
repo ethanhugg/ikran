@@ -37,38 +37,46 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef CSFLOG_H
-#define CSFLOG_H
+#include "Logger.h"
+#include <string>
+#include <memory>
+#include <iostream>
+#include <fstream>
 
-typedef enum{
-	CSF_LOG_CRITICAL =1,
-	CSF_LOG_ERROR,
-	CSF_LOG_WARNING,
-	CSF_LOG_NOTICE,
-	CSF_LOG_INFO,
-	CSF_LOG_DEBUG
-} CSFLogLevel;
+bool enableLog = true;
+Logger* Logger::_instance = 0;
+string Logger::filename = "/tmp/addon-log.txt";
 
 
-
-#define CSFLogError(tag , format, ...) CSFLog( CSF_LOG_ERROR, __FILE__ , __LINE__ , tag , format , ## __VA_ARGS__ )
-#define CSFLogErrorV(tag , format, va_list_arg) CSFLogV(CSF_LOG_ERROR, __FILE__ , __LINE__ , tag , format , va_list_arg )
-#define CSFLogWarn(tag , format, ...) CSFLog( CSF_LOG_WARNING, __FILE__ , __LINE__ , tag , format , ## __VA_ARGS__ )
-#define CSFLogWarnV(tag , format, va_list_arg) CSFLogV(CSF_LOG_WARNING, __FILE__ , __LINE__ , tag , format , va_list_arg )
-#define CSFLogInfo(tag , format, ...) CSFLog( CSF_LOG_INFO, __FILE__ , __LINE__ , tag , format , ## __VA_ARGS__ )
-#define CSFLogInfoV(tag , format, va_list_arg) CSFLogV(CSF_LOG_INFO, __FILE__ , __LINE__ , tag , format , va_list_arg )
-#define CSFLogDebug(tag , format, ...) CSFLog(CSF_LOG_DEBUG, __FILE__ , __LINE__ , tag , format , ## __VA_ARGS__ )
-#define CSFLogDebugV(tag , format, va_list_arg) CSFLogV(CSF_LOG_DEBUG, __FILE__ , __LINE__ , tag , format , va_list_arg )
-
-#ifdef __cplusplus
-extern "C"
+Logger::Logger(void)
 {
-#endif
-void CSFLog( CSFLogLevel priority, const char* sourceFile, int sourceLine, const char* tag , const char* format, ...);
-void CSFLogV( CSFLogLevel priority, const char* sourceFile, int sourceLine, const char* tag , const char* format, va_list args);
-#ifdef __cplusplus
+	ofstream logfile;
+	logfile.open(filename.c_str(), ios::app);
+	logfile << " ==== New Session Started  === " << endl;
+	logfile.close();
 }
-#endif
 
-#endif
+
+Logger* Logger::Instance()
+{
+	if(_instance == 0)
+	{
+		_instance = new Logger();
+	}
+	return _instance;
+}
+
+void Logger::logIt(string message)
+{
+	if(true == enableLog)
+	{
+		
+		ofstream logfile;
+		logfile.open(filename.c_str(), ios::app);
+		logfile <<  message.c_str() << endl;
+		logfile.close();
+	}
+
+}
+
 

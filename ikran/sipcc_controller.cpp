@@ -102,7 +102,8 @@ void SipccController::InitInternal() {
 	ccm_ptr_->setProperty(ConfigPropertyKeysEnum::eRemoteVoipPort ,remoteVoipPort);
 	ccm_ptr_->setProperty(ConfigPropertyKeysEnum::eTransport ,transport);
 
-	LOG(ERROR)<<"SipccController:: Authentication user : " << sip_user_;
+  CSFLogError("ikran", "SipccController:: Authentication user : %s", sip_user_.c_str());
+  
 	initDone = true;	
 }
 

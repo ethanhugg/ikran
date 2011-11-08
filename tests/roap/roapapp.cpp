@@ -37,38 +37,44 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef CSFLOG_H
-#define CSFLOG_H
+#include <sys/timeb.h>
+#include <stdarg.h>
 
-typedef enum{
-	CSF_LOG_CRITICAL =1,
-	CSF_LOG_ERROR,
-	CSF_LOG_WARNING,
-	CSF_LOG_NOTICE,
-	CSF_LOG_INFO,
-	CSF_LOG_DEBUG
-} CSFLogLevel;
+#include "csf_common.h"
+#include "CSFLogStream.h"
+#include "debug-psipcc-types.h"
+#include "base/time.h"
+#include "base/threading/platform_thread.h"
+#include "base/threading/simple_thread.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/synchronization/lock.h"
+
+#include <algorithm>
+#include <fstream>
+#include <iostream>
+#include <map>
+
+#include "incomingroap.h"
+#include "outgoingroap.h"
+#include "incomingroapthread.h"
+#include "outgoingroapthread.h"
+
+static const char* logTag = "RoapProxy";
 
 
 
-#define CSFLogError(tag , format, ...) CSFLog( CSF_LOG_ERROR, __FILE__ , __LINE__ , tag , format , ## __VA_ARGS__ )
-#define CSFLogErrorV(tag , format, va_list_arg) CSFLogV(CSF_LOG_ERROR, __FILE__ , __LINE__ , tag , format , va_list_arg )
-#define CSFLogWarn(tag , format, ...) CSFLog( CSF_LOG_WARNING, __FILE__ , __LINE__ , tag , format , ## __VA_ARGS__ )
-#define CSFLogWarnV(tag , format, va_list_arg) CSFLogV(CSF_LOG_WARNING, __FILE__ , __LINE__ , tag , format , va_list_arg )
-#define CSFLogInfo(tag , format, ...) CSFLog( CSF_LOG_INFO, __FILE__ , __LINE__ , tag , format , ## __VA_ARGS__ )
-#define CSFLogInfoV(tag , format, va_list_arg) CSFLogV(CSF_LOG_INFO, __FILE__ , __LINE__ , tag , format , va_list_arg )
-#define CSFLogDebug(tag , format, ...) CSFLog(CSF_LOG_DEBUG, __FILE__ , __LINE__ , tag , format , ## __VA_ARGS__ )
-#define CSFLogDebugV(tag , format, va_list_arg) CSFLogV(CSF_LOG_DEBUG, __FILE__ , __LINE__ , tag , format , va_list_arg )
-
-#ifdef __cplusplus
-extern "C"
+int main(int argc, char**argv)
 {
-#endif
-void CSFLog( CSFLogLevel priority, const char* sourceFile, int sourceLine, const char* tag , const char* format, ...);
-void CSFLogV( CSFLogLevel priority, const char* sourceFile, int sourceLine, const char* tag , const char* format, va_list args);
-#ifdef __cplusplus
+  IncomingRoapThread incomingThread;
+  OutgoingRoapThread outgoingThread;
+  
+  CSFLogDebugS(logTag, "ROAP Proxy Start");
+
+  incomingThread.Start();
+  outgoingThread.Start();
+  
+  incomingThread.Join();
+  outgoingThread.Join();
+  
+  CSFLogDebugS(logTag, "ROAP Proxy End");
 }
-#endif
-
-#endif
-
