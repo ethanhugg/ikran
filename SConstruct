@@ -284,7 +284,8 @@ SCRIPT_FILES = [
 
 # Unit tests and testapp builds are all static.
 SCRIPT_FILES += [ 
-  'tests/testapp_softphone/SConstruct'
+  'tests/testapp_softphone/SConstruct',
+  'tests/roap/SConstruct'
 ]
 
 if noaddon != 'yes':
