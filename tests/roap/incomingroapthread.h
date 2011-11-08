@@ -41,6 +41,9 @@
 
 #include <string>
 #include <map>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 
 #include "incomingroap.h"
 
@@ -49,6 +52,8 @@ class IncomingRoapThread : public base::SimpleThread
 private:
   IncomingRoap _incoming;
   bool _shutdown;
+  int _socket;
+  
 private:
   void initialize();
   string nextMessage();
@@ -56,6 +61,6 @@ private:
 public:
   IncomingRoapThread() : base::SimpleThread("IncomingRoapThread") {_shutdown= false;};
   virtual void Run();
-  void shutdown() {_shutdown= true;}
+  void shutdown();
 };
 

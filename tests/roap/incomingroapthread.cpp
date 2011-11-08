@@ -49,11 +49,52 @@ static const char* logTag = "RoapProxy";
 
 void IncomingRoapThread::initialize()
 {
+  _socket = socket(AF_INET, SOCK_STREAM, 0);
+  
+  if (_socket == -1)
+  {
+    CSFLogDebugS(logTag, "Unable to create socket");
+  }
+  else
+  {
+    struct sockaddr_in addr;
+    
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = INADDR_ANY;
+    addr.sin_port = htons(7627);
+        
+    if (bind(_socket, (sockaddr *)&addr, sizeof(addr)) != 0)
+    {
+      CSFLogDebugS(logTag, "Unable to bind socket");
+    }
+    else if (listen(_socket, 5) != 0)
+    {
+      CSFLogDebugS(logTag, "Unable to listen on socket");
+    }
+    else
+    {
+      CSFLogDebugS(logTag, "Successful Bind and Listen");
+    }
+  }
 }
 
 string IncomingRoapThread::nextMessage()
 {
   string next;
+  socklen_t addrlen= sizeof(struct sockaddr_in);
+  struct sockaddr_in address;
+
+  int newSocket = accept(_socket, (struct sockaddr *)&address, &addrlen);
+  
+  if (newSocket < 0)
+  {
+    CSFLogDebugS(logTag, "Accept failed");
+  }
+  else
+  {
+    CSFLogDebugS(logTag, "Accept Success");
+  }
+  
   
   return next;
 }
@@ -130,16 +171,16 @@ void IncomingRoapThread::Run()
   CSFLogDebugS(logTag, "IncomingRoapThread Start");
 
   // TEMP TEST
-  string test;
-  test += "{ \"messageType\":\"OFFER\", \"callerSessionId\":\"1234567890\", \"seq\":123, \"sdp\":\"sdpstuff\" }";
-  map<string,string> message = JsonParser::Parse(test);
-  map<string,string>::iterator it;
-  for (it=message.begin(); it != message.end(); it++)
-  {
-    CSFLogDebugS(logTag, "name/value map: " << (*it).first << " and " << (*it).second << " -- ");
-  }
-  HandleMessage(message);
-  shutdown();
+//  string test;
+//  test += "{ \"messageType\":\"OFFER\", \"callerSessionId\":\"1234567890\", \"seq\":123, \"sdp\":\"sdpstuff\" }";
+//  map<string,string> message = JsonParser::Parse(test);
+//  map<string,string>::iterator it;
+//  for (it=message.begin(); it != message.end(); it++)
+//  {
+//    CSFLogDebugS(logTag, "name/value map: " << (*it).first << " and " << (*it).second << " -- ");
+//  }
+//  HandleMessage(message);
+//  shutdown();
   // END TEMP TEST
   
   initialize();
@@ -155,5 +196,14 @@ void IncomingRoapThread::Run()
   }
   
   CSFLogDebugS(logTag, "IncomingRoapThread End");
+}
+
+void IncomingRoapThread::shutdown()
+{
+  _shutdown = true;
+  if (_socket != -1)
+  {
+    close(_socket);
+  }
 }
 

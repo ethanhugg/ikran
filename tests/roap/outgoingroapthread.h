@@ -45,8 +45,10 @@ class OutgoingRoapThread : public base::SimpleThread
 {
 private:
   OutgoingRoap _outgoing;
+  bool _shutdown;
 public:
   OutgoingRoapThread() : base::SimpleThread("OutgoingRoapThread") {};
   virtual void Run();
+  void shutdown() {_shutdown= true;}
 };
 
