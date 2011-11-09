@@ -46,6 +46,7 @@
 #include "incomingroapthread.h"
 
 static const char* logTag = "RoapProxy";
+static const unsigned short incoming_roap_port = 7627;
 
 void IncomingRoapThread::initialize()
 {
@@ -61,7 +62,7 @@ void IncomingRoapThread::initialize()
     
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = INADDR_ANY;
-    addr.sin_port = htons(7627);
+    addr.sin_port = htons(incoming_roap_port);
         
     if (bind(_socket, (sockaddr *)&addr, sizeof(addr)) != 0)
     {

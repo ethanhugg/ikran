@@ -39,6 +39,10 @@
 
 #pragma once
 
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+
 #include "outgoingroap.h"
 
 class OutgoingRoapThread : public base::SimpleThread
@@ -46,9 +50,14 @@ class OutgoingRoapThread : public base::SimpleThread
 private:
   OutgoingRoap _outgoing;
   bool _shutdown;
+  int _socket;
+  
+private:
+  void initialize();
+  void nextConnection();
 public:
   OutgoingRoapThread() : base::SimpleThread("OutgoingRoapThread") {};
   virtual void Run();
-  void shutdown() {_shutdown= true;}
+  void shutdown();
 };
 

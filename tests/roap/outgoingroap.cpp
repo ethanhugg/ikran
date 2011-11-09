@@ -49,7 +49,7 @@ void OutgoingRoap::push(string roapMessage)
 string OutgoingRoap::pop()
 {
   base::AutoLock lock(queueMutex);
-  string result = NULL;
+  string result;
   
   if (!outboundQueue.empty())
   {

@@ -45,13 +45,120 @@
 #include "outgoingroapthread.h"
 
 static const char* logTag = "RoapProxy";
+static const unsigned short outgoing_roap_port = 7628;
+
+void OutgoingRoapThread::initialize()
+{
+  _socket = socket(AF_INET, SOCK_STREAM, 0);
+  
+  if (_socket == -1)
+  {
+    CSFLogDebugS(logTag, "Unable to create socket");
+  }
+  else
+  {
+    struct sockaddr_in addr;
+    
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = INADDR_ANY;
+    addr.sin_port = htons(outgoing_roap_port);
+    
+    if (bind(_socket, (sockaddr *)&addr, sizeof(addr)) != 0)
+    {
+      CSFLogDebugS(logTag, "Unable to bind socket");
+      close(_socket);
+      _socket = -1;
+    }
+    else if (listen(_socket, 5) != 0)
+    {
+      CSFLogDebugS(logTag, "Unable to listen on socket");
+      close(_socket);
+      _socket = -1;
+    }
+    else
+    {
+      CSFLogDebugS(logTag, "Successful Bind and Listen");
+    }
+  }
+}
+
+void OutgoingRoapThread::nextConnection()
+{
+  socklen_t addrlen= sizeof(struct sockaddr_in);
+  struct sockaddr_in address;
+  
+  if (_socket == -1)
+  {
+    CSFLogDebugS(logTag, "nextConnection - no socket");
+  }
+  else
+  {
+    int newSocket = accept(_socket, (struct sockaddr *)&address, &addrlen);
+    
+    if (newSocket < 0)
+    {
+      CSFLogDebugS(logTag, "Accept failed");
+    }
+    else
+    {
+      int i;
+      
+      CSFLogDebugS(logTag, "Accept Success");
+      
+      for (i= 0; i < 100; i++)
+      {
+        string next = _outgoing.pop();
+        
+        if (next.empty())
+        {
+          sleep(1000);
+        }
+        else
+        {
+          CSFLogDebugS(logTag, "nextConnection sending " << next);
+          send(newSocket, next.c_str(), next.length(), 0);
+          break;  
+        }
+      }
+      
+      CSFLogDebugS(logTag, "nextConnection complete");
+      close(newSocket);
+    }
+  }
+}
+
 
 void OutgoingRoapThread::Run()
 {
   CSFLogDebugS(logTag, "OutgoingRoapThread Start");
+  
+  initialize();
+  
+  // TEST CODE
+  string callerSessionId = "callerId";
+  string calleeSessionId = "calleeId";
+  string seq = "seq123";
+  string sdp = "sdp456";
+  
+  _outgoing.Answer(callerSessionId, calleeSessionId, seq, sdp);
+  // END TEST
+  
+  while (!_shutdown)
+  {
+    nextConnection();
+  }
+  
   CSFLogDebugS(logTag, "OutgoingRoapThread End");
 }
 
+void OutgoingRoapThread::shutdown()
+{
+  _shutdown = true;
+  if (_socket != -1)
+  {
+    close(_socket);
+  }
+}
 
 
 
