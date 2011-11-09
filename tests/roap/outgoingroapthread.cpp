@@ -105,13 +105,13 @@ void OutgoingRoapThread::nextConnection()
       
       CSFLogDebugS(logTag, "Accept Success");
       
-      for (i= 0; i < 100; i++)
+      for (i= 0; i < 60; i++)
       {
         string next = _outgoing.pop();
         
         if (next.empty())
         {
-          sleep(1000);
+          sleep(5);
         }
         else
         {
@@ -140,7 +140,10 @@ void OutgoingRoapThread::Run()
   string seq = "seq123";
   string sdp = "sdp456";
   
+  _outgoing.Offer(callerSessionId, seq, sdp);
   _outgoing.Answer(callerSessionId, calleeSessionId, seq, sdp);
+  _outgoing.OK(callerSessionId, calleeSessionId, seq);
+  _outgoing.TentativeAnswer(callerSessionId, calleeSessionId, seq, sdp);
   // END TEST
   
   while (!_shutdown)
@@ -153,6 +156,8 @@ void OutgoingRoapThread::Run()
 
 void OutgoingRoapThread::shutdown()
 {
+  CSFLogDebugS("OutgoingRoapThread shutdown called");
+  
   _shutdown = true;
   if (_socket != -1)
   {
