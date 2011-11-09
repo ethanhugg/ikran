@@ -38,10 +38,26 @@
  * ***** END LICENSE BLOCK ***** */
 
 #include "incomingroap.h"
+#include "CSFLogStream.h"
+#include "CallControlManager.h"
 
-void IncomingRoap::Init(string localIp, string user, string password, string device)
+using namespace CSF;
+
+static const char* logTag = "RoapProxy";
+static CallControlManagerPtr ccmPtr;
+
+void IncomingRoap::Init(string device, string user, string password, string domain)
 {
+  ccmPtr = CallControlManager::create();
   
+  if (ccmPtr->startROAPProxy(device, user, password, domain))
+  {
+    CSFLogDebugS(logTag, "startROAPProxy succeeded");
+  }
+  else
+  {
+    CSFLogDebugS(logTag, "startROAPProxy failed");
+  }
 }
 
 void IncomingRoap::Offer(string callerSessionId, string seq, string sdp)

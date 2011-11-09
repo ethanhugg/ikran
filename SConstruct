@@ -285,8 +285,12 @@ SCRIPT_FILES = [
 # Unit tests and testapp builds are all static.
 SCRIPT_FILES += [ 
   'tests/testapp_softphone/SConstruct',
-  'tests/roap/SConstruct'
 ]
+
+if sys.platform != 'win32':
+  SCRIPT_FILES += [
+    'tests/roap/SConstruct'
+  ]
 
 if noaddon != 'yes':
   SCRIPT_FILES += [ 

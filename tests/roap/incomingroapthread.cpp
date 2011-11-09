@@ -126,7 +126,32 @@ void IncomingRoapThread::HandleMessage(map<string, string> message)
     
     if (messageType.compare("INIT") == 0)
     {
+      map<string,string>::iterator itDevice = message.find("device");
+      map<string,string>::iterator itUser = message.find("user");
+      map<string,string>::iterator itPassword = message.find("password");
+      map<string,string>::iterator itDomain = message.find("domain");
       
+      if (itDevice == message.end())
+      {
+        CSFLogDebugS(logTag, "INIT is missing device");
+      }
+      else if (itUser == message.end())
+      {
+        CSFLogDebugS(logTag, "INIT is missing user");
+      }
+      else if (itPassword == message.end())
+      {
+        CSFLogDebugS(logTag, "INIT is missing password");
+      }
+      else if (itDomain == message.end())
+      {
+        CSFLogDebugS(logTag, "INIT is missing domain");
+      }
+      else
+      {
+        CSFLogDebugS(logTag, "Calling INIT");
+        _incoming.Init((*itDevice).second, (*itUser).second, (*itPassword).second, (*itDomain).second);
+      }
     }
     else if (messageType.compare("OFFER") == 0)
     {
@@ -148,12 +173,8 @@ void IncomingRoapThread::HandleMessage(map<string, string> message)
       }
       else
       {
-        string callerSessionId = (*itCallerSessionId).second;
-        string seq = (*itSeq).second;
-        string sdp = (*itSdp).second;
-
         CSFLogDebugS(logTag, "Calling OFFER");
-        _incoming.Offer(callerSessionId, seq, sdp);
+        _incoming.Offer((*itCallerSessionId).second, (*itSeq).second, (*itSdp).second);
       }
     }
     else if (messageType.compare("ANSWER") == 0)
@@ -181,13 +202,8 @@ void IncomingRoapThread::HandleMessage(map<string, string> message)
       }
       else
       {
-        string callerSessionId = (*itCallerSessionId).second;
-        string calleeSessionId = (*itCallerSessionId).second;
-        string seq = (*itSeq).second;
-        string sdp = (*itSdp).second;
-        
         CSFLogDebugS(logTag, "Calling ANSWER");
-        _incoming.Answer(callerSessionId, calleeSessionId, seq, sdp);
+        _incoming.Answer((*itCallerSessionId).second, (*itCalleeSessionId).second, (*itSeq).second, (*itSdp).second);
       }
     }
     else if (messageType.compare("OK") == 0)
@@ -210,12 +226,8 @@ void IncomingRoapThread::HandleMessage(map<string, string> message)
       }
       else
       {
-        string callerSessionId = (*itCallerSessionId).second;
-        string calleeSessionId = (*itCallerSessionId).second;
-        string seq = (*itSeq).second;
-        
         CSFLogDebugS(logTag, "Calling OK");
-        _incoming.OK(callerSessionId, calleeSessionId, seq);
+        _incoming.OK((*itCallerSessionId).second, (*itCalleeSessionId).second, (*itSeq).second);
       }
     }
     else if (messageType.compare("TENTATIVE_ANSWER") == 0)
@@ -243,13 +255,8 @@ void IncomingRoapThread::HandleMessage(map<string, string> message)
       }
       else
       {
-        string callerSessionId = (*itCallerSessionId).second;
-        string calleeSessionId = (*itCallerSessionId).second;
-        string seq = (*itSeq).second;
-        string sdp = (*itSdp).second;
-        
         CSFLogDebugS(logTag, "Calling TENTATIVE_ANSWER");
-        _incoming.TentativeAnswer(callerSessionId, calleeSessionId, seq, sdp);
+        _incoming.TentativeAnswer((*itCallerSessionId).second, (*itCalleeSessionId).second, (*itSeq).second, (*itSdp).second);
       }
     }
     else
