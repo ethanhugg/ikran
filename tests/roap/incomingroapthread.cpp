@@ -312,7 +312,7 @@ void IncomingRoapThread::Run()
 
 void IncomingRoapThread::shutdown()
 {
-  CSFLogDebugS("IncomingRoapThread shutdown called");
+  CSFLogDebugS(logTag, "IncomingRoapThread shutdown called");
 
   _shutdown = true;
   if (_socket != -1)
