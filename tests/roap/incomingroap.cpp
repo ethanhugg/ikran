@@ -40,24 +40,26 @@
 #include "incomingroap.h"
 #include "CSFLogStream.h"
 #include "CallControlManager.h"
-
-using namespace CSF;
+#include "sipcc_controller.h"
 
 static const char* logTag = "RoapProxy";
-static CallControlManagerPtr ccmPtr;
 
 void IncomingRoap::Init(string device, string user, string password, string domain)
 {
-  ccmPtr = CallControlManager::create();
+	SipccController::GetInstance()->SetProperty("transport", "tcp");
   
-  if (ccmPtr->startROAPProxy(device, user, password, domain))
+	int regResult = SipccController::GetInstance()->StartROAPProxy(device, user, password, domain);
+
+	//zero means happy here
+	//TODO - maybe finer grained results?
+	if (regResult != 0) 
   {
-    CSFLogDebugS(logTag, "startROAPProxy succeeded");
-  }
-  else
+		CSFLogDebugS(logTag, "ERROR registering with " << domain);
+	}
+	else 
   {
-    CSFLogDebugS(logTag, "startROAPProxy failed");
-  }
+		CSFLogDebugS(logTag, "Successfully registered with " << domain);
+	}
 }
 
 void IncomingRoap::Offer(string callerSessionId, string seq, string sdp)
