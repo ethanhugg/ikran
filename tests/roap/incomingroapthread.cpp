@@ -93,6 +93,17 @@ string IncomingRoapThread::nextMessage()
   else
   {
     CSFLogDebugS(logTag, "Accept Success");
+    int countRecv;
+    const unsigned buffer_length = 1024;
+    char buffer[buffer_length];
+    
+    while ((countRecv= recv(newSocket, buffer, buffer_length, 0)) > 0)
+    {
+      next.append(buffer, countRecv);  
+    }
+    
+    close(newSocket);
+    CSFLogDebugS(logTag, "Received: " << next);
   }
   
   
@@ -147,15 +158,99 @@ void IncomingRoapThread::HandleMessage(map<string, string> message)
     }
     else if (messageType.compare("ANSWER") == 0)
     {
-    
+      map<string,string>::iterator itCallerSessionId = message.find("callerSessionId");
+      map<string,string>::iterator itCalleeSessionId = message.find("calleeSessionId");
+      map<string,string>::iterator itSeq = message.find("seq");
+      map<string,string>::iterator itSdp = message.find("sdp");
+      
+      if (itCallerSessionId == message.end())
+      {
+        CSFLogDebugS(logTag, "ANSWER is missing callerSessionId");  
+      }
+      else if (itCalleeSessionId == message.end())
+      {
+        CSFLogDebugS(logTag, "ANSWER is missing calleeSessionId");  
+      }
+      else if (itSeq == message.end())
+      {
+        CSFLogDebugS(logTag, "ANSWER is missing seq");  
+      }
+      else if (itSdp == message.end())
+      {
+        CSFLogDebugS(logTag, "ANSWER is missing sdp");  
+      }
+      else
+      {
+        string callerSessionId = (*itCallerSessionId).second;
+        string calleeSessionId = (*itCallerSessionId).second;
+        string seq = (*itSeq).second;
+        string sdp = (*itSdp).second;
+        
+        CSFLogDebugS(logTag, "Calling ANSWER");
+        _incoming.Answer(callerSessionId, calleeSessionId, seq, sdp);
+      }
     }
     else if (messageType.compare("OK") == 0)
     {
+      map<string,string>::iterator itCallerSessionId = message.find("callerSessionId");
+      map<string,string>::iterator itCalleeSessionId = message.find("calleeSessionId");
+      map<string,string>::iterator itSeq = message.find("seq");
       
+      if (itCallerSessionId == message.end())
+      {
+        CSFLogDebugS(logTag, "OK is missing callerSessionId");  
+      }
+      else if (itCalleeSessionId == message.end())
+      {
+        CSFLogDebugS(logTag, "OK is missing calleeSessionId");  
+      }
+      else if (itSeq == message.end())
+      {
+        CSFLogDebugS(logTag, "OK is missing seq");  
+      }
+      else
+      {
+        string callerSessionId = (*itCallerSessionId).second;
+        string calleeSessionId = (*itCallerSessionId).second;
+        string seq = (*itSeq).second;
+        
+        CSFLogDebugS(logTag, "Calling OK");
+        _incoming.OK(callerSessionId, calleeSessionId, seq);
+      }
     }
     else if (messageType.compare("TENTATIVE_ANSWER") == 0)
     {
+      map<string,string>::iterator itCallerSessionId = message.find("callerSessionId");
+      map<string,string>::iterator itCalleeSessionId = message.find("calleeSessionId");
+      map<string,string>::iterator itSeq = message.find("seq");
+      map<string,string>::iterator itSdp = message.find("sdp");
       
+      if (itCallerSessionId == message.end())
+      {
+        CSFLogDebugS(logTag, "TENTATIVE_ANSWER is missing callerSessionId");  
+      }
+      else if (itCalleeSessionId == message.end())
+      {
+        CSFLogDebugS(logTag, "TENTATIVE_ANSWER is missing calleeSessionId");  
+      }
+      else if (itSeq == message.end())
+      {
+        CSFLogDebugS(logTag, "TENTATIVE_ANSWER is missing seq");  
+      }
+      else if (itSdp == message.end())
+      {
+        CSFLogDebugS(logTag, "TENTATIVE_ANSWER is missing sdp");  
+      }
+      else
+      {
+        string callerSessionId = (*itCallerSessionId).second;
+        string calleeSessionId = (*itCallerSessionId).second;
+        string seq = (*itSeq).second;
+        string sdp = (*itSdp).second;
+        
+        CSFLogDebugS(logTag, "Calling TENTATIVE_ANSWER");
+        _incoming.TentativeAnswer(callerSessionId, calleeSessionId, seq, sdp);
+      }
     }
     else
     {
@@ -192,6 +287,15 @@ void IncomingRoapThread::Run()
     if (next.length() > 0)
     {
       map<string,string> messageMap = JsonParser::Parse(next);
+      
+      if (messageMap.empty())
+      {
+        CSFLogDebugS(logTag, "Parse returned empty map");
+      }
+      else
+      {
+        HandleMessage(messageMap);
+      }
     }
   }
   
