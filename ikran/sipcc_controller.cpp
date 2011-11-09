@@ -182,6 +182,25 @@ int SipccController::Register(std::string device, std::string sipUser, std::stri
 	return result;
 }
 
+int SipccController::StartROAPProxy(std::string device, std::string sipUser, std::string sipCredentials, std::string sipDomain) {
+	int result = 0;
+	sip_user_ = sipUser;
+	sip_credentials_ = sipCredentials;
+    device_ = device;
+    sip_domain_ = sipDomain;
+    Logger::Instance()->logIt(sip_user_);
+    Logger::Instance()->logIt(device_);
+    Logger::Instance()->logIt(sip_domain_);
+    GetLocalActiveInterfaceAddress();
+
+    InitInternal();
+	if(ccm_ptr_->startROAPProxy(device_, sip_user_, sip_credentials_, sip_domain_) == false) {
+		Logger::Instance()->logIt("startROAPProxy - FAILED ");
+		return -1;
+	}
+	return result;
+}
+
 void SipccController::UnRegister() {
 	if (ccm_ptr_ != NULL) {
             ccm_ptr_->disconnect();

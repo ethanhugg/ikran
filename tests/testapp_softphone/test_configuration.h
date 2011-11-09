@@ -77,6 +77,9 @@ public:
 	
 	virtual bool UseP2PMode(void);
 	virtual void SetUseP2PMode(bool useP2PMode);
+
+	virtual bool UseROAPMode(void);
+	virtual void SetUseROAPMode(bool useP2PMode);
 	
 	virtual string GetP2PAddress(void);
 	virtual void SetP2PAddress(string p2pAddress);
@@ -103,6 +106,7 @@ private:
 	//flag for using audio only during the test
 	bool _useVideo;
 	bool _useP2PMode;
+	bool _useROAPMode;
 	//flag to tell the test application to run everythign from the config file
 	bool _useBatchMode;
 	

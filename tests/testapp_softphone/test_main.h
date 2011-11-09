@@ -90,14 +90,12 @@ private:
 	void EndCall();
 	void RegisterSIPProxy();
 	void RegisterP2P();
-	void GetP2POrSIP();	
+	void StartROAPProxy();
+	void GetStartupMode();
 	void GetVideoCalling();
 	void GetSIPProxy();
 	void GetPassword();
 	void GetDeviceName();
-	
-	
-	
 	
 	int _state;
 	bool videoWinEnabled;	

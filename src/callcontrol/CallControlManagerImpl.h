@@ -80,6 +80,8 @@ namespace CSF
 
         virtual bool startP2PMode(const std::string& user);
 
+        virtual bool startROAPProxy( const std::string& deviceName, const std::string& user, const std::string& password, const std::string& domain );
+
         virtual bool disconnect();
         virtual std::string getPreferredDeviceName();
         virtual std::string getPreferredLineDN();

@@ -55,7 +55,7 @@ const string TestConfiguration::NUMBERTODIAL = "numbertodial";
 const string TestConfiguration::USEBATCHMODE = "usebatchmode";
 
 
-TestConfiguration::TestConfiguration(void):_userNumber(), _userPassword(), _deviceName(), _sipProxyAddress(), _numberToDial(), _p2pAddress(), _useVideo(false), _useP2PMode(false), _useBatchMode(false){
+TestConfiguration::TestConfiguration(void):_userNumber(), _userPassword(), _deviceName(), _sipProxyAddress(), _numberToDial(), _p2pAddress(), _useVideo(false), _useP2PMode(false), _useROAPMode(false), _useBatchMode(false) {
 	
 }
 
@@ -227,6 +227,13 @@ bool TestConfiguration::UseP2PMode(void){
 }
 void TestConfiguration::SetUseP2PMode(bool useP2PMode){
 	_useP2PMode = useP2PMode;
+}
+
+bool TestConfiguration::UseROAPMode(void) {
+	return _useROAPMode;
+}
+void TestConfiguration::SetUseROAPMode(bool useROAPMode){
+	_useROAPMode = useROAPMode;
 }
 
 bool TestConfiguration::IsBatchMode(void){

@@ -176,7 +176,8 @@
 #define CFGID_CCM_EXTERNAL_NUMBER_MASK_STRING  CFGID_BEGIN_INDEX + ROUNDTABLE_INDEX_OFFSET + 103  //tag:<externalNumberMask>
 #define CFGID_MEDIA_IP_ADDR_STRING             CFGID_BEGIN_INDEX + ROUNDTABLE_INDEX_OFFSET + 104  //tag:<videoCapability>
 #define CFGID_P2PSIP_BOOL                      CFGID_BEGIN_INDEX + ROUNDTABLE_INDEX_OFFSET + 105
-#define CFGID_VERSION_STRING                   CFGID_BEGIN_INDEX + ROUNDTABLE_INDEX_OFFSET + 105
+#define CFGID_ROAPPROXY_BOOL                   CFGID_BEGIN_INDEX + ROUNDTABLE_INDEX_OFFSET + 106
+#define CFGID_VERSION_STRING                   CFGID_BEGIN_INDEX + ROUNDTABLE_INDEX_OFFSET + 107
 
 /* All non Line specific params should be added above */
 /* All Line specific params should be added below */

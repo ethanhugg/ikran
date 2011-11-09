@@ -248,6 +248,47 @@ bool CallControlManagerImpl::startP2PMode(const std::string& user)
     return bStarted;
 }
 
+bool CallControlManagerImpl::startROAPProxy( const std::string& deviceName, const std::string& user, const std::string& password, const std::string& domain )
+{
+	setConnectionState(ConnectionStatusEnum::eRegistering);
+
+    CSFLogInfoS(logTag, "startROAPProxy(" << user << ", " << domain << " )");
+    if(phone != NULL)
+    {
+    	setConnectionState(ConnectionStatusEnum::eReady);
+
+        CSFLogErrorS(logTag, "startROAPProxy() failed - already connected!");
+        return false;
+    }
+
+    // Check preconditions.
+    if(localIpAddress.empty() || localIpAddress == "127.0.0.1")
+    {
+    	setConnectionState(ConnectionStatusEnum::eFailed);
+    	CSFLogErrorS(logTag, "startROAPProxy() failed - No local IP address set!");
+    	return false;
+    }
+
+    softPhone = CC_SIPCCServicePtr(new CC_SIPCCService());
+    phone = softPhone;
+    phone->init(user, password, domain, deviceName);
+    softPhone->setLoggingMask(sipccLoggingMask);
+    softPhone->setLocalAddressAndGateway(localIpAddress, defaultGW);
+    phone->addCCObserver(this);
+
+    phone->setP2PMode(false);
+    phone->setROAPProxyMode(true);
+
+    bool bStarted = phone->startService();
+    if (!bStarted) {
+        setConnectionState(ConnectionStatusEnum::eFailed);
+    } else {
+        setConnectionState(ConnectionStatusEnum::eReady);
+    }
+
+    return bStarted;
+}
+
 bool CallControlManagerImpl::disconnect()
 {
     CSFLogInfoS(logTag, "disconnect()");
