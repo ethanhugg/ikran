@@ -54,7 +54,7 @@ private:
   
 private:
   void initialize();
-  void nextConnection();
+  bool nextConnection();
 public:
   OutgoingRoapThread() : base::SimpleThread("OutgoingRoapThread") {};
   virtual void Run();

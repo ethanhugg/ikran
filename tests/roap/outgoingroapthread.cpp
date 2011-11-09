@@ -82,8 +82,9 @@ void OutgoingRoapThread::initialize()
   }
 }
 
-void OutgoingRoapThread::nextConnection()
+bool OutgoingRoapThread::nextConnection()
 {
+  bool success = false;
   socklen_t addrlen= sizeof(struct sockaddr_in);
   struct sockaddr_in address;
   
@@ -123,8 +124,12 @@ void OutgoingRoapThread::nextConnection()
       
       CSFLogDebugS(logTag, "nextConnection complete");
       close(newSocket);
+      
+      success = true;
     }
   }
+  
+  return success;
 }
 
 
@@ -148,7 +153,10 @@ void OutgoingRoapThread::Run()
   
   while (!_shutdown)
   {
-    nextConnection();
+    if (!nextConnection())
+    {
+      break;
+    }
   }
   
   CSFLogDebugS(logTag, "OutgoingRoapThread End");

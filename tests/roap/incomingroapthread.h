@@ -56,7 +56,7 @@ private:
   
 private:
   void initialize();
-  string nextMessage();
+  bool nextMessage(string& next);
   void HandleMessage(map<string, string> message);
 public:
   IncomingRoapThread() : base::SimpleThread("IncomingRoapThread") {_shutdown= false;};

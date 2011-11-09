@@ -79,36 +79,44 @@ void IncomingRoapThread::initialize()
   }
 }
 
-string IncomingRoapThread::nextMessage()
+bool IncomingRoapThread::nextMessage(string& next)
 {
-  string next;
+  bool success = false;
   socklen_t addrlen= sizeof(struct sockaddr_in);
   struct sockaddr_in address;
 
-  int newSocket = accept(_socket, (struct sockaddr *)&address, &addrlen);
-  
-  if (newSocket < 0)
+  if (_socket == -1)
   {
-    CSFLogDebugS(logTag, "Accept failed");
+    CSFLogDebugS(logTag, "nextMessage - no socket");
   }
   else
   {
-    CSFLogDebugS(logTag, "Accept Success");
-    int countRecv;
-    const unsigned buffer_length = 1024;
-    char buffer[buffer_length];
+    int newSocket = accept(_socket, (struct sockaddr *)&address, &addrlen);
     
-    while ((countRecv= recv(newSocket, buffer, buffer_length, 0)) > 0)
+    if (newSocket < 0)
     {
-      next.append(buffer, countRecv);  
+      CSFLogDebugS(logTag, "Accept failed");
     }
-    
-    close(newSocket);
-    CSFLogDebugS(logTag, "Received: " << next);
-  }
+    else
+    {
+      CSFLogDebugS(logTag, "Accept Success");
+      int countRecv;
+      const unsigned buffer_length = 1024;
+      char buffer[buffer_length];
+      
+      while ((countRecv= recv(newSocket, buffer, buffer_length, 0)) > 0)
+      {
+        next.append(buffer, countRecv);  
+      }
+      
+      close(newSocket);
+      CSFLogDebugS(logTag, "Received: " << next);
+      
+      success = true;
+    }
+  }    
   
-  
-  return next;
+  return success;
 }
 
 void IncomingRoapThread::HandleMessage(map<string, string> message)
@@ -290,19 +298,24 @@ void IncomingRoapThread::Run()
   
   while (!_shutdown)
   {
-    next = nextMessage();
-    
-    if (next.length() > 0)
+    if (!nextMessage(next))
     {
-      map<string,string> messageMap = JsonParser::Parse(next);
-      
-      if (messageMap.empty())
+      break;
+    }
+    else
+    {
+      if (next.length() > 0)
       {
-        CSFLogDebugS(logTag, "Parse returned empty map");
-      }
-      else
-      {
-        HandleMessage(messageMap);
+        map<string,string> messageMap = JsonParser::Parse(next);
+        
+        if (messageMap.empty())
+        {
+          CSFLogDebugS(logTag, "Parse returned empty map");
+        }
+        else
+        {
+          HandleMessage(messageMap);
+        }
       }
     }
   }
