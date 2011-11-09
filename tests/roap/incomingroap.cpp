@@ -37,6 +37,8 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+#include <stdarg.h>
+
 #include "incomingroap.h"
 #include "CSFLogStream.h"
 #include "CallControlManager.h"
