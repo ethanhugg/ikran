@@ -73,6 +73,20 @@ int main(int argc, char**argv)
   incomingThread.Start();
   outgoingThread.Start();
   
+  printf("RoapProxy Running\nPress 'q' to quit\n\n");
+  
+  while (true)
+  {
+    char ch = getchar();
+    
+    if (ch == 'q' || ch == 'Q')
+    {
+      incomingThread.shutdown();
+      outgoingThread.shutdown();
+      break;
+    }
+  }
+  
   incomingThread.Join();
   outgoingThread.Join();
   

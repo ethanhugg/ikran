@@ -6,7 +6,7 @@ function sendToRoapProxy($message)
 {
   $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 
-  $success = socket_connect($socket, "localhost", "1234");
+  $success = socket_connect($socket, "localhost", "7627");
 
   socket_send($socket, $message . "\n", strlen($message) + 1, 0);
 

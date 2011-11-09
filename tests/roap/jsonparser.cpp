@@ -174,7 +174,6 @@ map<string, string> JsonParser::Parse(string message)
         case '\r':
         case '\n':
         case '\t':
-          break;
         case ',':
           state = state_toplevel;
           // Got name and value, add to map
