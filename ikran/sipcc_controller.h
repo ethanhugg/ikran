@@ -103,6 +103,7 @@ public:
 
 	int StartP2PMode(std::string sipUser);
 	void PlaceP2PCall(std::string dial_number,  std::string sipDomain);
+	int StartROAPProxy(std::string device, std::string sipUser, std::string sipCredentials, std::string sipDomain);
 
 	void SendDigits(std::string digits);
 	void HoldCall();

@@ -123,6 +123,7 @@ namespace CSF
 		virtual bool setLocalVoipPort(int port);
 		virtual bool setRemoteVoipPort(int port);
 		virtual bool setP2PMode(bool mode);
+		virtual bool setROAPProxyMode(bool mode);
 
         /**
          * End of public API

@@ -187,6 +187,11 @@ cc_boolean CCAPI_Config_set_p2p_mode(const cc_boolean is_p2p) {
 	return TRUE;
 }
 
+cc_boolean CCAPI_Config_set_roap_proxy_mode(const cc_boolean is_roap_proxy) {
+	config_setup_roap_proxy_mode(is_roap_proxy);
+	return TRUE;
+}
+
 /**
  * 
  * @return

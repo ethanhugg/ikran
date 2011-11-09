@@ -102,6 +102,7 @@ static int gTransportLayerProtocol = 4;   //  4 = tcp, 2 = udp
 static boolean gP2PSIP = FALSE;
 static int gVoipControlPort = 5060;
 static int gCcm1_sip_port = 5060;
+static boolean gROAPPROXY = FALSE;
 
 typedef struct _multiLevel {
     int cfgId;           /* config id */
@@ -1523,6 +1524,9 @@ void config_setup_elements (const char *sipUser, const char *sipPassword, const 
     // Set SIP P2P boolean
     compare_or_set_boolean_value(CFGID_P2PSIP, gP2PSIP, (const unsigned char *) "p2psip");
 
+    // Set ROAP Proxy Mode boolean
+    compare_or_set_boolean_value(CFGID_ROAPPROXY, gROAPPROXY, (const unsigned char *) "roapproxy");
+
     // Set product version
     compare_or_set_string_value(CFGID_VERSION, gVersion, (const unsigned char *) "version");
 
@@ -1566,6 +1570,10 @@ void config_setup_p2p_mode(const cc_boolean is_p2p) {
 	compare_or_set_boolean_value(CFGID_P2PSIP, is_p2p, (const unsigned char *) "p2psip");
 }
 
+void config_setup_roap_proxy_mode(const cc_boolean is_roap_proxy) {
+	gROAPPROXY = is_roap_proxy;
+	compare_or_set_boolean_value(CFGID_ROAPPROXY, is_roap_proxy, (const unsigned char *) "roapproxy");
+}
 
 /**
  * config_get_elements:

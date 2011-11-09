@@ -226,6 +226,7 @@ typedef struct
     char        external_number_mask[MAX_EXTERNAL_NUMBER_MASK_SIZE];
     char        media_ip_addr[MAX_IPADDR_STR_LEN];
     int         p2psip;
+    int			roapproxy;
     char        version[4];
 } prot_cfg_t;
 
@@ -434,6 +435,7 @@ var_t prot_cfg_table[CFGID_PROTOCOL_MAX+1] = {
         {"externalNumberMask", CFGVAR(external_number_mask), PA_STR, PR_STR, 0},
         {"mediaIpAddr", CFGVAR(media_ip_addr),    PA_STR, PR_STR, 0},
         {"p2psip", CFGVAR(p2psip),       PA_INT, PR_INT, 0},
+        {"roapproxy", CFGVAR(roapproxy),       PA_INT, PR_INT, 0},
         {"version", CFGVAR(version),    PA_STR, PR_STR, 0},
         {0,                              0,      0,      0, 0, 0}
   };
