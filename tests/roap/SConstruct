@@ -277,6 +277,7 @@ elif sys.platform=='linux2':
   libpath += [
     chromiumbaselibpath,
     '../../third_party/lib',
+    '../../ikran',
   ]
   if x64 == 'yes':
     libpath += [
@@ -300,6 +301,7 @@ elif sys.platform=='linux2':
     webrtcpath + '/out/Debug/obj.target/src/system_wrappers/source'
   ]
   libs += [
+    ':sipcc_controller.o',
     componentName + suffixName, 
     'nspr4',
     'pthread',
@@ -350,7 +352,7 @@ elif sys.platform=='linux2':
     'X11',
     'Xext',
     'rt',
-    'dl'
+    'dl',
   ]
   env["LINKFLAGS"] += [
     '-z',

@@ -41,7 +41,6 @@
 
 #include "incomingroap.h"
 #include "CSFLogStream.h"
-#include "CallControlManager.h"
 #include "sipcc_controller.h"
 
 static const char* logTag = "RoapProxy";
