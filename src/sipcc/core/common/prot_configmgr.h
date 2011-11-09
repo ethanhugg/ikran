@@ -268,6 +268,7 @@
 #define CFGID_LINE_FWD_DIALED_NUMBER_DIPLAY          CFGID_LINE_FWD_DIALED_NUMBER_DIPLAY_BOOL
 #define CFGID_LINE_FEATURE_OPTION_MASK               CFGID_LINE_FEATURE_OPTION_MASK_INT
 #define CFGID_P2PSIP                                 CFGID_P2PSIP_BOOL
+#define CFGID_ROAPPROXY                              CFGID_ROAPPROXY_BOOL
 #define CFGID_VERSION                                CFGID_VERSION_STRING
 
 /*********************************************************

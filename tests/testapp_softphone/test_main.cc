@@ -112,7 +112,7 @@ TestMain::TestMain(){
 }
 
 void TestMain::ManualConfiguration(){
-	GetP2POrSIP();
+	GetStartupMode();
 	
 	GetUserPhoneNumber();
 	
@@ -183,10 +183,13 @@ void TestMain::ReadConfig(string filePath){
 void TestMain::Register(){
 	
 	//P2P Registeration
-	if(_config->UseP2PMode()){
+	if(_config->UseP2PMode()) {
 		RegisterP2P();
 	}
-	else{
+	else if (_config->UseROAPMode()) {
+		StartROAPProxy();
+	}
+	else {
 		RegisterSIPProxy();
 	}
 	
@@ -229,6 +232,8 @@ void TestMain::RegisterSIPProxy(){
 	}
 	
 	cout << "Registering to SIP Proxy with " << _config->GetSIPProxyAddress() << endl;
+
+	SipccController::GetInstance()->SetProperty("transport", "tcp");
 		
 	int regResult = SipccController::GetInstance()->Register(_config->GetDeviceName(), _config->GetUserNumber(), _config->GetPassword(), _config->GetSIPProxyAddress());
 	//zero means happy here
@@ -242,6 +247,42 @@ void TestMain::RegisterSIPProxy(){
 		_state = STATE_REGISTERED;
 	}
 	
+}
+
+void TestMain::StartROAPProxy(){
+
+	//SIP Proxy Registration
+	if (!_config->IsConfigured()) {
+		cout << "Could not register!" << endl;
+		cout << "Please review your configuration information: " << endl;
+		cout << "*************************************************" << endl << endl;
+		cout << _config->toString() << endl;
+		cout << "*************************************************" << endl << endl;
+
+		return;
+	}
+
+	if (_state == STATE_REGISTERED) {
+		cout << "Already registered, ignoring registration request" << endl;
+		return;
+	}
+
+	cout << "Registering to SIP Proxy as ROAP Proxy with " << _config->GetSIPProxyAddress() << endl;
+
+	SipccController::GetInstance()->SetProperty("transport", "tcp");
+
+	int regResult = SipccController::GetInstance()->StartROAPProxy(_config->GetDeviceName(), _config->GetUserNumber(), _config->GetPassword(), _config->GetSIPProxyAddress());
+	//zero means happy here
+	//TODO - maybe finer grained results?
+	if (regResult != 0) {
+		cout << "ERROR registering with " << _config->GetSIPProxyAddress() << " check your log files " << endl;
+		_state = STATE_NOT_REGISTERED;
+	}
+	else {
+		cout << "Successfully registered with " << _config->GetSIPProxyAddress() << endl;
+		_state = STATE_REGISTERED;
+	}
+
 }
 
 
@@ -391,14 +432,20 @@ void TestMain::ProcessInput(int op){
 }
 //Begin - Get User Input Section////////////
 
-void TestMain::GetP2POrSIP(){
+void TestMain::GetStartupMode(){
 	string p2p;
-	cout  << "p2p or sip? [p2p|sip]: [current value = " << (_config->UseP2PMode() ? "p2p" : "sip") << "] " ;
+	//cout  << "p2p, sip or ROAP? [p2p|sip|roap]: [current value = " << (_config->UseP2PMode() ? "p2p" : "sip") << "] " ;
+	cout  << "p2p, sip or ROAP? [p2p|sip|roap]:";
 	getline(cin, p2p, '\n');
 	if(p2p.length() > 0){
 		transform( p2p.begin(), p2p.end(), p2p.begin(),::tolower );
-		if(p2p == "p2p" && !_config->UseP2PMode()){
+
+		if(p2p == "p2p" && !_config->UseP2PMode()) {
 			_config->SetUseP2PMode(true);
+		}
+		else if(p2p == "roap") {
+			_config->SetUseROAPMode(true);
+			_config->SetUseP2PMode(false);
 		}
 		else {
 			_config->SetUseP2PMode(false);
@@ -409,7 +456,7 @@ void TestMain::GetP2POrSIP(){
 		cout << "Switching mode unregistering with " << _config->GetSIPProxyAddress() << endl;
 		//assume this is already registered with CUCM, so unregister
 		SipccController::GetInstance()->UnRegister();
-		_state == STATE_NOT_REGISTERED;
+		_state = STATE_NOT_REGISTERED;
 	}
 }
 

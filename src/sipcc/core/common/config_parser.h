@@ -203,6 +203,12 @@ const char* config_get_version();
  */
 void config_setup_p2p_mode(const cc_boolean is_p2p);
 
+
+/*
+ * set ROAP proxy mode on or off
+ */
+void config_setup_roap_proxy_mode(const cc_boolean is_roap_proxy);
+
 /**
 * config_minimum_check:
 *
