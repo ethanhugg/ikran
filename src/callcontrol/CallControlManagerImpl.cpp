@@ -544,7 +544,7 @@ void CallControlManagerImpl::notifyCallEventObservers (ccapi_call_event_e callEv
     set<CC_Observer*>::const_iterator it = ccObservers.begin();
     for ( ; it != ccObservers.end(); it++ )
     {
-        (*it)->onCallEvent(callEvent, callPtr, info, "");
+        (*it)->onCallEvent(callEvent, callPtr, info, sdp);
     }
 }
 
