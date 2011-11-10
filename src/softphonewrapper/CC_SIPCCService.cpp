@@ -1105,4 +1105,8 @@ bool CC_SIPCCService::setROAPProxyMode(bool mode)  {
 	return CCAPI_Config_set_roap_proxy_mode(mode);
 }
 
+bool CC_SIPCCService::setROAPClientMode(bool mode)  {
+	return CCAPI_Config_set_roap_client_mode(mode);
+}
+
 } // End of namespace CSF

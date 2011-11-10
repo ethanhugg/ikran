@@ -202,7 +202,7 @@ int CCAPI_Config_get_remote_voip_port();
 const char* CCAPI_Config_get_version();
 cc_boolean CCAPI_Config_set_p2p_mode(const cc_boolean is_p2p);
 cc_boolean CCAPI_Config_set_roap_proxy_mode(const cc_boolean is_roap_proxy);
-
+cc_boolean CCAPI_Config_set_roap_client_mode(const cc_boolean is_roap_client);
 
 
 #endif  /* _CONFIG_API_H_ */
