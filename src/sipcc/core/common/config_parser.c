@@ -103,6 +103,7 @@ static boolean gP2PSIP = FALSE;
 static int gVoipControlPort = 5060;
 static int gCcm1_sip_port = 5060;
 static boolean gROAPPROXY = FALSE;
+static boolean gROAPCLIENT = FALSE;
 
 typedef struct _multiLevel {
     int cfgId;           /* config id */
@@ -1527,6 +1528,9 @@ void config_setup_elements (const char *sipUser, const char *sipPassword, const 
     // Set ROAP Proxy Mode boolean
     compare_or_set_boolean_value(CFGID_ROAPPROXY, gROAPPROXY, (const unsigned char *) "roapproxy");
 
+    // Set ROAP Client Mode boolean
+    compare_or_set_boolean_value(CFGID_ROAPCLIENT, gROAPCLIENT, (const unsigned char *) "roapclient");
+
     // Set product version
     compare_or_set_string_value(CFGID_VERSION, gVersion, (const unsigned char *) "version");
 
@@ -1573,6 +1577,11 @@ void config_setup_p2p_mode(const cc_boolean is_p2p) {
 void config_setup_roap_proxy_mode(const cc_boolean is_roap_proxy) {
 	gROAPPROXY = is_roap_proxy;
 	compare_or_set_boolean_value(CFGID_ROAPPROXY, is_roap_proxy, (const unsigned char *) "roapproxy");
+}
+
+void config_setup_roap_client_mode(const cc_boolean is_roap_client) {
+	gROAPCLIENT = is_roap_client;
+	compare_or_set_boolean_value(CFGID_ROAPCLIENT, is_roap_client, (const unsigned char *) "roapclient");
 }
 
 /**
