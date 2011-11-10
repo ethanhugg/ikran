@@ -212,6 +212,7 @@ void SipccController::UnRegister() {
 }
 
 void SipccController::PlaceCall(std::string dial_number) {
+	char sdp[] = "empty sdp string";
 	Logger::Instance()->logIt(" SipccController::PlaceCall");
 	dial_number_ = dial_number;	
 	 if (ccm_ptr_ != NULL)
@@ -227,7 +228,7 @@ void SipccController::PlaceCall(std::string dial_number) {
 			Logger::Instance()->logIt(" ext_renderer is NULL in PlaceCall");
 		}
 		outgoing_call_->setExternalRenderer(0,ext_renderer);
-        if(outgoing_call_->originateCall(videoDirection, dial_number_)) {
+        if(outgoing_call_->originateCall(videoDirection, dial_number_, sdp )) {
 			Logger::Instance()->logIt("SipccController::PlaceCall: Call Setup Succeeded ");
         	return ;
         } else {
