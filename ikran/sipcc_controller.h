@@ -94,7 +94,7 @@ public:
    	//Registration and Session Operations 
 	int Register(std::string device, std::string sipUser, std::string sipCredentials, std::string sipDomain);
 	void UnRegister();
-    void PlaceCall( std::string dial_number);
+  void PlaceCall(std::string dial_number, std::string sdp);
 	void EndCall();
 	void AnswerCall();
 	

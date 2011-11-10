@@ -314,7 +314,7 @@ CallControl::PlaceCall(const char* dn,
 	 	Logger::Instance()->logIt("Vsource is null in PlaceCall");
 	}
 	SipccController::GetInstance()->SetExternalRenderer(vSource);
-	SipccController::GetInstance()->PlaceCall(m_dial_number);
+	SipccController::GetInstance()->PlaceCall(m_dial_number, (char *) "");
 	m_session = PR_TRUE;
 	return NS_OK;
 }
