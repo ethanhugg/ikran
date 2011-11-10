@@ -167,9 +167,9 @@ CC_CallInfoPtr CC_SIPCCCall::getCallInfo ()
 //              down to pSIPCC to originate a call, end a call etc.
 //
 
-bool CC_SIPCCCall::originateCall (cc_sdp_direction_t video_pref, const string & digits)
+bool CC_SIPCCCall::originateCall (cc_sdp_direction_t video_pref, const string & digits, char* sdp)
 {
-    return (CCAPI_Call_originateCall(callHandle, video_pref, digits.c_str()) == CC_SUCCESS);
+    return (CCAPI_Call_originateCall(callHandle, video_pref, digits.c_str(), sdp) == CC_SUCCESS);
 }
 
 bool CC_SIPCCCall::answerCall (cc_sdp_direction_t video_pref)
@@ -554,7 +554,8 @@ CC_SIPCCCallMediaDataPtr CC_SIPCCCall::getMediaData()
 
 bool CC_SIPCCCall::originateP2PCall (cc_sdp_direction_t video_pref, const std::string & digits, const std::string & ip)
 {
+	char sdp[] = "empty sdp string";
 	CCAPI_Config_set_server_address(ip.c_str());
-	return (CCAPI_Call_originateCall(callHandle, video_pref, digits.c_str()) == CC_SUCCESS);
+	return (CCAPI_Call_originateCall(callHandle, video_pref, digits.c_str(), sdp) == CC_SUCCESS);
 }
 

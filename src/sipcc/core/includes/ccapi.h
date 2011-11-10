@@ -71,7 +71,7 @@ typedef struct cc_global_sdp_ {
 	char				   sdp[1000];
 } cc_global_sdp_t;
 
-cc_global_sdp_t  gSDP;
+extern cc_global_sdp_t  gROAPSDP;
 
 //set_global_sdp(char* sdp);
 
