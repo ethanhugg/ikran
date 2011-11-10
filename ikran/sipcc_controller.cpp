@@ -259,15 +259,18 @@ Logger::Instance()->logIt(" In Asnwer call ");
 	
 		if (answerableCall != NULL) {		
 			if (!answerableCall->answerCall(videoDirection)) {
+			} else {
+				//defaulting to I420 video format retrieval
+				if(ext_renderer == 0)
+					Logger::Instance()->logIt("ext_renderer is NULL in PlaceCall");
+
+				answerableCall->setExternalRenderer(0, ext_renderer);
 			}
 		} else {
+			Logger::Instance()->logIt("AnswerCall no active call");
         }
-		//defaulting to I420 video format retrieval
-		if(ext_renderer == 0)
-			Logger::Instance()->logIt("ext_renderer is NULL in PlaceCall");
-
-	    answerableCall->setExternalRenderer(0, ext_renderer);
 	} else {
+		Logger::Instance()->logIt("AnswerCall: ccm pointer not created");
 	}
 }
 
@@ -412,7 +415,7 @@ void SipccController::onAuthenticationStatusChange	(AuthenticationStatusEnum::Au
 {}
 
 //SipStack Callbacks for changes in call status.
-void SipccController::onCallEvent (ccapi_call_event_e callEvent, CC_CallPtr call, CC_CallInfoPtr info) 
+void SipccController::onCallEvent (ccapi_call_event_e callEvent, CC_CallPtr call, CC_CallInfoPtr info, char* sdp) 
 {
 	if (callEvent == CCAPI_CALL_EV_STATE) {
 		
@@ -441,8 +444,8 @@ void SipccController::onCallEvent (ccapi_call_event_e callEvent, CC_CallPtr call
             	observer_->OnCallConnected();
 		} else if (info->getCallState() == RINGOUT ) {
 			Logger::Instance()->logIt("SipccController::onCallEvent RINGOUT");
-		// <em>	if(observer_ != NULL)
-            	// <em> observer_->OnCallConnected();
+			if(observer_ != NULL)
+            	observer_->OnCallConnected();
 		} else if (info->getCallState() == HOLD ) {
 			Logger::Instance()->logIt("SipccController::onCallEvent HOLD");
 			if(observer_ != NULL)
