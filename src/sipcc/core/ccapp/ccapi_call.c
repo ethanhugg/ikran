@@ -120,8 +120,17 @@ cc_lineid_t CCAPI_Call_getLine(cc_call_handle_t call_handle){
  * @param [in] digits - digits to be dialed
  * @return SUCCESS or FAILURE
  */
-cc_return_t CCAPI_Call_originateCall(cc_call_handle_t handle, cc_sdp_direction_t video_pref, cc_string_t digits){
-     return CC_CallFeature_dial(handle, video_pref, digits);
+cc_return_t CCAPI_Call_originateCall(cc_call_handle_t handle, cc_sdp_direction_t video_pref, cc_string_t digits, char* sdp){
+	
+	// <em>
+	int roapproxy = 0;
+	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
+	
+	if (roapproxy == TRUE)	
+		strcpy(gSDP.sdp, sdp);
+	//
+	
+	return CC_CallFeature_dial(handle, video_pref, digits);
 }
 
 /**

@@ -3293,6 +3293,8 @@ ccsip_handle_idle_ev_cc_setup (ccsipCCB_t *ccb, sipSMEvent_t *event)
     cpr_ip_type     ip_type = CPR_IP_ADDR_IPV4;
     boolean         replace = FALSE;
 
+	int	roapproxy;
+
     CPR_IP_ADDR_INIT(proxy_ipaddr);
 
     ccb->gsm_id  = event->u.cc_msg->msg.setup.call_id;
@@ -3610,10 +3612,16 @@ ccsip_handle_idle_ev_cc_setup (ccsipCCB_t *ccb, sipSMEvent_t *event)
 
     /* Save the GSM's msg. bodies for future used */
     ccsip_save_local_msg_body(ccb, &event->u.cc_msg->msg.setup.msg_body);
-    
-    // <em>    setting global sdp string 
-    //set_global_sdp(char* sdp);
-    strcpy(gSDP.sdp, ccb->local_msg_body.parts[0].body);
+
+	// <em>
+	// replace SDP in ccb if this is the ROAP proxy
+    roapproxy = 0;
+	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
+	
+	if (roapproxy == TRUE)
+		strcpy(ccb->local_msg_body.parts[0].body,gSDP.sdp);
+	else
+		strcpy(gSDP.sdp, ccb->local_msg_body.parts[0].body);
     //
     
     /*
