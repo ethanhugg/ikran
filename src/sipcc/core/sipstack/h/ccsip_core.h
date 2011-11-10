@@ -604,6 +604,7 @@ typedef struct
     boolean send_reason_header;
 
     uint32_t callref;
+    
 } ccsipCCB_t;
 
 

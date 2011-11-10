@@ -97,6 +97,7 @@ protected:
     PRThread *thread;
     PRBool m_session;
 	PRBool m_registered;
+	PRBool m_callHeld;
     PRLogModuleInfo *log;
     
 	nsCOMPtr<nsISessionStateObserver> sessionObserver; 

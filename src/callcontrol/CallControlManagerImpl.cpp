@@ -502,9 +502,9 @@ void CallControlManagerImpl::onLineEvent(ccapi_line_event_e lineEvent,     CC_Li
 {
     notifyLineEventObservers(lineEvent, linePtr, info);
 }
-void CallControlManagerImpl::onCallEvent(ccapi_call_event_e callEvent,     CC_CallPtr callPtr, CC_CallInfoPtr info)
+void CallControlManagerImpl::onCallEvent(ccapi_call_event_e callEvent,     CC_CallPtr callPtr, CC_CallInfoPtr info, char* sdp)
 {
-    notifyCallEventObservers(callEvent, callPtr, info);
+    notifyCallEventObservers(callEvent, callPtr, info, sdp);
 }
 
 
@@ -538,13 +538,13 @@ void CallControlManagerImpl::notifyLineEventObservers (ccapi_line_event_e lineEv
     }
 }
 
-void CallControlManagerImpl::notifyCallEventObservers (ccapi_call_event_e callEvent, CC_CallPtr callPtr, CC_CallInfoPtr info)
+void CallControlManagerImpl::notifyCallEventObservers (ccapi_call_event_e callEvent, CC_CallPtr callPtr, CC_CallInfoPtr info, char* sdp)
 {
 	base::AutoLock lock(m_lock);
     set<CC_Observer*>::const_iterator it = ccObservers.begin();
     for ( ; it != ccObservers.end(); it++ )
     {
-        (*it)->onCallEvent(callEvent, callPtr, info);
+        (*it)->onCallEvent(callEvent, callPtr, info, "");
     }
 }
 

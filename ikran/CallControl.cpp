@@ -96,7 +96,10 @@ public:
     }
    
     NS_IMETHOD Run() {
-        return m_M_Obs->OnMediaStateChange((char *)m_Msg, (char *)m_Arg);
+		if (m_M_Obs != NULL)
+			return m_M_Obs->OnMediaStateChange((char *)m_Msg, (char *)m_Arg);
+		else
+			return NS_OK;
     }
    
 private:
@@ -114,6 +117,7 @@ CallControl::Init()
 {
     m_session = PR_FALSE;
 	m_registered = PR_FALSE;
+	m_callHeld = PR_FALSE;
 	vSource = 0;
     return NS_OK;
 }
@@ -295,7 +299,7 @@ CallControl::PlaceCall(const char* dn,
 {
 	mediaObserver = obs;
 	vCanvas = ctx;
-	if(m_session) {
+	if(m_session && m_callHeld == PR_FALSE) {
 		Logger::Instance()->logIt("Place Call: call is in progress");
         NS_DispatchToMainThread(new MediaCallback(
             mediaObserver, "error", "call is in progress"
@@ -473,6 +477,7 @@ CallControl::HoldCall()
         return NS_ERROR_FAILURE;
 	}
 	SipccController::GetInstance()->HoldCall();
+	m_callHeld = PR_TRUE;
     return NS_OK;
 }
 
@@ -491,5 +496,6 @@ CallControl::ResumeCall()
         return NS_ERROR_FAILURE;
 	}
 	SipccController::GetInstance()->ResumeCall();
+	m_callHeld = PR_FALSE;
     return NS_OK;
 }

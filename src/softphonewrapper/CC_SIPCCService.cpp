@@ -385,10 +385,10 @@ extern "C" void CCAPI_LineListener_onLineEvent(ccapi_line_event_e type, cc_linei
     CSF::CC_SIPCCService::onLineEvent(type, line, info);
 }
 
-extern "C" void CCAPI_CallListener_onCallEvent(ccapi_call_event_e type, cc_call_handle_t handle, cc_callinfo_ref_t info)
+extern "C" void CCAPI_CallListener_onCallEvent(ccapi_call_event_e type, cc_call_handle_t handle, cc_callinfo_ref_t info, char* sdp)
 {
     //CSFLogDebugS( logTag, "In CCAPI_CallListener_onCallEvent");
-	CSF::CC_SIPCCService::onCallEvent(type, handle, info);
+	CSF::CC_SIPCCService::onCallEvent(type, handle, info, sdp);
 }
 
 
@@ -797,7 +797,7 @@ void CC_SIPCCService::onLineEvent(ccapi_line_event_e eventType, cc_lineid_t line
     _self->notifyLineEventObservers(eventType, linePtr, infoPtr);
 }
 
-void CC_SIPCCService::onCallEvent(ccapi_call_event_e eventType, cc_call_handle_t handle, cc_callinfo_ref_t info)
+void CC_SIPCCService::onCallEvent(ccapi_call_event_e eventType, cc_call_handle_t handle, cc_callinfo_ref_t info, char* sdp)
 {
     if (_self == NULL)
     {
@@ -824,7 +824,7 @@ void CC_SIPCCService::onCallEvent(ccapi_call_event_e eventType, cc_call_handle_t
 	set<CSF::CC_CallCapabilityEnum::CC_CallCapability> capSet = infoPtr->getCapabilitySet();
     CSFLogInfoS( logTag, "onCallEvent(" << call_event_getname(eventType) << ", " << callPtr->toString() <<
     		", [" << call_state_getname(infoPtr->getCallState()) << "|" << CC_CallCapabilityEnum::toString(capSet) << "] )");
-    _self->notifyCallEventObservers(eventType, callPtr, infoPtr);
+    _self->notifyCallEventObservers(eventType, callPtr, infoPtr, sdp);
 }
 
 void CC_SIPCCService::addCCObserver ( CC_Observer * observer )
@@ -876,13 +876,13 @@ void CC_SIPCCService::notifyLineEventObservers (ccapi_line_event_e eventType, CC
     }
 }
 
-void CC_SIPCCService::notifyCallEventObservers (ccapi_call_event_e eventType, CC_CallPtr callPtr, CC_CallInfoPtr info)
+void CC_SIPCCService::notifyCallEventObservers (ccapi_call_event_e eventType, CC_CallPtr callPtr, CC_CallInfoPtr info, char* sdp)
 {
 	base::AutoLock lock(m_lock);
 	set<CC_Observer*>::const_iterator it = ccObservers.begin();
 	for ( ; it != ccObservers.end(); it++ )
     {
-	    (*it)->onCallEvent(eventType, callPtr, info);
+	    (*it)->onCallEvent(eventType, callPtr, info, sdp);
     }
 }
 
