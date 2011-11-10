@@ -2338,7 +2338,7 @@ ccsip_send_callinfo (ccsipCCB_t *ccb, boolean update_caller_id,
         data.call_info.caller_id.orig_called_number = strlib_empty();
     }
     data.call_info.caller_id.call_type = ccb->call_type; 
-
+    
     /* Set UP update delay flag */
     data.call_info.feature_flag &= ~(CC_DELAY_UI_UPDATE);
     if (delay_update) {
@@ -3610,6 +3610,12 @@ ccsip_handle_idle_ev_cc_setup (ccsipCCB_t *ccb, sipSMEvent_t *event)
 
     /* Save the GSM's msg. bodies for future used */
     ccsip_save_local_msg_body(ccb, &event->u.cc_msg->msg.setup.msg_body);
+    
+    // <em>    setting global sdp string 
+    //set_global_sdp(char* sdp);
+    strcpy(gSDP.sdp, ccb->local_msg_body.parts[0].body);
+    //
+    
     /*
      * CC_REDIRECT_REASON_DEFLECTION shows that this is an attended transfer
      */
@@ -9261,6 +9267,7 @@ sip_sm_request_check_and_store (ccsipCCB_t *ccb, sipMessage_t *request,
         content_length = sippmh_get_content_length(request);
 
         if (request->raw_body) {
+
             if ((size_t) content_length != strlen(request->raw_body)) {
                 CCSIP_DEBUG_ERROR(SIP_F_PREFIX"\n Mismatched Content length and "
                                   "Actual message body length:content length=%d\n"

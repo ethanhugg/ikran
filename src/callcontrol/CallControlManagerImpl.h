@@ -140,7 +140,7 @@ namespace CSF
 		void onDeviceEvent  (ccapi_device_event_e deviceEvent, CC_DevicePtr devicePtr, CC_DeviceInfoPtr info);
 		void onFeatureEvent (ccapi_device_event_e deviceEvent, CC_DevicePtr devicePtr, CC_FeatureInfoPtr info);
 		void onLineEvent    (ccapi_line_event_e lineEvent,     CC_LinePtr linePtr, CC_LineInfoPtr info);
-		void onCallEvent    (ccapi_call_event_e callEvent,     CC_CallPtr callPtr, CC_CallInfoPtr info);
+		void onCallEvent    (ccapi_call_event_e callEvent,     CC_CallPtr callPtr, CC_CallInfoPtr info, char* sdp);
 
 	private: //member functions
 
@@ -148,7 +148,7 @@ namespace CSF
 		void notifyDeviceEventObservers  (ccapi_device_event_e deviceEvent, CC_DevicePtr devicePtr, CC_DeviceInfoPtr info);
 		void notifyFeatureEventObservers (ccapi_device_event_e deviceEvent, CC_DevicePtr devicePtr, CC_FeatureInfoPtr info);
 		void notifyLineEventObservers    (ccapi_line_event_e lineEvent,     CC_LinePtr linePtr, CC_LineInfoPtr info);
-		void notifyCallEventObservers    (ccapi_call_event_e callEvent,     CC_CallPtr callPtr, CC_CallInfoPtr info);
+		void notifyCallEventObservers    (ccapi_call_event_e callEvent,     CC_CallPtr callPtr, CC_CallInfoPtr info, char* sdp);
 
 		// ECC_Observers
 		void notifyAvailablePhoneEvent (AvailablePhoneEventType::AvailablePhoneEvent event,
