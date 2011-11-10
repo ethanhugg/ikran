@@ -107,6 +107,10 @@ const char *ring_names[] = {
     "Bellcore-dr5"
 };
 
+// <em>
+cc_global_sdp_t  gROAPSDP;
+//
+
 /* Forward function declarations */
 static int sip_sm_request_check_and_store(ccsipCCB_t *ccb, sipMessage_t *request,
                                                sipMethod_t request_method,
@@ -3618,10 +3622,12 @@ ccsip_handle_idle_ev_cc_setup (ccsipCCB_t *ccb, sipSMEvent_t *event)
     roapproxy = 0;
 	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
 	
-	if (roapproxy == TRUE)
-		strcpy(ccb->local_msg_body.parts[0].body,gSDP.sdp);
-	else
-		strcpy(gSDP.sdp, ccb->local_msg_body.parts[0].body);
+	if (roapproxy == TRUE) {
+		strcpy(ccb->local_msg_body.parts[0].body,gROAPSDP.sdp);
+	} else {
+		strcpy(gROAPSDP.sdp, ccb->local_msg_body.parts[0].body);
+	}
+
     //
     
     /*

@@ -127,7 +127,7 @@ cc_return_t CCAPI_Call_originateCall(cc_call_handle_t handle, cc_sdp_direction_t
 	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
 	
 	if (roapproxy == TRUE)	
-		strcpy(gSDP.sdp, sdp);
+		strcpy(gROAPSDP.sdp, sdp);
 	//
 	
 	return CC_CallFeature_dial(handle, video_pref, digits);
