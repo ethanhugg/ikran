@@ -3875,6 +3875,7 @@ ccsip_handle_sentinvite_ev_sip_2xx (ccsipCCB_t *ccb, sipSMEvent_t *event)
     const char     *contact = NULL;
     sipsdp_status_t sdp_status;
     string_t        recv_info_list = strlib_empty();
+	int roapproxy;
 
     /* Unpack the event */
     response = event->u.pSipMessage;
@@ -3941,6 +3942,15 @@ ccsip_handle_sentinvite_ev_sip_2xx (ccsipCCB_t *ccb, sipSMEvent_t *event)
     /* Extract destination SDP and related fields */
     sdp_status = sip_util_extract_sdp(ccb, response);
 
+	//<em>
+	// extract SDP from ccb if this is the ROAP proxy
+    roapproxy = 0;
+	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
+	
+	if (roapproxy == TRUE) {
+		strcpy(gROAPSDP.sdp, ccb->local_msg_body.parts[0].body);
+	}
+	//
 
     switch (sdp_status) {
     case SIP_SDP_SUCCESS:
