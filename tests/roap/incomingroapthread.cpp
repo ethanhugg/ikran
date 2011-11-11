@@ -84,7 +84,8 @@ bool IncomingRoapThread::nextMessage(string& next)
   bool success = false;
   socklen_t addrlen= sizeof(struct sockaddr_in);
   struct sockaddr_in address;
-
+  next.clear();
+  
   if (_socket == -1)
   {
     CSFLogDebugS(logTag, "nextMessage - no socket");
