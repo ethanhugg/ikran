@@ -39,6 +39,8 @@
 
 #include "outgoingroap.h"
 
+
+
 void OutgoingRoap::push(string roapMessage)
 {
   base::AutoLock lock(queueMutex);
@@ -58,6 +60,16 @@ string OutgoingRoap::pop()
   }
   
   return result;
+}
+
+void OutgoingRoap::Init()
+{
+	SipccController::GetInstance()->AddSipccControllerObserver(this);
+}
+
+void OutgoingRoap::Shutdown()
+{
+	SipccController::GetInstance()->RemoveSipccControllerObserver();
 }
 
 void OutgoingRoap::Offer(string callerSessionId, string seq, string sdp)
@@ -122,3 +134,23 @@ void OutgoingRoap::TentativeAnswer(string callerSessionId, string calleeSessionI
   
   push(roapMessage);
 }
+
+void OutgoingRoap::OnIncomingCall(std::string callingPartyName, std::string callingPartyNumber)
+{}
+
+void OutgoingRoap::OnRegisterStateChange(std::string registrationState)
+{}
+
+void OutgoingRoap::OnCallTerminated()
+{}
+
+void OutgoingRoap::OnCallConnected(char* sdp)
+{
+	Answer("callerSessionId", "calleeSessionId", "seq", sdp);
+}
+
+void OutgoingRoap::OnCallHeld()
+{}
+
+void OutgoingRoap::OnCallResume()
+{}

@@ -171,7 +171,7 @@ void CallControl::OnCallTerminated()
  * Callback from Sip Call Controller on
  * media connected between the peers 
  */
-void CallControl::OnCallConnected()
+void CallControl::OnCallConnected(char* sdp)
 {
 	 NS_DispatchToMainThread(new MediaCallback(
         mediaObserver, "call-connected", ""

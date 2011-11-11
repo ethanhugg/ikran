@@ -441,11 +441,11 @@ void SipccController::onCallEvent (ccapi_call_event_e callEvent, CC_CallPtr call
 		} else if (info->getCallState() == CONNECTED ) {
 			Logger::Instance()->logIt("SipccController::onCallEvent CONNECTED");
 			if(observer_ != NULL)
-            	observer_->OnCallConnected();
+            	observer_->OnCallConnected(sdp);
 		} else if (info->getCallState() == RINGOUT ) {
 			Logger::Instance()->logIt("SipccController::onCallEvent RINGOUT");
 			if(observer_ != NULL)
-            	observer_->OnCallConnected();
+            	observer_->OnCallConnected(sdp);
 		} else if (info->getCallState() == HOLD ) {
 			Logger::Instance()->logIt("SipccController::onCallEvent HOLD");
 			if(observer_ != NULL)
