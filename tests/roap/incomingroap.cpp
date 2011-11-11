@@ -39,6 +39,7 @@
 
 #include <stdarg.h>
 
+#include "roapapp.h"
 #include "incomingroap.h"
 #include "CSFLogStream.h"
 #include "sipcc_controller.h"
@@ -47,25 +48,41 @@ static const char* logTag = "RoapProxy";
 
 void IncomingRoap::Init(string device, string user, string password, string domain)
 {
-	SipccController::GetInstance()->SetProperty("transport", "tcp");
-  
-	int regResult = SipccController::GetInstance()->StartROAPProxy(device, user, password, domain);
+  if (roapProxyCallState != CALLSTATE_NOT_REGISTERED)
+  {
+    CSFLogErrorS(logTag, "Init called in invalid state: " << roapProxyCallState);
+  }
+  else
+  {
+    SipccController::GetInstance()->SetProperty("transport", "tcp");
+    
+    int regResult = SipccController::GetInstance()->StartROAPProxy(device, user, password, domain);
 
-	//zero means happy here
-	//TODO - maybe finer grained results?
-	if (regResult != 0) 
-	{
-		CSFLogDebugS(logTag, "ERROR registering with " << domain);
-	}
-	else 
-	{
-		CSFLogDebugS(logTag, "Successfully registered with " << domain);
-	}
+    //zero means happy here
+    //TODO - maybe finer grained results?
+    if (regResult != 0) 
+    {
+      CSFLogDebugS(logTag, "ERROR registering with " << domain);
+    }
+    else 
+    {
+      CSFLogDebugS(logTag, "Successfully registered with " << domain);
+      roapProxyCallState = CALLSTATE_REGISTERED;
+    }
+  }
 }
 
 void IncomingRoap::Offer(string callerSessionId, string seq, string sdp)
 {
-	SipccController::GetInstance()->PlaceCall("", sdp);
+  if (roapProxyCallState != CALLSTATE_REGISTERED)
+  {
+    CSFLogErrorS(logTag, "Offer called in invalid state: " << roapProxyCallState);
+  }
+  else
+  {
+    SipccController::GetInstance()->PlaceCall(callerSessionId, sdp);
+    roapProxyCallState = CALLSTATE_IN_CALL;
+  }
 }
 
 void IncomingRoap::Answer(string callerSessionId, string calleeSessionId, string seq, string sdp)

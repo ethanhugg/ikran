@@ -37,59 +37,11 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#include <sys/timeb.h>
-#include <stdarg.h>
+#pragma once
 
-#include "csf_common.h"
-#include "CSFLogStream.h"
-#include "debug-psipcc-types.h"
-#include "base/time.h"
-#include "base/threading/platform_thread.h"
-#include "base/threading/simple_thread.h"
-#include "base/synchronization/waitable_event.h"
-#include "base/synchronization/lock.h"
+const int CALLSTATE_NOT_REGISTERED = 1;
+const int CALLSTATE_REGISTERED = 2;
+const int CALLSTATE_IN_CALL = 3;
+const int CALLSTATE_INCOMING_CALL = 4;
 
-#include <algorithm>
-#include <fstream>
-#include <iostream>
-#include <map>
-
-#include "roapapp.h"
-#include "incomingroap.h"
-#include "outgoingroap.h"
-#include "incomingroapthread.h"
-#include "outgoingroapthread.h"
-
-static const char* logTag = "RoapProxy";
-
-int roapProxyCallState = CALLSTATE_NOT_REGISTERED;
-
-int main(int argc, char**argv)
-{
-  IncomingRoapThread incomingThread;
-  OutgoingRoapThread outgoingThread;
-  
-  CSFLogDebugS(logTag, "ROAP Proxy Start");
-
-  incomingThread.Start();
-  outgoingThread.Start();
-  
-  printf("RoapProxy Running\nPress 'q' to quit\n\n");
-  
-  while (true)
-  {
-    char ch = getchar();
-    
-    if (ch == 'q' || ch == 'Q')
-    {
-      incomingThread.shutdown();
-      outgoingThread.shutdown();
-      break;
-    }
-  }
-  
-  incomingThread.Join();
-  outgoingThread.Join();
-  
-  CSFLogDebugS(logTag, "ROAP Proxy End");
-}
+extern int roapProxyCallState;
