@@ -86,7 +86,7 @@ public:
 	virtual void OnIncomingCall(std::string callingPartyName, std::string callingPartyNumber);
  	virtual void OnRegisterStateChange(std::string registrationState);
  	virtual void OnCallTerminated(); 
-	virtual void OnCallConnected();
+	virtual void OnCallConnected(char* sdp);
 	virtual void OnCallHeld();
 	virtual void OnCallResume();
 	
