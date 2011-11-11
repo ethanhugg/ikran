@@ -46,7 +46,9 @@ using namespace std;
 #include "base/synchronization/waitable_event.h"
 #include "base/synchronization/lock.h"
 
-class OutgoingRoap
+#include "sipcc_controller.h"
+
+class OutgoingRoap : public SipccControllerObserver
 {
 public:
   queue<string> outboundQueue;
@@ -54,8 +56,17 @@ public:
 public:
   void push(string roapMessage);
   string pop();
+  void Init();
+  void Shutdown();
   void Offer(string callerSessionId, string seq, string sdp);
   void Answer(string callerSessionId, string calleeSessionId, string seq, string sdp);
   void OK(string callerSessionId, string calleeSessionId, string seq);
   void TentativeAnswer(string callerSessionId, string calleeSessionId, string seq, string sdp);
+
+  virtual void OnIncomingCall(std::string callingPartyName, std::string callingPartyNumber);
+  virtual void OnRegisterStateChange(std::string registrationState);
+  virtual void OnCallTerminated();
+  virtual void OnCallConnected(char* sdp);
+  virtual void OnCallHeld();
+  virtual void OnCallResume();
 };

@@ -54,18 +54,18 @@ void IncomingRoap::Init(string device, string user, string password, string doma
 	//zero means happy here
 	//TODO - maybe finer grained results?
 	if (regResult != 0) 
-  {
+	{
 		CSFLogDebugS(logTag, "ERROR registering with " << domain);
 	}
 	else 
-  {
+	{
 		CSFLogDebugS(logTag, "Successfully registered with " << domain);
 	}
 }
 
 void IncomingRoap::Offer(string callerSessionId, string seq, string sdp)
 {
-  
+	SipccController::GetInstance()->PlaceCall("", sdp);
 }
 
 void IncomingRoap::Answer(string callerSessionId, string calleeSessionId, string seq, string sdp)
@@ -82,4 +82,6 @@ void IncomingRoap::TentativeAnswer(string callerSessionId, string calleeSessionI
 {
   
 }
+
+
 

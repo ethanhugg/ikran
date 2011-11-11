@@ -96,7 +96,7 @@ void TestMain::OnCallTerminated()
  * Callback from Sip Call Controller on
  * media connected between the peers 
  */
-void TestMain::OnCallConnected(){
+void TestMain::OnCallConnected(char* sdp){
 	_state = STATE_IN_CALL;
 }
 
