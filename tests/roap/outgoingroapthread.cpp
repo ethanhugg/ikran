@@ -139,6 +139,8 @@ void OutgoingRoapThread::Run()
   
   initialize();
   
+  _outgoing.Init();
+
   // TEST CODE
   string callerSessionId = "callerId";
   string calleeSessionId = "calleeId";
@@ -166,6 +168,8 @@ void OutgoingRoapThread::shutdown()
 {
   CSFLogDebugS(logTag, "OutgoingRoapThread shutdown called");
   
+  _outgoing.Shutdown();
+
   _shutdown = true;
   if (_socket != -1)
   {

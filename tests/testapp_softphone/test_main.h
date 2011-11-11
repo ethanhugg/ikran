@@ -73,7 +73,7 @@ public:
 	virtual void OnIncomingCall(string callingPartyName, string callingPartyNumber);
  	virtual void OnRegisterStateChange(string registrationState);
  	virtual void OnCallTerminated(); 
-	virtual void OnCallConnected();   
+	virtual void OnCallConnected(char* sdp);
 	virtual void OnCallHeld();
 	virtual void OnCallResume();
 private:
