@@ -332,7 +332,7 @@ void TestMain::PlaceCall(){
 	}
 	else{
 		cout << "Calling: " << _config->GetNumberToDial() << endl;
-		SipccController::GetInstance()->PlaceCall(_config->GetNumberToDial());
+		SipccController::GetInstance()->PlaceCall(_config->GetNumberToDial(), (char *) "");
 	}
 	_state = STATE_IN_CALL;	
 }
