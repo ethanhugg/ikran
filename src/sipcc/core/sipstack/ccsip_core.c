@@ -3619,6 +3619,7 @@ ccsip_handle_idle_ev_cc_setup (ccsipCCB_t *ccb, sipSMEvent_t *event)
 
 	// <em>
 	// replace SDP in ccb if this is the ROAP proxy
+	
     roapproxy = 0;
 	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
 	
@@ -3627,7 +3628,7 @@ ccsip_handle_idle_ev_cc_setup (ccsipCCB_t *ccb, sipSMEvent_t *event)
 	} else {
 		strcpy(gROAPSDP.sdp, ccb->local_msg_body.parts[0].body);
 	}
-
+	
     //
     
     /*
@@ -5560,6 +5561,7 @@ ccsip_handle_disconnect_local (ccsipCCB_t *ccb, sipSMEvent_t *event)
 
     /* Send BYE message */
     ccb->authen.cred_type = 0;
+	
     sipSPISendBye(ccb, alsoString, NULL);
     if (ccb->state == SIP_STATE_SENT_MIDCALL_INVITE) {
         sip_sm_change_state(ccb, SIP_STATE_RELEASE);
