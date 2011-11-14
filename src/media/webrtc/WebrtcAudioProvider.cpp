@@ -727,7 +727,7 @@ int WebrtcAudioProvider::toneStart( ToneType type, ToneDirection direction, int 
 }
 
 int WebrtcAudioProvider::toneStop( ToneType type, int groupId, int streamId ) {
-	base::AutoLock lock(m_lock);
+	//base::AutoLock lock(m_lock);
 	LOG_WEBRTC_INFO( logTag, "mediaToneStop: tone=%d, groupId=%d, streamId=%d", type, groupId, streamId );
 	if ( voeFile->IsPlayingFileLocally( localToneChannel ) == 1 ) {
 		voeBase->StopPlayout( localToneChannel );
