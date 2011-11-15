@@ -142,15 +142,15 @@ void OutgoingRoapThread::Run()
   _outgoing.Init();
 
   // TEST CODE
-  string callerSessionId = "callerId";
-  string calleeSessionId = "calleeId";
-  string seq = "seq123";
-  string sdp = "sdp456";
-  
-  _outgoing.Offer(callerSessionId, seq, sdp);
-  _outgoing.Answer(callerSessionId, calleeSessionId, seq, sdp);
-  _outgoing.OK(callerSessionId, calleeSessionId, seq);
-  _outgoing.TentativeAnswer(callerSessionId, calleeSessionId, seq, sdp);
+//  string callerSessionId = "callerId";
+//  string calleeSessionId = "calleeId";
+//  string seq = "seq123";
+//  string sdp = "sdp456";
+//  
+//  _outgoing.Offer(callerSessionId, seq, sdp);
+//  _outgoing.Answer(callerSessionId, calleeSessionId, seq, sdp);
+//  _outgoing.OK(callerSessionId, calleeSessionId, seq);
+//  _outgoing.TentativeAnswer(callerSessionId, calleeSessionId, seq, sdp);
   // END TEST
   
   while (!_shutdown)

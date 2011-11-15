@@ -76,7 +76,7 @@ void OutgoingRoap::Offer(string callerSessionId, string seq, string sdp)
 {
   string roapMessage;
   
-  roapMessage += "{ \"messageType\":\"OFFER\", callerSessionId:\"";
+  roapMessage += "{ \"messageType\":\"OFFER\", \"callerSessionId\":\"";
   roapMessage += callerSessionId;
   roapMessage += "\", \"seq\":\"";
   roapMessage += seq;
@@ -91,7 +91,7 @@ void OutgoingRoap::Answer(string callerSessionId, string calleeSessionId, string
 {
   string roapMessage;
   
-  roapMessage += "{ \"messageType\":\"ANSWER\", callerSessionId:\"";
+  roapMessage += "{ \"messageType\":\"ANSWER\", \"callerSessionId\":\"";
   roapMessage += callerSessionId;
   roapMessage += "\", \"calleeSessionId:\"";
   roapMessage += calleeSessionId;
@@ -109,7 +109,7 @@ void OutgoingRoap::OK(string callerSessionId, string calleeSessionId, string seq
 {
   string roapMessage;
   
-  roapMessage += "{ \"messageType\":\"OK\", callerSessionId:\"";
+  roapMessage += "{ \"messageType\":\"OK\", \"callerSessionId\":\"";
   roapMessage += callerSessionId;
   roapMessage += "\", \"seq\":\"";
   roapMessage += seq;
@@ -122,7 +122,7 @@ void OutgoingRoap::TentativeAnswer(string callerSessionId, string calleeSessionI
 {
   string roapMessage;
   
-  roapMessage += "{ \"messageType\":\"TENTATIVE_ANSWER\", callerSessionId:\"";
+  roapMessage += "{ \"messageType\":\"TENTATIVE_ANSWER\", \"callerSessionId\":\"";
   roapMessage += callerSessionId;
   roapMessage += "\", \"calleeSessionId:\"";
   roapMessage += calleeSessionId;
