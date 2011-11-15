@@ -146,7 +146,8 @@ void OutgoingRoap::OnCallTerminated()
 
 void OutgoingRoap::OnCallConnected(char* sdp)
 {
-	Answer("callerSessionId", "calleeSessionId", "seq", sdp);
+	if (strcmp(sdp,"") != 0)
+		Answer("callerSessionId", "calleeSessionId", "seq", sdp);
 }
 
 void OutgoingRoap::OnCallHeld()
