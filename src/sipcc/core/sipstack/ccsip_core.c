@@ -3623,11 +3623,11 @@ ccsip_handle_idle_ev_cc_setup (ccsipCCB_t *ccb, sipSMEvent_t *event)
     roapproxy = 0;
 	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
 	
+
 	if (roapproxy == TRUE) {
-		strcpy(ccb->local_msg_body.parts[0].body,gROAPSDP.sdp);
-		strcpy(gROAPSDP.sdp,"");
+		strcpy(ccb->local_msg_body.parts[0].body, gROAPSDP.offerSDP);
 	} else {
-		strcpy(gROAPSDP.sdp, ccb->local_msg_body.parts[0].body);
+		//strcpy(gROAPSDP->sdp, ccb->local_msg_body.parts[0].body);
 	}
 	
     //
@@ -3950,8 +3950,9 @@ ccsip_handle_sentinvite_ev_sip_2xx (ccsipCCB_t *ccb, sipSMEvent_t *event)
 	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
 	
 	if (roapproxy == TRUE) {
-		//strcpy(gROAPSDP.sdp, ccb->local_msg_body.parts[0].body);
-		strcpy(gROAPSDP.sdp, response->mesg_body->msgBody);
+		//strcpy(gROAPSDP->sdp, ccb->local_msg_body.parts[0].body);
+		strcpy(gROAPSDP.answerSDP, "\0");
+		strcpy(gROAPSDP.answerSDP, response->mesg_body->msgBody);
 	}
 	//
 

@@ -6388,15 +6388,21 @@ static void lsm_util_start_tone(vcm_tones_t tone, short alert_info,
         cc_call_handle_t call_handle, groupid_t group_id,
         streamid_t stream_id, uint16_t direction) {
 
+	int roapproxy;
     static const char fname[] = "lsm_util_start_tone";
     line_t line = GET_LINE_ID(call_handle);
     callid_t call_id = GET_CALL_ID(call_handle);
     DEF_DEBUG(DEB_F_PREFIX"Enter, line=%d, call_id=%d.\n",
               DEB_F_PREFIX_ARGS(MED_API, fname), line, call_id);
 
-    //vcmToneStart
-    vcmToneStart(tone, alert_info, call_handle, group_id, stream_id, direction);
-    
+	//<em>
+    roapproxy = 0;
+	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
+	if (roapproxy == FALSE) {
+
+		//vcmToneStart
+		vcmToneStart(tone, alert_info, call_handle, group_id, stream_id, direction);
+	}
     /*
      * Set delay value for multi-part tones and repeated tones.
      * Currently the only multi-part tones are stutter and message
