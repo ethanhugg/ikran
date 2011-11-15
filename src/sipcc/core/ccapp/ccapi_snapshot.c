@@ -486,7 +486,7 @@ void ccsnap_gen_callEvent(ccapi_call_event_e event, cc_call_handle_t handle){
         printCallInfo(call_info, "ccsnap_gen_callEvent");
     }
 
-    CCAPI_CallListener_onCallEvent(event, handle, call_info, gROAPSDP.sdp);
+    CCAPI_CallListener_onCallEvent(event, handle, call_info, gROAPSDP.answerSDP);
     CCAPI_Call_releaseCallInfo(call_info);
 }
 
