@@ -455,6 +455,8 @@ void SipccController::onCallEvent (ccapi_call_event_e callEvent, CC_CallPtr call
 			if(observer_ != NULL)
 				observer_->OnCallResume();
 		}
+    } else if (callEvent == CCAPI_CALL_EV_CALLINFO) {
+    	observer_->OnCallConnected(sdp);
     }
 }
 

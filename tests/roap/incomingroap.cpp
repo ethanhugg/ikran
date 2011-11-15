@@ -81,7 +81,7 @@ void IncomingRoap::Offer(string callerSessionId, string seq, string sdp)
   else
   {
     SipccController::GetInstance()->PlaceCall(callerSessionId, sdp);
-    roapProxyCallState = CALLSTATE_IN_CALL;
+    //roapProxyCallState = CALLSTATE_IN_CALL;
   }
 }
 
