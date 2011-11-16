@@ -71,6 +71,12 @@ int main(int argc, char**argv)
   
   CSFLogDebugS(logTag, "ROAP Proxy Start");
 
+  // TEMP
+  //string str = "This\r\nOne\r\nHas\r\nLinebreaks";
+  //OutgoingRoap::escapeForJSON(str);
+  //CSFLogDebugS(logTag, str);
+  // END TEMP
+  
   incomingThread.Start();
   outgoingThread.Start();
   

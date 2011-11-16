@@ -56,6 +56,8 @@ public:
 public:
   void push(string roapMessage);
   string pop();
+  static void replaceAll(string& str, const char* find, const char* replace);
+  static void escapeForJSON(string& str);
   void Init();
   void Shutdown();
   void Offer(string callerSessionId, string seq, string sdp);

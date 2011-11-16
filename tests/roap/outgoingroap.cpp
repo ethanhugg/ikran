@@ -37,9 +37,38 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+#include <stdarg.h>
+
+#include "CSFLogStream.h"
 #include "outgoingroap.h"
 
 
+static const char* logTag = "RoapProxy";
+
+void OutgoingRoap::replaceAll(string& str, const char* find, const char* replace)
+{
+  size_t position = 0;
+  
+  while ((position = str.find(find, position)) != string::npos)
+  {
+    CSFLogDebugS(logTag, "Found one - " << replace);
+    str.replace(position, strlen(find), replace);
+    position += strlen(find);
+  }
+}
+
+void OutgoingRoap::escapeForJSON(string& str)
+{
+  replaceAll(str, "\\", "\\\\");
+  replaceAll(str, "\b", "\\b");
+  replaceAll(str, "\f", "\\f");
+  replaceAll(str, "\n", "\\n");
+  replaceAll(str, "\r", "\\r");
+  replaceAll(str, "\t", "\\t");
+  replaceAll(str, "\v", "\\v");
+  replaceAll(str, "\'", "\\'");
+  replaceAll(str, "\"", "\\\"");
+}
 
 void OutgoingRoap::push(string roapMessage)
 {
@@ -76,6 +105,8 @@ void OutgoingRoap::Offer(string callerSessionId, string seq, string sdp)
 {
   string roapMessage;
   
+  escapeForJSON(sdp);
+  
   roapMessage += "{ \"messageType\":\"OFFER\", \"callerSessionId\":\"";
   roapMessage += callerSessionId;
   roapMessage += "\", \"seq\":\"";
@@ -90,6 +121,8 @@ void OutgoingRoap::Offer(string callerSessionId, string seq, string sdp)
 void OutgoingRoap::Answer(string callerSessionId, string calleeSessionId, string seq, string sdp)
 {
   string roapMessage;
+  
+  escapeForJSON(sdp);
   
   roapMessage += "{ \"messageType\":\"ANSWER\", \"callerSessionId\":\"";
   roapMessage += callerSessionId;
@@ -121,6 +154,8 @@ void OutgoingRoap::OK(string callerSessionId, string calleeSessionId, string seq
 void OutgoingRoap::TentativeAnswer(string callerSessionId, string calleeSessionId, string seq, string sdp)
 {
   string roapMessage;
+  
+  escapeForJSON(sdp);
   
   roapMessage += "{ \"messageType\":\"TENTATIVE_ANSWER\", \"callerSessionId\":\"";
   roapMessage += callerSessionId;
