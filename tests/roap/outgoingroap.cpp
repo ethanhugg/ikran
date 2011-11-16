@@ -93,7 +93,7 @@ void OutgoingRoap::Answer(string callerSessionId, string calleeSessionId, string
   
   roapMessage += "{ \"messageType\":\"ANSWER\", \"callerSessionId\":\"";
   roapMessage += callerSessionId;
-  roapMessage += "\", \"calleeSessionId:\"";
+  roapMessage += "\", \"calleeSessionId\":\"";
   roapMessage += calleeSessionId;
   roapMessage += "\", \"seq\":\"";
   roapMessage += seq;
