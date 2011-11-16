@@ -86,10 +86,6 @@ cc_boolean parse_config_properties (int device_handle, const char *device_name, 
  */
 cc_return_t CCAPI_Service_create() {
     CCAPP_ERROR("CCAPI_Service_create - calling CC_Service_create \n");
-    
-
-    // <em>
-    //gROAPSDP = (cc_global_sdp_t *) cpr_malloc(sizeof(cc_global_sdp_t));
 
     registration_processEvent(EV_CC_CREATE);
     return (CC_SUCCESS);

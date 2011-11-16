@@ -68,15 +68,14 @@ extern cc_reg_state_t ccapp_get_state();
 
 // <em>   global sdp structure
 typedef struct cc_global_sdp_ {
-	char				   offerSDP[1020];
-	char				   answerSDP[1024];
+	char			offerSDP[1020];
+	char			answerSDP[1024];
+	char			offerAddress[MAX_IPADDR_STR_LEN];
+	int				audioPort;
+	int				videoPort;
 } cc_global_sdp_t;
 
-//extern cc_global_sdp_t*  gROAPSDP;
 extern cc_global_sdp_t  gROAPSDP;
-
-//set_global_sdp(char* sdp);
-
 //
 
 typedef enum {

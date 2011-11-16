@@ -103,7 +103,7 @@ namespace CSF
 
         virtual CC_CallInfoPtr getCallInfo ();
 
-        virtual bool originateCall (cc_sdp_direction_t video_pref, const std::string & digits, char* sdp);
+        virtual bool originateCall (cc_sdp_direction_t video_pref, const std::string & digits, char* sdp, int audioPort, int videoPort);
         virtual bool answerCall (cc_sdp_direction_t video_pref);
         virtual bool hold (cc_hold_reason_t reason);
         virtual bool resume (cc_sdp_direction_t video_pref);
