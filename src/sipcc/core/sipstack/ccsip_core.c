@@ -3724,7 +3724,6 @@ ccsip_handle_sentinvite_ev_sip_1xx (ccsipCCB_t *ccb, sipSMEvent_t *event)
     case SIP_1XX_RINGING:
         {
             sipsdp_status_t sdp_status;
-			int roapproxy;
             CCSIP_DEBUG_STATE(DEB_L_C_F_PREFIX"%d: %s <- SIP 180 RINGING\n",
                               DEB_L_C_F_PREFIX_ARGS(SIP_CALL_STATUS, ccb->dn_line, ccb->gsm_id, fname), 
 							  ccb->index, sip_util_state2string(ccb->state));
