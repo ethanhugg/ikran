@@ -581,7 +581,7 @@ static void handleOriginatePhoneCall (CallControlManagerPtr ccmPtr, const string
 
     	CSFLogDebug(logTag, " dialing (%s) # %s...", pMediaTypeStr, digits.c_str());
 
-        if (outgoingCall->originateCall(videoPref, digits, (char *) ""))
+        if (outgoingCall->originateCall(videoPref, digits, (char *) "", 0, 0))
         {
         	CSFLogDebug(logTag, "Dialing (%s) %s...", pMediaTypeStr, digits.c_str());
         }

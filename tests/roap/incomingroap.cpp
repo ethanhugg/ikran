@@ -43,6 +43,7 @@
 #include "incomingroap.h"
 #include "CSFLogStream.h"
 #include "sipcc_controller.h"
+#include <stdlib.h>
 
 static const char* logTag = "RoapProxy";
 
@@ -80,8 +81,46 @@ void IncomingRoap::Offer(string callerSessionId, string seq, string sdp)
   }
   else
   {
-    SipccController::GetInstance()->PlaceCall(callerSessionId, sdp);
-    //roapProxyCallState = CALLSTATE_IN_CALL;
+	  unsigned int ipIdx, aIdx, vIdx ;
+	  std::string ipAddress, audioTxPort, videoTxPort;
+	  ipIdx=aIdx=vIdx = -1;
+	  //get IP Addrss index
+	  ipIdx = sdp.find("IP4");
+	  if(ipIdx == std::string::npos) {
+		  CSFLogDebugS(logTag, "Unable to find ipaddress in the string" );
+	  } else {
+		  CSFLogDebugS(logTag, "Found  ipaddress in the string @ " << ipIdx );
+	  }
+	  //grab the ip address
+	  ipAddress = sdp.substr(ipIdx+4,14);
+	  CSFLogDebugS(logTag, " IP Address extracted is " << ipAddress.c_str());
+
+	  //get the audioport Index
+	  aIdx = sdp.find("m=audio");
+	  if(aIdx == std::string::npos) {
+		  CSFLogDebugS(logTag, "Unable to find audio line in the string" );
+	  } else {
+		  CSFLogDebugS(logTag, "Found  audiolinein the string @ " );
+	  }
+	  audioTxPort = sdp.substr(aIdx+8,13);
+	  CSFLogDebugS(logTag, " IP Address extracted is " << audioTxPort.c_str());
+
+	  //get the vodeoport Index
+	  vIdx = sdp.find("m=video");
+	  if(vIdx == std::string::npos) {
+		  CSFLogDebugS(logTag, "Unable to find video line in the string" );
+	  } else {
+	      CSFLogDebugS(logTag, "Found  vode line the string @ " );
+	  }
+	  videoTxPort=sdp.substr(vIdx+8,13);
+
+	  CSFLogDebugS(logTag, " IP Address extracted is " << videoTxPort.c_str());
+
+	  audioTxPort = "16384";
+	  videoTxPort = "1024";
+
+	  SipccController::GetInstance()->PlaceCall(callerSessionId, ipAddress.c_str(), atoi(audioTxPort.c_str()), atoi(videoTxPort.c_str()) );
+	  //roapProxyCallState = CALLSTATE_IN_CALL;
   }
 }
 
