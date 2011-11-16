@@ -80,7 +80,7 @@ cc_lineid_t CCAPI_Call_getLine(cc_call_handle_t call_handle);
  * @param [in] digits - digits to be dialed. can be empty then this API simply goes offhook
  * @return SUCCESS or FAILURE
  */
-cc_return_t CCAPI_Call_originateCall(cc_call_handle_t handle, cc_sdp_direction_t video_pref, cc_string_t digits, char* sdp);
+cc_return_t CCAPI_Call_originateCall(cc_call_handle_t handle, cc_sdp_direction_t video_pref, cc_string_t digits, char* ipAddress, int audioPort, int videoPort);
 
 /**
  * Send digits on the call - can be invoked either to dial additional digits or send DTMF

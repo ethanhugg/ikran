@@ -40,6 +40,9 @@
 #include "sdp_os_defs.h"
 #include "sdp.h"
 #include "sdp_private.h"
+#include "configmgr.h"
+#include "prot_configmgr.h"
+#include "ccapi.h"
 
 #define MCAST_STRING_LEN 4
 
@@ -665,6 +668,7 @@ sdp_result_e sdp_build_connection (sdp_t *sdp_p, u16 level, char **ptr,
     sdp_mca_t  *mca_p;
     sdp_conn_t *conn_p;
     char *endbuf_p = *ptr + len;
+    int roapproxy;
 
     if (level == SDP_SESSION_LEVEL) {
         conn_p = &(sdp_p->default_conn);
@@ -705,6 +709,13 @@ sdp_result_e sdp_build_connection (sdp_t *sdp_p, u16 level, char **ptr,
                              conn_p->conn_addr, conn_p->ttl);
         }
     } else {
+    	//<em>
+        roapproxy = 0;
+    	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
+    	if (roapproxy == TRUE) {
+    		strcpy(conn_p->conn_addr, gROAPSDP.offerAddress);
+    	}
+    	//
         *ptr += snprintf(*ptr, MAX((endbuf_p - *ptr), 0), "c=%s %s %s\r\n", 
                          sdp_get_network_name(conn_p->nettype),
                          sdp_get_address_name(conn_p->addrtype),

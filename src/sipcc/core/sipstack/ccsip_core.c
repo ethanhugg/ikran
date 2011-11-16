@@ -3619,17 +3619,14 @@ ccsip_handle_idle_ev_cc_setup (ccsipCCB_t *ccb, sipSMEvent_t *event)
 
 	// <em>
 	// replace SDP in ccb if this is the ROAP proxy
-	
+	// we not inject directly into sdp generation
     roapproxy = 0;
 	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
 	
 
 	if (roapproxy == TRUE) {
-		strcpy(ccb->local_msg_body.parts[0].body, gROAPSDP.offerSDP);
-	} else {
-		//strcpy(gROAPSDP->sdp, ccb->local_msg_body.parts[0].body);
+		//strcpy(ccb->local_msg_body.parts[0].body, gROAPSDP.offerSDP);
 	}
-	
     //
     
     /*
@@ -3727,7 +3724,7 @@ ccsip_handle_sentinvite_ev_sip_1xx (ccsipCCB_t *ccb, sipSMEvent_t *event)
     case SIP_1XX_RINGING:
         {
             sipsdp_status_t sdp_status;
-
+			int roapproxy;
             CCSIP_DEBUG_STATE(DEB_L_C_F_PREFIX"%d: %s <- SIP 180 RINGING\n",
                               DEB_L_C_F_PREFIX_ARGS(SIP_CALL_STATUS, ccb->dn_line, ccb->gsm_id, fname), 
 							  ccb->index, sip_util_state2string(ccb->state));
@@ -3742,7 +3739,7 @@ ccsip_handle_sentinvite_ev_sip_1xx (ccsipCCB_t *ccb, sipSMEvent_t *event)
              }
              */
             sdp_status = sip_util_extract_sdp(ccb, response);
-
+	
             switch (sdp_status) {
             case SIP_SDP_SUCCESS:
             case SIP_SDP_SESSION_AUDIT:
@@ -3946,12 +3943,11 @@ ccsip_handle_sentinvite_ev_sip_2xx (ccsipCCB_t *ccb, sipSMEvent_t *event)
 
 	//<em>
 	// extract SDP from ccb if this is the ROAP proxy
+    // youu are in function ccsip_handle_sentinvite_ev_sip_2xx
     roapproxy = 0;
 	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
 	
 	if (roapproxy == TRUE) {
-		//strcpy(gROAPSDP->sdp, ccb->local_msg_body.parts[0].body);
-		strcpy(gROAPSDP.answerSDP, "\0");
 		strcpy(gROAPSDP.answerSDP, response->mesg_body->msgBody);
 	}
 	//

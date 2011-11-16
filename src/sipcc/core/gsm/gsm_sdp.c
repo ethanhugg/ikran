@@ -833,6 +833,7 @@ gsmsdp_get_local_source_v4_address (fsmdef_media_t *media)
     char             curr_media_ip[MAX_IPADDR_STR_LEN];
     cpr_ip_addr_t    addr;                
     const char       fname[] = "gsmsdp_get_local_source_v4_address";
+    int roapproxy;
 
     /*
      * Get device address.
@@ -843,7 +844,15 @@ gsmsdp_get_local_source_v4_address (fsmdef_media_t *media)
         config_get_value(CFGID_MEDIA_IP_ADDR, curr_media_ip,
                         MAX_IPADDR_STR_LEN);
         if (is_empty_str(curr_media_ip) == FALSE) {
-             str2ip(curr_media_ip, &addr);
+
+        	//<em>
+            roapproxy = 0;
+        	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
+        	if (roapproxy == TRUE) {
+        		str2ip(gROAPSDP.offerAddress, &addr);
+        	} else {
+        		str2ip(curr_media_ip, &addr);
+        	}
              util_ntohl(&addr, &addr);
              if (util_check_if_ip_valid(&media->src_addr) == FALSE)  {
                  // Update the media Src address only if it is invalid
@@ -3834,6 +3843,7 @@ gsmsdp_init_local_sdp (cc_sdp_t **sdp_pp)
     int             nat_enable = 0;
     char           *p_addr_str;
     cpr_ip_mode_e   ip_mode;
+    int roapproxy;
 
     if (!sdp_pp) {
         return CC_CAUSE_ERROR;
@@ -3854,7 +3864,16 @@ gsmsdp_init_local_sdp (cc_sdp_t **sdp_pp)
         sip_config_get_nat_ipaddr(&ipaddr);
     }
 
-    ipaddr2dotted(addr_str, &ipaddr);
+    //<em>
+    roapproxy = 0;
+	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
+	if (roapproxy == TRUE) {
+		strcpy(addr_str, gROAPSDP.offerAddress);
+	} else {
+		ipaddr2dotted(addr_str, &ipaddr);
+	}
+
+
     p_addr_str = strtok(addr_str, "[ ]");
 
     /*
@@ -3972,6 +3991,7 @@ gsmsdp_add_media_line (fsmdef_dcb_t *dcb_p, const cc_media_cap_t *media_cap,
     static const char fname[] = "gsmsdp_add_media_line";
     cc_action_data_t  data;
     fsmdef_media_t   *media = NULL;
+    int roapproxy;
 
     switch (media_cap->type) {
     case SDP_MEDIA_AUDIO:
@@ -4025,7 +4045,18 @@ gsmsdp_add_media_line (fsmdef_dcb_t *dcb_p, const cc_media_cap_t *media_cap,
         }
 
         /* allocate port successful, save the port */
-        media->src_port = data.open_rcv.port;
+
+        // <em>
+        roapproxy = 0;
+    	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
+    	if (roapproxy == TRUE) {
+    		if (SDP_MEDIA_AUDIO == media->type)
+    			media->src_port = gROAPSDP.audioPort;
+    		else
+    			media->src_port = gROAPSDP.videoPort;
+    	} else {
+    		media->src_port = data.open_rcv.port;
+    	}
 
         /*
          * Setup the local soruce address.
