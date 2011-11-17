@@ -171,17 +171,49 @@ void config_setup_server_address (const char *sipDomain);
 /*
  * set transport protocol, limited to udp or tcp for now
  */
-void config_setup_transport(const cc_boolean is_udp);
+void config_setup_transport_udp(const cc_boolean is_udp);
 
 /*
  * set local voip port defaults to 5060
  */
-void config_setup_voip_control_port(const int voipControlPort);
+void config_setup_local_voip_control_port(const int voipControlPort);
+
+/*
+ * set remote voip port defaults to 5060
+ */
+void config_setup_remote_voip_control_port(const int voipControlPort);
+
+/*
+ * get local voip port defaults to 5060
+ */
+int config_get_local_voip_control_port();
+
+/*
+ * get remote voip port defaults to 5060
+ */
+int config_get_remote_voip_control_port();
+
+/*
+ * get ikran version
+ */
+const char* config_get_version();
 
 /*
  * set p2p mode on or off
  */
 void config_setup_p2p_mode(const cc_boolean is_p2p);
+
+
+/*
+ * set ROAP proxy mode on or off
+ */
+void config_setup_roap_proxy_mode(const cc_boolean is_roap_proxy);
+
+/*
+ * set ROAP client mode on or off
+ */
+void config_setup_roap_client_mode(const cc_boolean is_roap_client);
+
 
 /**
 * config_minimum_check:

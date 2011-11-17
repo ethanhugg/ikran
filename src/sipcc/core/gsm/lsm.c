@@ -615,6 +615,7 @@ lsm_open_rx (lsm_lcb_t *lcb, cc_action_data_open_rcv_t *data,
     int           port_allocated = 0;
     cc_rcs_t      rc = CC_RC_ERROR;
     fsmdef_dcb_t *dcb;
+    int roapproxy;
 
     dcb = lcb->dcb;
     if (dcb == NULL) {
@@ -645,23 +646,42 @@ lsm_open_rx (lsm_lcb_t *lcb, cc_action_data_open_rcv_t *data,
               "requested port", data->port);
 
     if (data->keep == TRUE) {
-        //Todo IPv6: Add interface call for IPv6
-        (void) vcmRxOpen(media->cap_index, dcb->group_id, media->refid,
-                           lsm_get_ms_ui_call_handle(lcb->line, lcb->call_id, lcb->ui_id), data->port,
-                           media->is_multicast ? &media->dest_addr:&media->src_addr, data->is_multicast,
-                           &port_allocated);
-        if (port_allocated != -1) {
-            data->port = (uint16_t)port_allocated;
-            rc = CC_RC_SUCCESS;
-        }
+
+    	//<em>
+        roapproxy = 0;
+    	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
+    	if (roapproxy == FALSE) {
+
+    		//Todo IPv6: Add interface call for IPv6
+    		(void) vcmRxOpen(media->cap_index, dcb->group_id, media->refid,
+    						lsm_get_ms_ui_call_handle(lcb->line, lcb->call_id, lcb->ui_id), data->port,
+    						media->is_multicast ? &media->dest_addr:&media->src_addr, data->is_multicast,
+    						&port_allocated);
+    		if (port_allocated != -1) {
+    			data->port = (uint16_t)port_allocated;
+    			rc = CC_RC_SUCCESS;
+    		}
+    	} else {
+    		rc = CC_RC_SUCCESS;
+    	}
     } else {
-        vcmRxAllocPort(media->cap_index, dcb->group_id, media->refid,
-                          lsm_get_ms_ui_call_handle(lcb->line, lcb->call_id, lcb->ui_id), data->port,
-                          &port_allocated);
-        if (port_allocated != -1) {
-            data->port = (uint16_t)port_allocated;
-            rc = CC_RC_SUCCESS;
-        }
+
+    	//<em>
+        roapproxy = 0;
+    	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
+
+    	if (roapproxy == FALSE) {
+
+    		vcmRxAllocPort(media->cap_index, dcb->group_id, media->refid,
+    						lsm_get_ms_ui_call_handle(lcb->line, lcb->call_id, lcb->ui_id), data->port,
+    						&port_allocated);
+    		if (port_allocated != -1) {
+    			data->port = (uint16_t)port_allocated;
+    			rc = CC_RC_SUCCESS;
+    		}
+    	} else {
+        	rc = CC_RC_SUCCESS;
+    	}
     }
 
     LSM_DEBUG(get_debug_string(LSM_DBG_INT1), lcb->call_id, lcb->line, fname,
@@ -719,6 +739,7 @@ lsm_close_rx (lsm_lcb_t *lcb, boolean refresh, fsmdef_media_t *media)
     static const char fname[] = "lsm_close_rx";
     fsmdef_media_t *start_media, *end_media;
     fsmdef_dcb_t   *dcb;
+    int roapproxy;
  
     dcb = lcb->dcb;
     if (dcb == NULL) {
@@ -754,9 +775,14 @@ lsm_close_rx (lsm_lcb_t *lcb, boolean refresh, fsmdef_media_t *media)
                           dcb->line, fname, "port closed", 
                           media->src_port);
 
-                vcmRxClose(media->cap_index, dcb->group_id, media->refid,
-                             lsm_get_ms_ui_call_handle(lcb->line, lcb->call_id, lcb->ui_id));
+            	//<em>
+                roapproxy = 0;
+            	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
+            	if (roapproxy == FALSE) {
 
+            		vcmRxClose(media->cap_index, dcb->group_id, media->refid,
+                             lsm_get_ms_ui_call_handle(lcb->line, lcb->call_id, lcb->ui_id));
+            	}
                 media->rcv_chan = FALSE;
             }
         }
@@ -789,6 +815,7 @@ lsm_close_tx (lsm_lcb_t *lcb, boolean refresh, fsmdef_media_t *media)
     fsmdef_media_t *start_media, *end_media;
     fsmdef_dcb_t   *dcb;
     static const char fname[] = "lsm_close_tx";
+    int roapproxy;
 
     dcb = lcb->dcb;
     if (dcb == NULL) {
@@ -819,9 +846,15 @@ lsm_close_tx (lsm_lcb_t *lcb, boolean refresh, fsmdef_media_t *media)
                 (refresh && 
                  gsmsdp_sdp_differs_from_previous_sdp(FALSE, media))) {
 
+            	//<em>
+                roapproxy = 0;
+            	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
+            	if (roapproxy == FALSE) {
+
                     vcmTxClose(media->cap_index, dcb->group_id, media->refid, 
                         lsm_get_ms_ui_call_handle(lcb->line, lcb->call_id, lcb->ui_id));
-                
+            	}
+
                 if (dcb->active_tone == VCM_MONITORWARNING_TONE || dcb->active_tone == VCM_RECORDERWARNING_TONE) {
 		            LSM_DEBUG(DEB_L_C_F_PREFIX"%s: Found active_tone: %d being played, current monrec_tone_action: %d. Need stop tone. \n",
                               DEB_L_C_F_PREFIX_ARGS(LSM, dcb->line, dcb->call_id, fname), fname, 
@@ -868,6 +901,7 @@ lsm_rx_start (lsm_lcb_t *lcb, const char *fname, fsmdef_media_t *media)
     boolean has_checked_conference = FALSE;
     fsmdef_dcb_t   *dcb, *grp_id_dcb;
     vcm_mediaAttrs_t attrs;
+    int roapproxy;
 
     attrs.video.opaque = NULL;
 
@@ -982,20 +1016,29 @@ lsm_rx_start (lsm_lcb_t *lcb, const char *fname, fsmdef_media_t *media)
                     if (media->local_dynamic_payload_type_value == RTP_NONE) {
                         media->local_dynamic_payload_type_value = media->payload;
                     }
-                ret_val =  vcmRxStart(media->cap_index, group_id, media->refid,
-                                        lsm_get_ms_ui_call_handle(dcb->line, call_id, CC_NO_CALL_ID),
-                                        vcmRtpToMediaPayload(media->payload,
+
+                    //<em>
+                    roapproxy = 0;
+                	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
+                	if (roapproxy == FALSE) {
+
+                		ret_val =  vcmRxStart(media->cap_index, group_id, media->refid,
+                                        	lsm_get_ms_ui_call_handle(dcb->line, call_id, CC_NO_CALL_ID),
+                                        	vcmRtpToMediaPayload(media->payload,
                                                                  media->local_dynamic_payload_type_value,
                                                                  media->mode),
-                                        media->is_multicast ? &media->dest_addr:&media->src_addr,
-                                        port,
-                                        FSM_NEGOTIATED_CRYPTO_ALGORITHM_ID(media),
-                                        FSM_NEGOTIATED_CRYPTO_RX_KEY(media),
-                                        &attrs);
-                if (ret_val == -1) {
-                    dcb->dsp_out_of_resources = TRUE;
-                        return;
-                    }
+                                                                 media->is_multicast ? &media->dest_addr:&media->src_addr,
+                                        		port,
+                                        	FSM_NEGOTIATED_CRYPTO_ALGORITHM_ID(media),
+                                        	FSM_NEGOTIATED_CRYPTO_RX_KEY(media),
+                                        	&attrs);
+                    	if (ret_val == -1) {
+                    		dcb->dsp_out_of_resources = TRUE;
+                        	return;
+                    	}
+                	} else {
+                		ret_val = CC_RC_SUCCESS;
+                	}
 
                 lsm_update_dscp_value(dcb);
 
@@ -1057,6 +1100,7 @@ lsm_tx_start (lsm_lcb_t *lcb, const char *fname, fsmdef_media_t *media)
     boolean        has_checked_conference = FALSE;
     fsmdef_dcb_t   *dcb;
     vcm_mediaAttrs_t attrs;
+    int roapproxy;
 
     attrs.video.opaque = NULL;
 
@@ -1152,12 +1196,18 @@ lsm_tx_start (lsm_lcb_t *lcb, const char *fname, fsmdef_media_t *media)
              * the SDP for the remote end.
              */
 
-            if (vcmTxOpen(media->cap_index, dcb->group_id, media->refid,
+            //<em>
+            roapproxy = 0;
+        	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
+        	if (roapproxy == FALSE) {
+
+        		if (vcmTxOpen(media->cap_index, dcb->group_id, media->refid,
                             lsm_get_ms_ui_call_handle(lcb->line, lcb->call_id, lcb->ui_id)) != 0) {
-                LSM_DEBUG(DEB_L_C_F_PREFIX"%s: vcmTxOpen failed\n",
+        			LSM_DEBUG(DEB_L_C_F_PREFIX"%s: vcmTxOpen failed\n",
                           DEB_L_C_F_PREFIX_ARGS(LSM, dcb->line, dcb->call_id, fname1), fname);
-                continue;
-            }
+        			continue;
+            	}
+        	}
 
             media->xmit_chan = TRUE;
 
@@ -1177,7 +1227,13 @@ lsm_tx_start (lsm_lcb_t *lcb, const char *fname, fsmdef_media_t *media)
             }
 
             dcb->cur_video_avail &= ~CC_ATTRIB_CAST;
-            if (vcmTxStart(media->cap_index, group_id,
+
+            //<em>
+            roapproxy = 0;
+        	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
+        	if (roapproxy == FALSE) {
+
+        		if (vcmTxStart(media->cap_index, group_id,
                              media->refid,
                              lsm_get_ms_ui_call_handle(dcb->line, call_id, CC_NO_CALL_ID),
                          vcmRtpToMediaPayload(media->payload,
@@ -1191,12 +1247,13 @@ lsm_tx_start (lsm_lcb_t *lcb, const char *fname, fsmdef_media_t *media)
                          FSM_NEGOTIATED_CRYPTO_ALGORITHM_ID(media),
                          FSM_NEGOTIATED_CRYPTO_TX_KEY(media),
                          &attrs) == -1) 
-            {
+        		{
                    LSM_DEBUG(DEB_L_C_F_PREFIX"%s: vcmTxStart failed\n",
                              DEB_L_C_F_PREFIX_ARGS(LSM, dcb->line, dcb->call_id, fname1), fname);
                    dcb->dsp_out_of_resources = TRUE;
                    return;
-                }
+        		}
+        	}
 
             lsm_update_dscp_value(dcb);
 
@@ -1789,6 +1846,7 @@ static void lsm_release_port (lsm_lcb_t *lcb)
     fsmdef_media_t *start_media, *end_media;
     fsmdef_dcb_t   *dcb;
     fsmdef_media_t *media;
+    int roapproxy;
 
     dcb = lcb->dcb;
     if (dcb == NULL) {
@@ -1804,9 +1862,14 @@ static void lsm_release_port (lsm_lcb_t *lcb)
     
     GSMSDP_FOR_MEDIA_LIST(media, start_media, end_media, dcb) {
 
-        vcmRxReleasePort(media->cap_index, dcb->group_id, media->refid,
-                            lsm_get_ms_ui_call_handle(lcb->line, lcb->call_id, lcb->ui_id), media->src_port);
+    	//<em>
+        roapproxy = 0;
+    	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
+    	if (roapproxy == FALSE) {
 
+    		vcmRxReleasePort(media->cap_index, dcb->group_id, media->refid,
+                            lsm_get_ms_ui_call_handle(lcb->line, lcb->call_id, lcb->ui_id), media->src_port);
+    	}
     }
 }
 
@@ -6325,15 +6388,21 @@ static void lsm_util_start_tone(vcm_tones_t tone, short alert_info,
         cc_call_handle_t call_handle, groupid_t group_id,
         streamid_t stream_id, uint16_t direction) {
 
+	int roapproxy;
     static const char fname[] = "lsm_util_start_tone";
     line_t line = GET_LINE_ID(call_handle);
     callid_t call_id = GET_CALL_ID(call_handle);
     DEF_DEBUG(DEB_F_PREFIX"Enter, line=%d, call_id=%d.\n",
               DEB_F_PREFIX_ARGS(MED_API, fname), line, call_id);
 
-    //vcmToneStart
-    vcmToneStart(tone, alert_info, call_handle, group_id, stream_id, direction);
-    
+	//<em>
+    roapproxy = 0;
+	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
+	if (roapproxy == FALSE) {
+
+		//vcmToneStart
+		vcmToneStart(tone, alert_info, call_handle, group_id, stream_id, direction);
+	}
     /*
      * Set delay value for multi-part tones and repeated tones.
      * Currently the only multi-part tones are stutter and message

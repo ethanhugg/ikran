@@ -16,19 +16,19 @@ suffixName = ""
 componentName = 'enhanced-callcontrol'
 
 # Environment variables
-if 'MOZSDKPATH' in os.environ:
-  mozsdkpath = os.environ['MOZSDKPATH'].rstrip('/').rstrip('\\')
-  print 'Using MOZSDKPATH ' + mozsdkpath
+if 'MOZSRCPATH' in os.environ:
+  mozsrcpath = os.environ['MOZSRCPATH'].rstrip('/').rstrip('\\')
+  print 'Using MOZSRCPATH ' + mozsrcpath
 else:
-  print 'Environment variable MOZSDKPATH must be set to your xulrunner-sdk path'
+  print 'Environment variable MOZSRCPATH must be set to your mozilla-central'
   exit(1)
 
 if 'WEBRTCPATH' in os.environ:
-	webrtcpath = os.environ['WEBRTCPATH'].rstrip('/').rstrip('\\')	
- 	print 'Using WEBRTCPATH ' + webrtcpath
+  webrtcpath = os.environ['WEBRTCPATH'].rstrip('/').rstrip('\\')
+  print 'Using WEBRTCPATH ' + webrtcpath
 else:
-	print 'Environment variable WEBRTCPATH must be set to webrtc trunk path'
-	exit(1)
+  print 'Environment variable WEBRTCPATH must be set to webrtc trunk path'
+  exit(1)
  
 if sys.platform =='win32':
   if 'MS_VC_PATH' in os.environ: 
@@ -60,7 +60,7 @@ build_env["CPPDEFINES"] = [
   '_NO_LOG4CXX', 
   'USE_SSLEAY', 
   'LIBXML_STATIC', 
-  '_CPR_USE_EXTERNAL_LOGGER'
+  'FORCE_PR_LOG',
 ]
 
 if sys.platform =='win32':
@@ -102,10 +102,10 @@ elif sys.platform=='darwin':
     ]    
     
   build_env["CPPDEFINES"] += [
-#    'NO_WEBRTC_VIDEO',
     'SIP_OS_OSX', 
     'OSX', 
     'GIPS_VER=3410', 
+    'FORCE_PR_LOG',
     '_FORTIFY_SOURCE=2'
   ]
   
@@ -163,11 +163,11 @@ elif sys.platform=='linux2':
       '-march=i486'
     ] 
   build_env["CPPDEFINES"] += [
-#    'NO_WEBRTC_VIDEO',
     '_GNU_SOURCE', 
     'SIP_OS_LINUX', 
     'LINUX', 
     'GIPS_VER=3510', 
+    'FORCE_PR_LOG',
     'SECLIB_OPENSSL'
   ]
   build_env["LINKFLAGS"] = [
@@ -253,14 +253,20 @@ if noaddon == 'yes':
 else:
   print "Building browser addon"
   
-Export ('build_env')
-Export ('debug')
-Export ('x64')
-Export ('mozsdkpath')
-Export ('webrtcpath')
+chromiumbaseincludepath = 'third_party'
+chromiumbaselibpath = 'third_party'
+#chromiumbaseincludepath = mozsrcpath + '/ipc/chromium/src'
+#chromiumbaselibpath = mozsrcpath + '/ipc/chromium/src'
 
-Export ('suffixName')
-Export ('componentName')
+Export('build_env')
+Export('debug')
+Export('x64')
+Export('mozsrcpath')
+Export('webrtcpath')
+Export('chromiumbaseincludepath')
+Export('chromiumbaselibpath')
+Export('suffixName')
+Export('componentName')
 
 SCRIPT_FILES = [ 
 
@@ -278,8 +284,13 @@ SCRIPT_FILES = [
 
 # Unit tests and testapp builds are all static.
 SCRIPT_FILES += [ 
-  'tests/testapp_softphone/SConstruct'
+  'tests/testapp_softphone/SConstruct',
 ]
+
+if sys.platform != 'win32':
+  SCRIPT_FILES += [
+    'tests/roap/SConstruct'
+  ]
 
 if noaddon != 'yes':
   SCRIPT_FILES += [ 

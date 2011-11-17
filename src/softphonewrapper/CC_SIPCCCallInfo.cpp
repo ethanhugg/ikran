@@ -48,7 +48,7 @@ extern "C"
 #include "ccapi_call_info.h"
 }
 
-#include "CSFLog.h"
+#include "CSFLogStream.h"
 static const char* logTag = "CC_SIPCCCallInfo";
 
 using namespace std;
@@ -290,7 +290,7 @@ void CC_SIPCCCallInfo::generateCapabilities()
 	// If caps are already generated, no need to repeat the exercise.
 	if(!caps.empty())
 		return;
-
+/*
 	CSFLogDebugS( logTag, "generateCapabilities() state=" << getCallState() <<
 			" underlyingCaps=" <<
 			PRINT_IF_CC_CAP_TRUE(CCAPI_CALL_CAP_NEWCALL) <<
@@ -309,7 +309,7 @@ void CC_SIPCCCallInfo::generateCapabilities()
 			PRINT_IF_CC_CAP_TRUE(CCAPI_CALL_CAP_JOIN) <<
 			PRINT_IF_CC_CAP_TRUE(CCAPI_CALL_CAP_SELECT) <<
 			PRINT_IF_CC_CAP_TRUE(CCAPI_CALL_CAP_RMVLASTPARTICIPANT) );
-
+*/
 	switch(getCallState())
 	{
 	case OFFHOOK:

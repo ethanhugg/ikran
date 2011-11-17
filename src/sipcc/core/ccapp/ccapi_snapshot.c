@@ -474,16 +474,19 @@ void ccsnap_gen_lineEvent(ccapi_line_event_e event, cc_lineid_t handle){
 }
 
 void ccsnap_gen_callEvent(ccapi_call_event_e event, cc_call_handle_t handle){
+
     session_data_t *call_info = CCAPI_Call_getCallInfo(handle);
 
     if ( call_info == NULL ) {
         call_info = getDeepCopyOfSessionData(NULL);
     }
+
     //print all info
     if (g_CCAppDebug) {
         printCallInfo(call_info, "ccsnap_gen_callEvent");
     }
-    CCAPI_CallListener_onCallEvent(event, handle, call_info);
+
+    CCAPI_CallListener_onCallEvent(event, handle, call_info, gROAPSDP.answerSDP);
     CCAPI_Call_releaseCallInfo(call_info);
 }
 
@@ -538,7 +541,7 @@ void ccsnap_handle_mnc_reached (cc_line_info_t *line_info, cc_boolean mnc_reache
             if (g_CCAppDebug) {
                 printCallInfo(cinfo, "ccsnap_handle_mnc_reached");
             }
-            CCAPI_CallListener_onCallEvent(CCAPI_CALL_EV_CAPABILITY, handles[i], cinfo);
+            CCAPI_CallListener_onCallEvent(CCAPI_CALL_EV_CAPABILITY, handles[i], cinfo, "");
 	}
     }
     // update RIU call caps on this line
@@ -551,7 +554,7 @@ void ccsnap_handle_mnc_reached (cc_line_info_t *line_info, cc_boolean mnc_reache
             if (g_CCAppDebug) {
                 printCallInfo(cinfo, "ccsnap_handle_mnc_reached");
             }
-            CCAPI_CallListener_onCallEvent(CCAPI_CALL_EV_CAPABILITY, handles[i], cinfo);
+            CCAPI_CallListener_onCallEvent(CCAPI_CALL_EV_CAPABILITY, handles[i], cinfo, "");
         }
     }
 }

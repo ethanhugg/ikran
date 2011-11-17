@@ -75,7 +75,7 @@ namespace CSF
 
            @return true or false.
          */
-        virtual bool originateCall (cc_sdp_direction_t video_pref, const std::string & digits) = 0;
+        virtual bool originateCall (cc_sdp_direction_t video_pref, const std::string & digits, char* sdp, int audioPort, int videoPort) = 0;
 
         /**
            Use this function to answer an incoming call.

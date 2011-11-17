@@ -90,6 +90,25 @@ Ikran.prototype = {
         return iosvc.newURI(url, null, null);
     },
     
+    _makePropertyBag: function(prop) {
+        let iP = ["localvoipport", "remotevoipport", "version"];
+        let bP = ["udp", "tcp", "video"];
+
+        let bag = Cc["@mozilla.org/hash-property-bag;1"].
+            createInstance(Ci.nsIWritablePropertyBag2);
+
+        iP.forEach(function(p) {
+            if (p in prop)
+                bag.setPropertyAsAString(p, prop[p]);
+        });
+        bP.forEach(function(p) {
+            if (p in prop)
+                bag.setPropertyAsBool(p, prop[p]);
+        });
+        
+        return bag;
+    },
+    
     _verifyPermission: function(win, loc, cb) {
         let location = loc.protocol + "//" + loc.hostname;
         if (loc.port) location += ":" + loc.port;
@@ -199,13 +218,12 @@ Ikran.prototype = {
     },
     
     hangupCall: function() {
-
         this._ikran.hangupCall();
-
     },
     
     unregisterUser: function() {
         this._ikran.unregisterUser();
+        this._session = false;
     },
 
     answerCall: function(ctx, obs) {
@@ -214,9 +232,32 @@ Ikran.prototype = {
         if (obs) this._media_observer = obs;
         else this._media_observer = function() {};
         this._ikran.answerCall(ctx,obs);
-	}
-
+	},
 	
+    setProperty: function(prop) {
+    	// Make property bag
+        let bag = this._makePropertyBag(prop);
+    	
+        this._ikran.setProperty(bag);
+    },	
+
+    getProperty: function(name) {
+    	var value = {};
+        this._ikran.getProperty(name, value);
+        return value;
+    },
+    
+    sendDigits: function(digits) {
+    	this._ikran.sendDigits(digits);
+    },
+
+    holdCall: function() {
+    	this._ikran.holdCall();
+    },
+
+    resumeCall: function() {
+    	this._ikran.resumeCall();
+    },	
 };
 
 var EXPORTED_SYMBOLS = ["Ikran"];

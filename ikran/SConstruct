@@ -3,10 +3,18 @@ import os, sys
 
 Import('debug')
 Import('x64')
-Import('mozsdkpath')
+Import('mozsrcpath')
 Import('componentName')
 Import('suffixName')
 Import('webrtcpath')
+Import('chromiumbaseincludepath')
+Import('chromiumbaselibpath')
+
+if(chromiumbaseincludepath == 'third_party'):
+  chromiumbaseincludepath = '../third_party/chromium_base'
+
+if(chromiumbaselibpath == 'third_party'):
+  chromiumbaselibpath = '../third_party/chromium_base'
 
 ## Add Tests folders here
 # Temp using absolute paths
@@ -16,16 +24,8 @@ include_dirs = [
   '../src/sipcc/include',
   '../src/common',
   '../out/include/system',
-  '../third_party/chromium_base',
+  chromiumbaseincludepath,
   '../src/common/browser_logging',
-  mozsdkpath + '/include',
-  mozsdkpath + '/include/system_wrappers',
-  mozsdkpath + '/include/xpcom',
-  mozsdkpath + '/include/string',
-  mozsdkpath + '/include/content',
-  mozsdkpath + '/include/dom',
-  mozsdkpath + '/include/nspr',
-  mozsdkpath + '/sdk/include',
   webrtcpath + '/src',
   webrtcpath + '/src/video_engine/main/interface',
   webrtcpath + '/src/voice_engine/main/interface'
@@ -49,14 +49,18 @@ libs = []
 env = build_env.Clone(CPPPATH=include_dirs)
 
 if sys.platform =='win32':
+  mozobjpath = mozsrcpath + '\\obj-i686-pc-mingw32'
   outputlibname = 'libsessioncontrol'
+  env["CPPPATH"] += [
+    mozobjpath + '/dist/include',
+  ]
   env["CPPDEFINES"] += [
     'WIN32',
     '_CONSOLE',
     'MBCS',
-	'XP_WIN',
-	'MOZ_NO_MOZALLOC',
-	]
+    'XP_WIN',
+    'MOZ_NO_MOZALLOC',
+  ]
   env["CPPFLAGS"] += [
     '/c',
     '/W4',
@@ -73,17 +77,17 @@ if sys.platform =='win32':
     ms_vc_lib_dir,
     windows_sdk_lib_dir,
     ms_vc_atlmfc_lib_dir,
-	ms_dx_sdk_dir,
+    ms_dx_sdk_dir,
     '../third_party/lib',
-    '../third_party/chromium_base',
+    chromiumbaselibpath,
     '../src/common/browser_logging',
-	mozsdkpath + '/lib',
-    mozsdkpath + '/bin',
-  	webrtcpath + '/Debug/lib'
+    mozobjpath + '/dist/lib',
+    mozobjpath + '/dist/bin',
+    webrtcpath + '/Debug/lib'
   ]
   libs += [
     componentName + suffixName + '.lib',
-	'xpcomglue_s.lib',
+    'xpcomglue_s.lib',
     'xpcom.lib',
     'nspr4.lib',
     'mozalloc.lib',
@@ -104,12 +108,11 @@ if sys.platform =='win32':
     'odbccp32.lib', 
     'atls.lib',  
     'avrt.lib', 
-    'DelayImp.lib', 
-    'ddraw.lib', 
-	'dmoguids.lib',
-	'msdmo.lib', 
-	'WinMM.lib',
-	'wmcodecdspuuid.lib',
+    'DelayImp.lib',  
+    'dmoguids.lib',
+    'msdmo.lib', 
+    'WinMM.lib',
+    'wmcodecdspuuid.lib',
     'ws2_32.lib', 
     'mswsock.lib', 
     'dbghelp.lib', 
@@ -118,7 +121,7 @@ if sys.platform =='win32':
     'browser_logging.lib',
     'aec.lib',
     'aecm.lib',
-	'agc.lib',
+    'agc.lib',
     'apm_util.lib',
     'audio_coding_module.lib',
     'audio_conference_mixer.lib',
@@ -139,21 +142,21 @@ if sys.platform =='win32':
     'rtp_rtcp.lib',
     'spl.lib',
     'protobuf_lite.lib',
-	'system_wrappers.lib',
+    'system_wrappers.lib',
     'udp_transport.lib',
-	'vad.lib',
+    'vad.lib',
     'video_capture_module.lib',
     'video_engine_core.lib',
     'video_processing.lib',
-	'video_render_module.lib',
-	'voice_engine_core.lib',
-	'libvpx.lib',
-	'webrtc_i420.lib',
-	'webrtc_jpeg.lib',
-	'webrtc_utility.lib',
-	'webrtc_video_coding.lib',
-	'webrtc_vp8.lib',
-	'webrtc_vplib.lib'
+    'video_render_module.lib',
+    'voice_engine_core.lib',
+    'libvpx.lib',
+    'webrtc_i420.lib',
+    'webrtc_jpeg.lib',
+    'webrtc_utility.lib',
+    'webrtc_video_coding.lib',
+    'webrtc_vp8.lib',
+    'webrtc_vplib.lib'
   ]
   if int(debug):
     libs += [
@@ -181,19 +184,27 @@ if sys.platform =='win32':
     '/NODEFAULTLIB:"avrt.lib"',
     '/NODEFAULTLIB:"libirc.lib"',
     '/NODEFAULTLIB:"advapi32.lib"'
-	]
+  ]
   if int(debug):
     env["LINKFLAGS"] += [
       '/DEBUG '
     ]
   
-  xpidl_h_cmd =  mozsdkpath + '\\bin\\xpidl -m header -I' + mozsdkpath + '\idl ./ICallControl.idl'
-  xpidl_tl_cmd = mozsdkpath + '\\bin\\xpidl -m typelib -I' + mozsdkpath + '\idl ./ICallControl.idl'
+  # Execute  xpcom commands
+  env.AppendENVPath('PYTHONPATH', mozobjpath + '\\dist\\sdk\\bin')
+  idlIncludePath =  mozobjpath + '\\dist\\idl'
+  xpidl_h_cmd =  'c:\\python27\\python ' + mozobjpath + '\\dist\\sdk\\bin\\header.py  --cachedir=. -I ' + idlIncludePath + ' ./ICallControl.idl -o ./ICallControl.h'
+  xpidl_tl_cmd = 'c:\\python27\\python ' + mozobjpath + '\\dist\\sdk\\bin\\typelib.py --cachedir=. -I ' + idlIncludePath + ' ./ICallControl.idl -o ICallControl.xpt'
+
   env.Execute(xpidl_h_cmd)
   env.Execute(xpidl_tl_cmd)
   
 elif sys.platform=='darwin':
+  mozobjpath = mozsrcpath + '/obj-ff-dbg'
   outputlibname = 'libsessioncontrol.dylib'
+  env["CPPPATH"] += [
+    mozobjpath + '/dist/include',
+  ]
   env["CPPDEFINES"] += [
     'MOZ_NO_MOZALLOC'
   ]
@@ -229,7 +240,7 @@ elif sys.platform=='darwin':
     '-pipe',
     '-bundle',
     '-mmacosx-version-min=10.5',
-    '-Wl,-executable_path,' + mozsdkpath + '/bin',
+    '-Wl,-executable_path,' + mozobjpath + '/dist/bin',
     '-Wl,-dead_strip',
     '-read_only_relocs',
     'suppress',
@@ -253,14 +264,14 @@ elif sys.platform=='darwin':
     'AudioToolbox',
     '-framework',
     'CoreServices',
-	'-fvisibility=default'	
+    '-fvisibility=default'
   ]
   libpath += [
     '..',
-    '../third_party/chromium_base',
+    chromiumbaselibpath,
     '../third_party/lib',
-    mozsdkpath + '/lib',
-    mozsdkpath + '/bin',
+    mozobjpath + '/dist/sdk/lib',
+    mozobjpath + '/dist/sdk/bin',
     webrtcpath + '/xcodebuild/Debug',
   ]
   libs += [
@@ -315,29 +326,39 @@ elif sys.platform=='darwin':
     'libvpx.a',
     'libwebrtc_i420.a',
     'libwebrtc_jpeg.a',
-	'libwebrtc_utility.a',
+    'libwebrtc_utility.a',
     'libwebrtc_video_coding.a',
     'libwebrtc_vp8.a',
     'libwebrtc_vplib.a'
   ]
+
   # Execute  xpcom commands
-  xpidl_h_cmd =  mozsdkpath + '/bin/xpidl -m header -I' + mozsdkpath + '/idl ./ICallControl.idl'
-  xpidl_tl_cmd = mozsdkpath + '/bin/xpidl -m typelib -I' + mozsdkpath + '/idl ./ICallControl.idl'
+  env.AppendENVPath('PYTHONPATH', mozobjpath + '/dist/sdk/bin')
+  idlIncludePath =  mozobjpath + '/dist/idl'
+  xpidl_h_cmd =  'python ' + mozobjpath + '/dist/sdk/bin/header.py  --cachedir=. -I ' + idlIncludePath + ' ./ICallControl.idl -o ICallControl.h'
+  xpidl_tl_cmd = 'python ' + mozobjpath + '/dist/sdk/bin/typelib.py --cachedir=.  -I ' + idlIncludePath + ' ./ICallControl.idl -o ICallControl.xpt'
   
   env.Execute(xpidl_h_cmd)
   env.Execute(xpidl_tl_cmd)
 elif sys.platform=='linux2':
   env.ParseConfig('pkg-config --cflags --libs gtk+-2.0')
 
-  print env['CPPPATH']
+  if x64 == 'yes':
+    mozobjpath = mozsrcpath + '/obj-x86_64-unknown-linux-gnu'
+  else:
+    mozobjpath = mozsrcpath + '/obj-i686-pc-linux-gnu'
 
   outputlibname = 'libsessioncontrol.so'
+  env["CPPPATH"] += [
+    mozobjpath + '/dist/include',
+  ]
   env["CPPDEFINES"] += [
     'MOZ_NO_MOZALLOC',
     'MOZILLA_STRICT_API',
     'IKRAN_LINUX'
   ]
   env["CPPFLAGS"] += [
+    '-std=gnu++0x',
     '-pipe',
     '-Os',
     '-shared',
@@ -361,7 +382,7 @@ elif sys.platform=='linux2':
     'xpcom-config.h'
   ]
   libpath += [
-    '../third_party/chromium_base',
+    chromiumbaselibpath,
     '../third_party/lib',
     '/usr/include'
   ]
@@ -375,23 +396,23 @@ elif sys.platform=='linux2':
     ]
 
   libpath += [
-    mozsdkpath + '/lib',
-    mozsdkpath + '/bin',
-     webrtcpath + '/out/Debug/obj.target/src/video_engine',
-     webrtcpath + '/out/Debug/obj.target/src/voice_engine',
-     webrtcpath + '/out/Debug/obj.target/src/modules',
-     webrtcpath + '/out/Debug/obj.target/src/common_video',
-     webrtcpath + '/out/Debug/obj.target/third_party/libvpx',
-     webrtcpath + '/out/Debug/obj.target/third_party/libjpeg_turbo',
-     webrtcpath + '/out/Debug/obj.target/src/common_audio',
-     webrtcpath + '/out/Debug/obj.target/third_party/protobuf',
-     webrtcpath + '/out/Debug/obj.target/src/system_wrappers/source'
+    mozobjpath + '/dist/lib',
+    mozobjpath + '/dist/bin',
+    webrtcpath + '/out/Debug/obj.target/src/video_engine',
+    webrtcpath + '/out/Debug/obj.target/src/voice_engine',
+    webrtcpath + '/out/Debug/obj.target/src/modules',
+    webrtcpath + '/out/Debug/obj.target/src/common_video',
+    webrtcpath + '/out/Debug/obj.target/third_party/libvpx',
+    webrtcpath + '/out/Debug/obj.target/third_party/libjpeg_turbo',
+    webrtcpath + '/out/Debug/obj.target/src/common_audio',
+    webrtcpath + '/out/Debug/obj.target/third_party/protobuf',
+    webrtcpath + '/out/Debug/obj.target/src/system_wrappers/source'
   ]
   libs += [
     componentName + suffixName, 
     'mozsqlite3',
     'xul',
-	'xpcomglue_s',
+    'xpcomglue_s',
     'xpcom',
     'nspr4',
     'mozalloc',
@@ -407,7 +428,7 @@ elif sys.platform=='linux2':
     'asound',
     'Xext',
     'chromium',
- 	'libvideo_engine_core.a',
+    'libvideo_engine_core.a',
     'libvoice_engine_core.a',
     'libvideo_render_module.a',
     'libmedia_file.a',
@@ -448,9 +469,9 @@ elif sys.platform=='linux2':
   ]
   env["LINKFLAGS"] += [
     '-shared',
-	'-pthread',
-	'-pipe',
-	'-Wl',	
+    '-pthread',
+    '-pipe',
+    '-Wl',
     '-z',
     'muldefs'
   ]
@@ -462,22 +483,21 @@ elif sys.platform=='linux2':
     env["LINKFLAGS"] += [
       '-m32',
     ]
+
   # Execute  xpcom commands
-  xpidl_h_cmd =  mozsdkpath + '/bin/xpidl -m header -I' + mozsdkpath + '/idl ./ICallControl.idl'
-  xpidl_tl_cmd = mozsdkpath + '/bin/xpidl -m typelib -I' + mozsdkpath + '/idl ./ICallControl.idl'
+  env.AppendENVPath('PYTHONPATH', mozobjpath + '/dist/sdk/bin')
+  idlIncludePath =  mozobjpath + '/dist/idl'
+  xpidl_h_cmd =  'python ' + mozobjpath + '/dist/sdk/bin/header.py --cachedir=. -I ' + idlIncludePath + ' ./ICallControl.idl -o ICallControl.h'
+  xpidl_tl_cmd = 'python ' + mozobjpath + '/dist/sdk/bin/typelib.py --cachedir=. -I ' + idlIncludePath + ' ./ICallControl.idl -o ICallControl.xpt'
   
   env.Execute(xpidl_h_cmd)
   env.Execute(xpidl_tl_cmd)
 
 
 if sys.platform == "win32":
-	buildResult = env.SharedLibrary(outputlibname, src_files,
-	LIBS=libs,
-	LIBPATH=libpath)
+  buildResult = env.SharedLibrary(outputlibname, src_files, LIBS=libs, LIBPATH=libpath)
 else:
-	buildResult = env.Program(outputlibname, src_files,
-	LIBS=libs,
-	LIBPATH=libpath)
+  buildResult = env.Program(outputlibname, src_files, LIBS=libs, LIBPATH=libpath)
 
 
 if sys.platform =='win32':

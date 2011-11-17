@@ -2,7 +2,7 @@
 <head>
     <title>Ikran!</title>
     <script type="application/javascript;version=1.8">
-        let Me = window.navigator.service.call;
+        let ikranService = window.navigator.service.call;
     </script>
 </head>
 <body onLoad="pageLoad()" style="margin:10px 0px;padding:0px;text-align:center;">
@@ -20,19 +20,28 @@
 	</div>
 	<div id="p2pDiv">
 	<p>My username or DN: <input type="text" id="p2pmydn" /></p>
+	<p>Local Voip Port: <input type="text" id="p2plocalvoipport" /></p>
+	<p>Remote Voip Port: <input type="text" id="p2premotevoipport" /></p>
 	</div>
 	<p><input type="button" id="regbutton" value="Register\Start Session!"/></p>
 	<p>DN to Call: <input type="text" id="dn" /></p>
-	<div id="p2pDiv2">
+	<div id="p2pControls">
 	<p>IP Address to Call: <input type="text" id="p2pipaddress" /></p>
 	</div>
 	<p><input type="button" id="callbutton" value="Place Call !"/></p>
+	<div id="registerControls">
+	<p>DTMF Digits: <input type="text" id="dtmfDigits" /></p>
+	<p><input type="button" id="sendDigits" value="Send DTMF Digits"/></p>
+	<p><input type="button" id="hold" value="Hold Call"/></p>
+	<p><input type="button" id="resume" value="Resume Call"/></p>
+	</div>	
 	<p id="themsg"></p>
 
 </body>
 <script type="application/javascript;version=1.8">
-    let Re = false;
-    let ReRe = false;
+    let Registered = false;
+    let CallInProgress = false;
+    let CallHeld = false;
     let msg = document.getElementById("themsg");
     let regbut = document.getElementById("regbutton");
     let callbut = document.getElementById("callbutton");
@@ -44,94 +53,189 @@
     let mypass = document.getElementById("mypass");
     let mydevice = document.getElementById("mydevice");
     let p2pmydn = document.getElementById("p2pmydn");
+    let p2plocalvoipport = document.getElementById("p2plocalvoipport");
+    let p2premotevoipport = document.getElementById("p2premotevoipport");
     let p2pipaddress = document.getElementById("p2pipaddress");
     let ctx = document.getElementById("thecanvas").getContext("2d");
+    let dtmfdigits = document.getElementById("dtmfDigits");
+    let dtmfbut = document.getElementById("sendDigits");
+    let holdbut = document.getElementById("hold");
+    let resumebut = document.getElementById("resume");
     
 	function pageLoad() {
 		let registerradio = document.getElementById("regradio").checked = "yes";
-		document.getElementById("registerDiv").style.display = '';
-		document.getElementById("p2pDiv").style.display = 'none';
-		document.getElementById("p2pDiv2").style.display = 'none';
+		showElement("registerDiv", true);
+		showElement("registerControls", false);
+		showElement("p2pDiv", false);
+		showElement("p2pControls", false);
+		showElement("resume", false);
     	ctx.drawImage(img, 192, 112);
     	serverRadioClick();
     }
     function serverRadioClick() {
-		document.getElementById("registerDiv").style.display = '';
-		document.getElementById("p2pDiv").style.display = 'none';
-		document.getElementById("p2pDiv2").style.display = 'none';
+    	showElement("registerDiv", true);
+    	showElement("registerControls", false);
+    	showElement("p2pDiv", false);
+    	showElement("p2pControls", false);
     }
     function p2pRadioClick() {
-		document.getElementById("registerDiv").style.display = 'none';
-		document.getElementById("p2pDiv").style.display = '';
-		document.getElementById("p2pDiv2").style.display = '';
+    	showElement("registerDiv", false);
+    	showElement("registerControls", false);
+    	showElement("p2pDiv", true);
+    	showElement("p2pControls", true);
+		p2plocalvoipport.value = '5060';
+		p2premotevoipport.value = '5060';
     }    
     function onSessionStateChange(type, arg) {
 		if(type == "incoming-call") {
 	    	alert(" incoming call ");
-	    	Me.answerCall(ctx,onMediaStateChange);
+	    	ikranService.answerCall(ctx,onMediaStateChange);
 	    	callbut.value = "End Call";
-	    	ReRe = true;
+	    	CallInProgress = true;
 	    	msg.innerHTML = type;
+	    	showElement("registerControls", true);
 		} else {
 	    	msg.innerHTML = type;
+	    	if(type == "registration-failed") {
+	    		Registered = false;
+            	regbut.value = "Register!";
+	    	}
 		}
     }
     function onMediaStateChange(type, arg) {
 		msg.innerHTML = type;
-		if(type == "call-terminated")
-		{
+		if(type == "call-terminated") {
 			callbut.value = "Place Call";
-			ReRe = false;
+			CallInProgress = false;
+			showElement("hold", true);
+			showElement("resume", false);
+			showElement("registerControls", false);
 		}
+		if(type == "call-held") {
+			msg.innerHTML = "Call held";
+		}		
+		if(type == "call-resumed") {
+			msg.innerHTML = "";
+		}		
     }
 
-    if (!Me) {
+    if (!ikranService) {
         msg.innerHTML = "The Ikran add-on could not be loaded!";
     }
     
     regbut.onclick = function() {
-        if (Re) {
-            // Stop recording
-            Me.unregisterUser();
- 	    	msg.innerHTML = " Unregistered ";
-	    	Re = false;
-            regbut.value = "Register !";
+        if (Registered) {
+            if (CallHeld) {	
+  					alert("Resume Call first");
+  			} else {
+            	ikranService.unregisterUser();
+ 	    		msg.innerHTML = " Unregistered ";
+	    		Registered = false;
+            	regbut.value = "Register!";
+  				if (CallInProgress) {
+            		callbut.value = " Place Call!";
+            		msg.innerHTML = "Call Ended...";
+					CallInProgress = false;
+					showElement("registerControls", false);
+				}
+			}
         } else {
-            Re = true;
+            Registered = true;
             regbut.value = "UnRegister !";
             msg.innerHTML = "Atempting 2 Register...";
             
             if (registerradio.checked) {
-            	Me.registerUser(mydevice.value, mydn.value, mypass.value, regipaddress.value, onSessionStateChange);
+                       	var propertyLiteral = {
+            							udp: true,
+            							video: false
+            						  };
+            							
+            	ikranService.setProperty(propertyLiteral);
+            	
+            	ikranService.registerUser(mydevice.value, mydn.value, mypass.value, regipaddress.value, onSessionStateChange);
             } else {             
             	// Start in P2P Mode
-            	Me.startP2PMode(p2pmydn.value, onSessionStateChange);
-            }        
-            
+            	var propertyLiteral = {
+            							localvoipport:  p2plocalvoipport.value, 
+            							remotevoipport: p2premotevoipport.value,
+            							udp: true
+            						  };
+            							
+            	ikranService.setProperty(propertyLiteral);
+            	ikranService.startP2PMode(p2pmydn.value, onSessionStateChange);
+            	var prop = ikranService.getProperty("localvoipport");
+            	var prop1 = ikranService.getProperty("remotevoipport");
+            	var prop2 = ikranService.getProperty("version");
+            }                 
             msg.innerHTML = "Registered...";
         }
     }
     callbut.onclick = function() {
-        if (ReRe) {
-            // Stop recording
-            Me.hangupCall();
-            callbut.value = " Place Call!";
-            msg.innerHTML = "Call Ended...";
-			ReRe = false;
-        } else {
-            // Start recording
-            ReRe = true;
-            callbut.value = " End Call!";
-            msg.innerHTML = "Placing Call...";
+    	if(Registered) {
+    	    if (CallInProgress) {
+    	    	if (!CallHeld) {	
+    	        	// Stop recording
+    	        	ikranService.hangupCall();
+    	        	callbut.value = " Place Call!";
+    	        	msg.innerHTML = "Call Ended...";
+					CallInProgress = false;
+					showElement("registerControls", false);
+			  	} else if (CallHeld) {	
+  					alert("Resume Call first");
+  				}	
+     	   } else {
+        	    CallInProgress = true;
+        	    callbut.value = " End Call!";
+        	    msg.innerHTML = "Placing Call...";
+        	    
+        	    var propertyLiteral = {
+            							video: true
+            						  };
+            							
+            	ikranService.setProperty(propertyLiteral);  
             
-            if (registerradio.checked) {
-            	Me.placeCall(dn.value, ctx, onMediaStateChange);
-            	callbut.value = "End Call!";
-            } else {
-            	Me.placeP2PCall(dn.value, p2pipaddress.value, ctx, onMediaStateChange);
-            }
-        }
+        	    if (registerradio.checked) {
+        	    	ikranService.placeCall(dn.value, ctx, onMediaStateChange);
+        	    	callbut.value = "End Call!";
+        	    } else {
+        	    	ikranService.placeP2PCall(dn.value, p2pipaddress.value, ctx, onMediaStateChange);
+        	    }
+        	    showElement("registerControls", true);
+        	}
+    	}
     }
-
+    dtmfbut.onclick = function() {
+    	if(Registered) {
+    		if(CallInProgress) {
+    			ikranService.sendDigits(dtmfdigits.value);
+    		}
+    	}
+    }
+    holdbut.onclick = function() {
+    	if(Registered) {
+    		if(CallInProgress) {
+    			ikranService.holdCall();
+    			CallHeld = true;
+    			showElement("hold", false);
+    			showElement("resume", true);
+    		}
+    	}
+    }
+    resumebut.onclick = function() {
+    	if(Registered) {
+    		if(CallInProgress) {
+    			ikranService.resumeCall();
+    			CallHeld = false;
+    			showElement("hold", true);
+    			showElement("resume", false);
+    		}
+    	}
+    }
+    function showElement(element, show) {
+    	if (show == true)
+    		document.getElementById(element).style.display = '';
+    	else
+    		document.getElementById(element).style.display = 'none';
+    }
 </script>
 </html>

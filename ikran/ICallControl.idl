@@ -84,4 +84,9 @@ interface ICallControl : nsISupports
 	void hangupCall();
 	void answerCall(in nsIDOMCanvasRenderingContext2D ctx,
 					in nsIMediaStateObserver media_obs);
+	void setProperty(in nsIPropertyBag2 prop);
+	void getProperty(in string name, out AString value);
+	void sendDigits(in string digits);
+	void holdCall();
+	void resumeCall();
 };

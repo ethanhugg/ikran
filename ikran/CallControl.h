@@ -52,6 +52,7 @@
 #include <nsIAsyncInputStream.h>
 #include <nsIAsyncOutputStream.h>
 #include <nsIDOMCanvasRenderingContext2D.h>
+#include <nsEmbedString.h>
 
 #include <nsCOMPtr.h>
 #include <nsAutoPtr.h>
@@ -82,11 +83,12 @@ public:
     virtual ~CallControl();
     CallControl(){}
 
-
 	virtual void OnIncomingCall(std::string callingPartyName, std::string callingPartyNumber);
  	virtual void OnRegisterStateChange(std::string registrationState);
  	virtual void OnCallTerminated(); 
-	virtual void OnCallConnected();
+	virtual void OnCallConnected(char* sdp);
+	virtual void OnCallHeld();
+	virtual void OnCallResume();
 	
 	void ParseProperties(nsIPropertyBag2* prop);
 
@@ -95,6 +97,7 @@ protected:
     PRThread *thread;
     PRBool m_session;
 	PRBool m_registered;
+	PRBool m_callHeld;
     PRLogModuleInfo *log;
     
 	nsCOMPtr<nsISessionStateObserver> sessionObserver; 
@@ -113,7 +116,7 @@ private:
 	char *m_credentials;
 	char *m_proxy_address;
 	char *m_dial_number;
-	char *m_remote_ip_address;
+	char *m_local_ip_address;
 };
 
 #endif

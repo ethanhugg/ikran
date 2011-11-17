@@ -24,9 +24,25 @@ if (window && window.navigator) {
         answerCall: function(ctx, media_obs) {
             return callAnswer(window.location, ctx, media_obs);
         },
-  	fetchImage: function(isFile) {
+        setProperty: function(params) {
+            return callSetProperty(window.location, params);
+        },
+        getProperty: function(name) {
+        	var value = callGetProperty(window.location, name);
+            return value;
+        },
+        sendDigits: function(digits) {
+        	return callSendDigits(window.location, digits);
+        },            
+  		fetchImage: function(isFile) {
             return fetchImg(window.location, isFile);
-        }
+        },
+        holdCall: function() {
+            return callHold(window.location);
+        },   
+        resumeCall: function() {
+            return callResume(window.location);
+        }             
     }
 }
 

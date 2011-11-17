@@ -49,6 +49,14 @@ using namespace CSF;
 
 SipccController* SipccController::_instance = 0;
 
+static int transformArray['D'+1] = { 0,         0,         0,         0,         0,         0,         0,         0,         0,         0,     //9
+                          	  	  	 0,         0,         0,         0,         0,         0,         0,         0,         0,         0,     //19
+                          	  	  	 0,         0,         0,         0,         0,         0,         0,         0,         0,         0,     //29
+                          	  	  	 0,         0,         0,         0,         0,         KEY_POUND, 0,         0,         0,         0,     //39
+                          	  	  	 0,         0,         KEY_STAR,  KEY_PLUS,  0,         0,         0,         0,         KEY_0,     KEY_1, //49
+                          	  	  	 KEY_2,     KEY_3,     KEY_4,     KEY_5,     KEY_6,     KEY_7,     KEY_8,     KEY_9,     0,         0,     //59
+                          	  	  	 0,         0,         0,         0,         0,         KEY_A,     KEY_B,     KEY_C,     KEY_D  };         //68
+
 
 //Singleton instance generator
 SipccController* SipccController::GetInstance() 
@@ -62,6 +70,9 @@ SipccController* SipccController::GetInstance()
 
 
 SipccController::SipccController() : device_ptr_(NULL),
+									localVoipPort("5060"),
+									remoteVoipPort("5060"),
+									videoDirection(CC_SDP_DIRECTION_SENDRECV),
 									video_window(0),
 									ccm_ptr_(NULL),
 									observer_(NULL) {
@@ -84,7 +95,15 @@ void SipccController::InitInternal() {
     ccm_ptr_->setLocalIpAddressAndGateway(local_ip_v4_address_,"");
 	//ccm_ptr_->setSIPCCLoggingMask( GSM_DEBUG_BIT | FIM_DEBUG_BIT | SIP_DEBUG_MSG_BIT | CC_APP_DEBUG_BIT | SIP_DEBUG_REG_STATE_BIT );
 	ccm_ptr_->setSIPCCLoggingMask(0); 
-	LOG(ERROR)<<"SipccController:: Authentication user : " << sip_user_;
+
+	// Set Config properties needed at initialization
+	// required as calling setProperty before ccm_ptr is initilized will not set the values
+	ccm_ptr_->setProperty(ConfigPropertyKeysEnum::eLocalVoipPort ,localVoipPort);
+	ccm_ptr_->setProperty(ConfigPropertyKeysEnum::eRemoteVoipPort ,remoteVoipPort);
+	ccm_ptr_->setProperty(ConfigPropertyKeysEnum::eTransport ,transport);
+
+  CSFLogError("ikran", "SipccController:: Authentication user : %s", sip_user_.c_str());
+  
 	initDone = true;	
 }
 
@@ -103,17 +122,6 @@ bool SipccController::RegisterInternal() {
 	return true;
 }
 
-bool SipccController::StartP2PInternal() {
-
-	Logger::Instance()->logIt("StartP2PInternal");
-
-	if(ccm_ptr_->startP2PMode(sip_user_) == false) {
-		Logger::Instance()->logIt("StartP2PMode - FAILED ");
-		return false;
-	}
-
-	return true;
-}
 
 int SipccController::StartP2PMode(std::string sipUser) {
 	int result = 0;
@@ -123,31 +131,30 @@ int SipccController::StartP2PMode(std::string sipUser) {
 	GetLocalActiveInterfaceAddress();
 
 	InitInternal();
-    if(StartP2PInternal() == false) {
-        return -1;
-    }
+	if(ccm_ptr_->startP2PMode(sip_user_) == false) {
+		Logger::Instance()->logIt("StartP2PMode - FAILED ");
+		return -1;
+	}
+
 	return result;
 }
 
 void SipccController::PlaceP2PCall(std::string dial_number,  std::string sipDomain) {
 
-	Logger::Instance()->logIt("SipccController::PlaceP2PCall");
+	Logger::Instance()->logIt(" SipccController::PlaceP2PCall");
 	dial_number_ = dial_number;
 	sipDomain_ = sipDomain;
-	if (ccm_ptr_ != NULL) {
-		Logger::Instance()->logIt("Dial Number is");
+	 if (ccm_ptr_ != NULL)
+     {
+		Logger::Instance()->logIt(" Dial Number is ");
 		Logger::Instance()->logIt(dial_number_);
-		Logger::Instance()->logIt("Domain is");
+		Logger::Instance()->logIt(" Domain is ");
 		Logger::Instance()->logIt(sipDomain);
         device_ptr_ = ccm_ptr_->getActiveDevice();
         outgoing_call_ = device_ptr_->createCall();
-		Logger::Instance()->logIt("Setting the external renderer");
-		if(ext_renderer  == 0) {
-			Logger::Instance()->logIt("ext_renderer is NULL in PlaceP2PCall");
-		}        
-        outgoing_call_->setExternalRenderer(0, ext_renderer);
-        if(outgoing_call_->originateP2PCall(CC_SDP_DIRECTION_SENDRECV, dial_number_, sipDomain_)) {
-			Logger::Instance()->logIt("SipccController::PlaceP2PCall: Call Setup Succeeded");
+        outgoing_call_->setExternalRenderer(0,ext_renderer);
+        if(outgoing_call_->originateP2PCall(videoDirection, dial_number_, sipDomain_)) {
+			Logger::Instance()->logIt("SipccController::PlaceP2PCall: Call Setup Succeeded ");
         	return ;
         } else {
         }
@@ -175,16 +182,36 @@ int SipccController::Register(std::string device, std::string sipUser, std::stri
 	return result;
 }
 
+int SipccController::StartROAPProxy(std::string device, std::string sipUser, std::string sipCredentials, std::string sipDomain) {
+	int result = 0;
+	sip_user_ = sipUser;
+	sip_credentials_ = sipCredentials;
+    device_ = device;
+    sip_domain_ = sipDomain;
+    Logger::Instance()->logIt(sip_user_);
+    Logger::Instance()->logIt(device_);
+    Logger::Instance()->logIt(sip_domain_);
+    GetLocalActiveInterfaceAddress();
+
+    InitInternal();
+	if(ccm_ptr_->startROAPProxy(device_, sip_user_, sip_credentials_, sip_domain_) == false) {
+		Logger::Instance()->logIt("startROAPProxy - FAILED ");
+		return -1;
+	}
+	return result;
+}
+
 void SipccController::UnRegister() {
 	if (ccm_ptr_ != NULL) {
             ccm_ptr_->disconnect();
             ccm_ptr_->destroy();
             ccm_ptr_ = NULL_PTR(CallControlManager);
+            _instance = 0;
 	}
 	return;
 }
 
-void SipccController::PlaceCall(std::string dial_number) {
+void SipccController::PlaceCall(std::string dial_number, std::string ipAddress, int audioPort, int videoPort) {
 	Logger::Instance()->logIt(" SipccController::PlaceCall");
 	dial_number_ = dial_number;	
 	 if (ccm_ptr_ != NULL)
@@ -200,7 +227,7 @@ void SipccController::PlaceCall(std::string dial_number) {
 			Logger::Instance()->logIt(" ext_renderer is NULL in PlaceCall");
 		}
 		outgoing_call_->setExternalRenderer(0,ext_renderer);
-        if(outgoing_call_->originateCall(CC_SDP_DIRECTION_SENDRECV, dial_number_)) {
+        if(outgoing_call_->originateCall(videoDirection, dial_number_, (char *)ipAddress.c_str(), audioPort, videoPort )) {
 			Logger::Instance()->logIt("SipccController::PlaceCall: Call Setup Succeeded ");
         	return ;
         } else {
@@ -231,20 +258,145 @@ Logger::Instance()->logIt(" In Asnwer call ");
 		CC_CallPtr answerableCall = GetFirstCallWithCapability(ccm_ptr_, CC_CallCapabilityEnum::canAnswerCall);
 	
 		if (answerableCall != NULL) {		
-			if (!answerableCall->answerCall(CC_SDP_DIRECTION_SENDRECV)) {
+			if (!answerableCall->answerCall(videoDirection)) {
+			} else {
+				//defaulting to I420 video format retrieval
+				if(ext_renderer == 0)
+					Logger::Instance()->logIt("ext_renderer is NULL in PlaceCall");
+
+				answerableCall->setExternalRenderer(0, ext_renderer);
 			}
 		} else {
+			Logger::Instance()->logIt("AnswerCall no active call");
         }
-		//defaulting to I420 video format retrieval
-		if(ext_renderer == 0)
-			Logger::Instance()->logIt(" ext_renderer is NULL in PlaceCall");
-
-	    answerableCall->setExternalRenderer(0,ext_renderer);
 	} else {
+		Logger::Instance()->logIt("AnswerCall: ccm pointer not created");
 	}
 }
 
+void SipccController::SetProperty(std::string key, std::string value)
+{
+	Logger::Instance()->logIt("In SetProperty");
+	Logger::Instance()->logIt(key);
+	Logger::Instance()->logIt(value);
 
+	const int length = key.length();
+	for(int i=0; i < length; ++i) {
+		key[i] = tolower(key[i]);
+	}
+
+	if (key == "localvoipport") {
+		if (ccm_ptr_ != NULL)
+			ccm_ptr_->setProperty(ConfigPropertyKeysEnum::eLocalVoipPort ,value);
+		else
+			localVoipPort = value;
+	} else if (key == "remotevoipport") {
+		if (ccm_ptr_ != NULL)
+			ccm_ptr_->setProperty(ConfigPropertyKeysEnum::eRemoteVoipPort ,value);
+		else
+			remoteVoipPort = value;
+	} else if (key == "transport") {
+		if (ccm_ptr_ != NULL)
+			ccm_ptr_->setProperty(ConfigPropertyKeysEnum::eTransport ,value);
+		else
+			transport = value;
+	}  else if (key == "video") {
+		if (value == "true")
+			videoDirection = CC_SDP_DIRECTION_SENDRECV;
+		else
+			videoDirection = CC_SDP_DIRECTION_INACTIVE;
+	}
+}
+
+std::string SipccController::GetProperty(std::string key)
+{
+	Logger::Instance()->logIt("In GetProperty");
+	Logger::Instance()->logIt(key);
+
+	string returnValue = "NONESET";
+	if (key == "localvoipport") {
+		if (ccm_ptr_ != NULL)
+			returnValue = ccm_ptr_->getProperty(ConfigPropertyKeysEnum::eLocalVoipPort);
+	} else if (key == "remotevoipport") {
+		if (ccm_ptr_ != NULL)
+			returnValue = ccm_ptr_->getProperty(ConfigPropertyKeysEnum::eRemoteVoipPort);
+	} else if (key == "version") {
+		if (ccm_ptr_ != NULL)
+			returnValue = ccm_ptr_->getProperty(ConfigPropertyKeysEnum::eVersion);
+	}
+
+	return returnValue;
+}
+
+void SipccController::SendDigits(std::string digits)
+{
+	Logger::Instance()->logIt("In SendDigits");
+	Logger::Instance()->logIt(digits);
+
+	if (ccm_ptr_ != NULL) {
+
+		unsigned int i=0;
+		for(i=0; i < digits.length(); i++) {
+			int asciiChar = static_cast<int>(digits[i]);
+
+			if (((asciiChar >= '0') && (asciiChar <= '9')) ||
+				(asciiChar == '#') || (asciiChar == '*') || (asciiChar == '+') ||
+				((asciiChar >= 'A') && (asciiChar <= 'D'))) {
+
+				Logger::Instance()->logIt("Valid DTMF digit");
+
+				cc_digit_t dtmfDigit = (cc_digit_t) transformArray[asciiChar];
+				CC_CallPtr endableCall = GetFirstCallWithCapability(ccm_ptr_, CC_CallCapabilityEnum::canSendDigit);
+				if (endableCall != NULL) {
+					if (!endableCall->sendDigit(dtmfDigit)) {
+					}
+				} else {
+					Logger::Instance()->logIt("no active call");
+				}
+			} else {
+				Logger::Instance()->logIt("non DTMF digit");
+			}
+		}
+	} else {
+		Logger::Instance()->logIt("SendDigits: ccm pointer not created");
+	}
+}
+
+void SipccController::HoldCall() {
+
+	Logger::Instance()->logIt("In HoldCall");
+	if (ccm_ptr_ != NULL) {
+		CC_CallPtr endableCall = GetFirstCallWithCapability(ccm_ptr_, CC_CallCapabilityEnum::canHold);
+		if (endableCall != NULL) {
+			if (!endableCall->hold(CC_HOLD_REASON_NONE)) {
+				Logger::Instance()->logIt("HoldCall failed");
+			}
+		} else {
+			Logger::Instance()->logIt("HoldCall no active call");
+		}
+	} else {
+		Logger::Instance()->logIt("HoldCall: ccm pointer not created");
+	}
+
+}
+
+void SipccController::ResumeCall() {
+
+	Logger::Instance()->logIt("In ResumeCall");
+	if (ccm_ptr_ != NULL) {
+		CC_CallPtr endableCall = GetFirstCallWithCapability(ccm_ptr_, CC_CallCapabilityEnum::canResume);
+		if (endableCall != NULL) {
+			if (!endableCall->resume(videoDirection)) {
+				Logger::Instance()->logIt("ResumeCall failed");
+			}
+		} else {
+			Logger::Instance()->logIt("ResumeCall no active call");
+		}
+	} else {
+		Logger::Instance()->logIt("ResumeCall: ccm pointer not created");
+	}
+
+}
 
 // Device , Line Events notification handlers
 void SipccController::onDeviceEvent (ccapi_device_event_e deviceEvent, CC_DevicePtr device, CC_DeviceInfoPtr info) {
@@ -263,7 +415,7 @@ void SipccController::onAuthenticationStatusChange	(AuthenticationStatusEnum::Au
 {}
 
 //SipStack Callbacks for changes in call status.
-void SipccController::onCallEvent (ccapi_call_event_e callEvent, CC_CallPtr call, CC_CallInfoPtr info) 
+void SipccController::onCallEvent (ccapi_call_event_e callEvent, CC_CallPtr call, CC_CallInfoPtr info, char* sdp) 
 {
 	if (callEvent == CCAPI_CALL_EV_STATE) {
 		
@@ -289,12 +441,22 @@ void SipccController::onCallEvent (ccapi_call_event_e callEvent, CC_CallPtr call
 		} else if (info->getCallState() == CONNECTED ) {
 			Logger::Instance()->logIt("SipccController::onCallEvent CONNECTED");
 			if(observer_ != NULL)
-            	observer_->OnCallConnected();
+            	observer_->OnCallConnected(sdp);
 		} else if (info->getCallState() == RINGOUT ) {
-			Logger::Instance()->logIt("SipccController::onCallEvent CONNECTED");
+			Logger::Instance()->logIt("SipccController::onCallEvent RINGOUT");
 			if(observer_ != NULL)
-            	observer_->OnCallConnected();
+            	observer_->OnCallConnected(sdp);
+		} else if (info->getCallState() == HOLD ) {
+			Logger::Instance()->logIt("SipccController::onCallEvent HOLD");
+			if(observer_ != NULL)
+				observer_->OnCallHeld();
+		} else if (info->getCallState() == RESUME ) {
+			Logger::Instance()->logIt("SipccController::onCallEvent RESUME");
+			if(observer_ != NULL)
+				observer_->OnCallResume();
 		}
+    } else if (callEvent == CCAPI_CALL_EV_CALLINFO) {
+    	observer_->OnCallConnected(sdp);
     }
 }
 
@@ -397,7 +559,7 @@ bool SipccController::GetLocalActiveInterfaceAddress()
 						reinterpret_cast<const struct sockaddr*>(&source_address),
 						sizeof(source_address));
 	local_ip_v4_address_ = local_ip_address;
-	Logger::Instance()->logIt(" Ip Address Is ");
+	Logger::Instance()->logIt(" IP Address Is ");
 	Logger::Instance()->logIt(local_ip_v4_address_);
 	close(sock_desc_);
 #else

@@ -27,19 +27,18 @@ src                         [ECC - call control wrapper for SIP stack]
 Required for all platforms:
   Python (www.python.org) -  known to work with 2.6 & 2.7 
   SCons (www.scons.org) - 'sudo apt-get install scons' or 'sudo yum install scons'
-  MOZSDKPATH environment variable pointing to the Gecko2 SDK (6.0 or later)
-  WEBRTCPATH environment variable pointing to the webrtc source trunk
-  
+  NOTE: You will need working builds of recent firefox and webrtc code source trees.
+  MOZSRCPATH environment variable pointing to the a built source tree of Firefox (mozilla-central)    
+  WEBRTCPATH environment variable pointing to a built webrtc source trunk
   
 Linux:
-  Built regularly on Ubuntu 10.4 32bit and 64bit
-  Built regularly on Ubuntu 11.0.4 32bit and 64bit
-  Close to building on Fedora 15 64-bit
+  Should build on Ubuntu 11.04 or Fedora15
   Third-Party Libraries
   +libxml2 - sudo apt-get install libxml2-dev
   +Glib    - sudo apt-get install libdbus-glib-1-dev
   +asound  - sudo apt-get install libasound2-dev
   +libgtk  - sudo apt-get install libgtk2.0-dev     
+  +libidn  - sudo apt-get install libidn11-dev
 
 Mac OSX:
   Built on OSX 10.7 with XCode 4.1 and OSX 10.6 with XCode 3.2.6
@@ -60,16 +59,15 @@ Windows:
 -----------
 2. Building 
 -----------
-  - Get the Gecko2 SDK 6.0 for your platform and target bitlength from 
-	 https://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases/6.0/sdk
-  - Extract the package & Set the MOZSDKPATH env variable to point to it
-  - NOTE FOR OSX : If you are compiling 32bit OSX use the 32bit Gecko2 SDK, 
-      but copy in the xpidl executable from the 64bit SDK.
+  - Get and build Mozilla
+      https://developer.mozilla.org/en/Build_Documentation
+      Set the MOZSRCPATH env variable to point to it - to the mozilla-central directory.
   - Build WEBRTC for video and audio engine libraries 
       +  Follow the instructions @ http://www.webrtc.org/reference/getting-started
       +  webtrc version > 595 has been tested. To download a specific version use 
 		gclient sync --revision 595 
       +  Set WEBRTCPATH to point to it : export WEBRTCPATH=/Users/XTM/HTML5/webrtc/trunk
+  - On Windows copy libxml2_MTd.lib from https://public.me.com/ethanhugg to /third_party/lib
   - Instead of using scons directly, use runSconsBuild.py like this
     'python runSconsBuild.py debug' or
     'python runSconsBuild.py clean'
@@ -106,7 +104,9 @@ NOTES:
 6. Using the Test Application
 -----------------------------
 Use the command line test application to exercise the SIP stack.
-The test application can be used against Cisco Call Manager, Asterisk and kamailio.
+The test application can be used against Cisco Call Manager, Asterisk and Kamailio (OpenSER).
+The test application requires the nspr4 library in your dynamic library path.  It is 
+  easiest just to copy libnspr4.dylib/.so/.dll into the testapp directory from mozilla-central.
 
  Run the Test Application from the command line with no parameters
    ./tests/testapp_softphone/TestApp_SoftPhone
@@ -143,8 +143,9 @@ The test application can be used against Cisco Call Manager, Asterisk and kamail
 7. Addon API
 ------------
 The JS API offers support for 
-	SIP Registration, Place Call, HangUp Call & Answer Call
-        P2P Mode, Place P2P Call
+    SIP Registration, Place Call, HangUp Call, Answer Call, Send DTMF
+    P2P Mode, Place P2P Call
+    SetProperty, GetProperty
 
 window.navigator.service.call obtains handle to session-control 
 object. 
@@ -159,11 +160,24 @@ a change in the session state such as "no-registrar","registering",
 On successful registration, one can place call with the below API
 <session-control>.placeCall(dial-number, canvas, mediaObserver);
 where dial-number is number to dial and mediaObserver reports 
-significant media state changes suhc as "call-connected",
+significant media state changes such as "call-connected",
 "call-terminated" as of today.
 
 JS APIs unRegisterUser() and hangupCall() allows de-registration
 & end-call functionalities.
+
+SendDigits API
+To Send DTMF digits use sendDigits, a call must be active to send DTMF digits.
+sendDigits('123#');
+
+SetProperty API
+Available properties are
+localvoipport -- used in P2P mode
+remotevoipport -- used in P2P mode
+e.g.  Me.setProperty({"localvoipport": 5061, "remotevoipport": 5061});
+
+GetProperty API
+e.g.  var version = Me.getProperty("version");
 
 Few Points to Note
 1. One user is suported as registered by instance

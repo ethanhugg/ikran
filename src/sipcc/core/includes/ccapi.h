@@ -65,6 +65,19 @@ typedef unsigned int softkey_events;
 typedef unsigned int cc_call_priority_e;
 extern cc_reg_state_t ccapp_get_state();
 
+
+// <em>   global sdp structure
+typedef struct cc_global_sdp_ {
+	char			offerSDP[1020];
+	char			answerSDP[1024];
+	char			offerAddress[MAX_IPADDR_STR_LEN];
+	int				audioPort;
+	int				videoPort;
+} cc_global_sdp_t;
+
+extern cc_global_sdp_t  gROAPSDP;
+//
+
 typedef enum {
     CC_FEATURE_MIN = -1L,
     CC_FEATURE_NONE,

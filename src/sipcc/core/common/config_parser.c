@@ -102,6 +102,8 @@ static int gTransportLayerProtocol = 4;   //  4 = tcp, 2 = udp
 static boolean gP2PSIP = FALSE;
 static int gVoipControlPort = 5060;
 static int gCcm1_sip_port = 5060;
+static boolean gROAPPROXY = FALSE;
+static boolean gROAPCLIENT = FALSE;
 
 typedef struct _multiLevel {
     int cfgId;           /* config id */
@@ -1523,6 +1525,15 @@ void config_setup_elements (const char *sipUser, const char *sipPassword, const 
     // Set SIP P2P boolean
     compare_or_set_boolean_value(CFGID_P2PSIP, gP2PSIP, (const unsigned char *) "p2psip");
 
+    // Set ROAP Proxy Mode boolean
+    compare_or_set_boolean_value(CFGID_ROAPPROXY, gROAPPROXY, (const unsigned char *) "roapproxy");
+
+    // Set ROAP Client Mode boolean
+    compare_or_set_boolean_value(CFGID_ROAPCLIENT, gROAPCLIENT, (const unsigned char *) "roapclient");
+
+    // Set product version
+    compare_or_set_string_value(CFGID_VERSION, gVersion, (const unsigned char *) "version");
+
     (void) isSecure; // XXX set but not used
     (void) isValid; // XXX set but not used
 }
@@ -1531,21 +1542,46 @@ void config_setup_server_address (const char *sipDomain) {
 	compare_or_set_string_value(CFGID_CCM1_ADDRESS+0, sipDomain, (const unsigned char *) "ccm1_addr");
 }
 
-void config_setup_transport(const cc_boolean is_udp) {
+void config_setup_transport_udp(const cc_boolean is_udp) {
 	gTransportLayerProtocol = is_udp ? 2 : 4;
 	compare_or_set_int_value(CFGID_TRANSPORT_LAYER_PROT, gTransportLayerProtocol, (const unsigned char *) "transportLayerProtocol");
 }
 
-void config_setup_voip_control_port(const int voipControlPort) {
+void config_setup_local_voip_control_port(const int voipControlPort) {
 	gVoipControlPort = voipControlPort;
-	gCcm1_sip_port = voipControlPort;
 	compare_or_set_int_value(CFGID_VOIP_CONTROL_PORT, voipControlPort, (const unsigned char *) "voipControlPort");
+}
+
+void config_setup_remote_voip_control_port(const int voipControlPort) {
+	gCcm1_sip_port = voipControlPort;
 	compare_or_set_int_value(CFGID_CCM1_SIP_PORT, voipControlPort,(const unsigned char *)"ccm1_sip_port");
+}
+
+int config_get_local_voip_control_port() {
+	return gVoipControlPort;
+}
+
+int config_get_remote_voip_control_port() {
+	return gCcm1_sip_port;
+}
+
+const char* config_get_version() {
+	return gVersion;
 }
 
 void config_setup_p2p_mode(const cc_boolean is_p2p) {
 	gP2PSIP = is_p2p;
 	compare_or_set_boolean_value(CFGID_P2PSIP, is_p2p, (const unsigned char *) "p2psip");
+}
+
+void config_setup_roap_proxy_mode(const cc_boolean is_roap_proxy) {
+	gROAPPROXY = is_roap_proxy;
+	compare_or_set_boolean_value(CFGID_ROAPPROXY, is_roap_proxy, (const unsigned char *) "roapproxy");
+}
+
+void config_setup_roap_client_mode(const cc_boolean is_roap_client) {
+	gROAPCLIENT = is_roap_client;
+	compare_or_set_boolean_value(CFGID_ROAPCLIENT, is_roap_client, (const unsigned char *) "roapclient");
 }
 
 /**

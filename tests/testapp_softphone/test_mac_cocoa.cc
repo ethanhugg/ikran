@@ -1,96 +1,110 @@
-/*
- *  Copyright (c) 2011 The WebRTC project authors. All Rights Reserved.
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
- *  Use of this source code is governed by a BSD-style license
- *  that can be found in the LICENSE file in the root of the source
- *  tree. An additional intellectual property rights grant can be found
- *  in the file PATENTS.  All contributing project authors may
- *  be found in the AUTHORS file in the root of the source tree.
- */
-
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * The Original Code is the Cisco Systems SIP Stack.
+ *
+ * The Initial Developer of the Original Code is
+ * Cisco Systems (CSCO).
+ * Portions created by the Initial Developer are Copyright (C) 2002
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ *  Cary Bran <cbran@cisco.com>
+ *  Ethan Hugg <ehugg@cisco.com>
+ *
+ * Alternatively, the contents of this file may be used under the terms of
+ * either the GNU General Public License Version 2 or later (the "GPL"), or
+ * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ * in which case the provisions of the GPL or the LGPL are applicable instead
+ * of those above. If you wish to allow use of your version of this file only
+ * under the terms of either the GPL or the LGPL, and not to allow others to
+ * use your version of this file under the terms of the MPL, indicate your
+ * decision by deleting the provisions above and replace them with the notice
+ * and other provisions required by the GPL or the LGPL. If you do not delete
+ * the provisions above, a recipient may use your version of this file under
+ * the terms of any one of the MPL, the GPL or the LGPL.
+ *
+ * ***** END LICENSE BLOCK ***** */
 
 #include	"test_mac_cocoa.h"
 #include	"test_main.h"
 
-WindowManager::WindowManager() :
-    _cocoaRenderView1(nil), _cocoaRenderView2(nil)
-{
+WindowManager::WindowManager() : _videoView(nil){
 
 }
 
-WindowManager::~WindowManager()
-{
-    if (_cocoaRenderView1)
-    {
-        [    _cocoaRenderView1 release];
-    }
-    if(_cocoaRenderView2)
-    {
-        [_cocoaRenderView2 release];
+WindowManager::~WindowManager(){
+  	if(_videoView){
+        [_videoView release];
     }
 }
 
-int WindowManager::CreateWindows(void* window1Title,
-                                            void* window2Title)
-{
-    NSRect outWindow1Frame = NSMakeRect(352,288,600,400);
-    NSWindow* outWindow1 = [[NSWindow alloc] initWithContentRect:outWindow1Frame
-                            styleMask:NSTitledWindowMask
-                            backing:NSBackingStoreBuffered defer:NO];
-    [outWindow1 orderOut:nil];
-    NSRect cocoaRenderView1Frame = NSMakeRect(0, 0, 600,400); 
-    _cocoaRenderView1 = [[CocoaRenderView alloc]
-                          initWithFrame:cocoaRenderView1Frame];
-    [[outWindow1 contentView] addSubview:_cocoaRenderView1];
-    [outWindow1 setTitle:[NSString stringWithFormat:@"%s", window1Title]];
-    [outWindow1 makeKeyAndOrderFront:NSApp];
+/**
+ * Creates a cocoa video view using the webrtc CocoaRenderView object
+ */
+CocoaRenderView* WindowManager::CreateView(NSString* title, NSRect windowDimensions, NSRect viewDimensions){
 
-    NSRect outWindow2Frame = NSMakeRect(352,300,600,400);
-    NSWindow* outWindow2 = [[NSWindow alloc] initWithContentRect:outWindow2Frame
-                            styleMask:NSTitledWindowMask
-                            backing:NSBackingStoreBuffered defer:NO];
-    [outWindow2 orderOut:nil];
-    NSRect cocoaRenderView2Frame = NSMakeRect(0, 0, 600,400);
-    _cocoaRenderView2 = [[CocoaRenderView alloc]
-                          initWithFrame:cocoaRenderView2Frame];
-    [[outWindow2 contentView] addSubview:_cocoaRenderView2];
-    [outWindow2 setTitle:[NSString stringWithFormat:@"%s", window2Title]];
-    [outWindow2 makeKeyAndOrderFront:NSApp];
-
-    return 0;
+	NSWindow* window = [[NSWindow alloc] initWithContentRect:windowDimensions
+						styleMask:NSTitledWindowMask
+						backing:NSBackingStoreBuffered defer:NO];
+	
+	CocoaRenderView* view = [[CocoaRenderView alloc]initWithFrame:viewDimensions];
+    [[window contentView] addSubview:view];
+    [window setTitle:title];
+	[window makeKeyAndOrderFront:NSApp];
+	
+	return view;
 }
 
-int WindowManager::TerminateWindows()
-{
-    return 0;
+
+void* WindowManager::GetVideoWindow(){
+	if(_videoView){
+		InitializeWindow();
+	}
+	return _videoView;
 }
 
-void* WindowManager::GetWindow1()
-{
-    return _cocoaRenderView1;
+int WindowManager::InitializeWindow(){
+	if(_videoView){
+		return 0;
+	}
+	
+	NSString* videoTitle = @"Caller Video Window";
+	
+	_videoView =   CreateView(videoTitle, NSMakeRect(352,288,600,400),  NSMakeRect(0, 0, 600,400));
+	
+	return 0;
 }
 
-void* WindowManager::GetWindow2()
-{
-    return _cocoaRenderView2;
-}
 
-bool WindowManager::SetTopmostWindow()
-{
-    return true;
-}
 
-int main(int argc, const char * argv[])
-{
-    NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+int main(int argc, const char * argv[]){
+		
+	NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
     [NSApplication sharedApplication];
+	
+	NSString* filePath= NULL;
+	if (argc == 2) {
+		//assume that the first arguement is the path to the test file
+		filePath = [[NSString alloc] initWithCString:argv[1]];
+	}
 
     // we have to run the test in a secondary thread because we need to run a
     // runloop, which blocks
     TestClass* autoTestClass = [[TestClass alloc]init];
         [NSThread detachNewThreadSelector:@selector(autoTestWithArg:)
-         toTarget:autoTestClass withObject:nil];
+         toTarget:autoTestClass withObject:filePath];
 
 	// process OS events. Blocking call
 	[[NSRunLoop mainRunLoop]run];
@@ -99,13 +113,19 @@ int main(int argc, const char * argv[])
 
 @implementation TestClass
 
--(void)autoTestWithArg:(NSString*)answerFile;
+-(void)autoTestWithArg:(NSString*)configPath;
 {
-
+	
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
-    TestMain autoTest;
-    int success = autoTest.BeginOSIndependentTesting();
-    [pool release];
+	string path;
+	TestMain autoTest;
+	if (configPath) {
+		path = [configPath cStringUsingEncoding:[NSString defaultCStringEncoding]];
+	}
+	 
+	int result = autoTest.BeginOSIndependentTesting(path);
+	
+	[pool release];
     return;
 }
 

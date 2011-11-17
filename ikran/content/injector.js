@@ -141,6 +141,42 @@ var IkranObserver = {
                 else throw "Permission denied";
             });
         }, "unregUser");
+        sandbox.importFunction(function(loc, params) {
+            ikran._verifyPermission(window, loc, function(allowed) {
+                if (allowed) ikran.setProperty(params);
+                else throw "Permission denied";
+            });
+        }, "callSetProperty"); 
+        sandbox.importFunction(function(loc, name) {
+        	let ret;
+            ikran._verifyPermission(window, loc, function(allowed) {
+                if (allowed) ret =  ikran.getProperty(name);
+                else throw "Permission denied";
+            });
+            return ret;
+        }, "callGetProperty"); 
+        sandbox.importFunction(function(loc, digits) {
+            ikran._verifyPermission(window, loc, function(allowed) {
+                if (allowed) ikran.sendDigits(digits);
+                else throw "Permission denied";
+            });
+        }, "callSendDigits");   
+        sandbox.importFunction(function(loc) {
+            let ret;
+            ikran._verifyPermission(window, loc, function(allowed) {
+                if (allowed) ret = ikran.holdCall();
+                else throw "Permission denied";
+            });
+            return ret;
+        }, "callHold");
+        sandbox.importFunction(function(loc) {
+            let ret;
+            ikran._verifyPermission(window, loc, function(allowed) {
+                if (allowed) ret = ikran.resumeCall();
+                else throw "Permission denied";
+            });
+            return ret;
+        }, "callResume");                                     
         sandbox.importFunction(function(loc, isFile) {
            let ret;
            ikran._verifyPermission(window, loc, function(allowed) {

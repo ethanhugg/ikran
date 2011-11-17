@@ -215,6 +215,7 @@ static const boolean gCcm1_isvalid = TRUE;
 static const int gDscpCallControl = 1;
 static const int gSpeakerEnabled = 1;
 static const char gExternalNumberMask[] = "";
+static const char gVersion[] = "0.1";
 
 
 #endif /* _CONFIG_H_ */

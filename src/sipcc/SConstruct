@@ -4,179 +4,183 @@ import sys
 Import('build_env')
 Import('debug')
 Import('x64')
+Import('mozsrcpath')
+Import('chromiumbaseincludepath')
 
+if(chromiumbaseincludepath == 'third_party'):
+  chromiumbaseincludepath = '../../third_party/chromium_base'
 
 use_msvc_dll = ARGUMENTS.get('use_msvc_dll', 1)     ##1 = MSVC C RT as a DLL rather than a static lib (libc)
 use_msvc_dll=0
 targetPlatform = ARGUMENTS.get('platform', sys.platform)
 
 
-include_dirs = Split("""
-            .
-            ../../third_party/chromium_base
-            ../common/browser_logging
-            cpr/include
-            core/includes
-            core/common 
-            core/sdp
-            core/sipstack/h
-            core/ccapp 
-            core/gsm/h
-            ../../third_party/libxml2/include
-            plat/common
-            include
-            """)
+include_dirs = [
+  '.',
+  chromiumbaseincludepath,
+  '../common/browser_logging',
+  'cpr/include',
+  'core/includes',
+  'core/common',
+  'core/sdp',
+  'core/sipstack/h',
+  'core/ccapp', 
+  'core/gsm/h',
+  '../../third_party/libxml2/include',
+  'plat/common',
+  'include'
+]
 
 src_files = Glob('core/ccapp/*.c') + \
-    Glob('core/common/*.c') 
+  Glob('core/common/*.c') 
 
-src_files += Split("""
-        core/gsm/ccapi.c
-        core/gsm/ccapi_strings.c
-        core/gsm/dcsm.c
-        core/gsm/fim.c
-        core/gsm/fsmb2bcnf.c
-        core/gsm/fsm.c
-        core/gsm/fsmcac.c
-        core/gsm/fsmcnf.c
-        core/gsm/fsmdef.c
-        core/gsm/fsmxfr.c
-        core/gsm/gsm.c
-        core/gsm/gsm_sdp.c
-        core/gsm/gsm_sdp_crypto.c
-        core/gsm/lsm.c
-        core/gsm/media_cap_tbl.c
-        core/gsm/sm.c
-        core/gsm/subapi.c
-    """)
+src_files += [
+  'core/gsm/ccapi.c',
+  'core/gsm/ccapi_strings.c',
+  'core/gsm/dcsm.c',
+  'core/gsm/fim.c',
+  'core/gsm/fsmb2bcnf.c',
+  'core/gsm/fsm.c',
+  'core/gsm/fsmcac.c',
+  'core/gsm/fsmcnf.c',
+  'core/gsm/fsmdef.c',
+  'core/gsm/fsmxfr.c',
+  'core/gsm/gsm.c',
+  'core/gsm/gsm_sdp.c',
+  'core/gsm/gsm_sdp_crypto.c',
+  'core/gsm/lsm.c',
+  'core/gsm/media_cap_tbl.c',
+  'core/gsm/sm.c',
+  'core/gsm/subapi.c'
+]
     
-src_files += Split("""
-        core/sdp/ccsdp.c 
-        core/sdp/sdp_access.c
-        core/sdp/sdp_attr_access.c
-        core/sdp/sdp_attr.c
-        core/sdp/sdp_base64.c
-        core/sdp/sdp_config.c
-        core/sdp/sdp_main.c
-        core/sdp/sdp_token.c
-        core/sdp/sdp_utils.c
-    """)
+src_files += [
+  'core/sdp/ccsdp.c', 
+  'core/sdp/sdp_access.c',
+  'core/sdp/sdp_attr_access.c',
+  'core/sdp/sdp_attr.c',
+  'core/sdp/sdp_base64.c',
+  'core/sdp/sdp_config.c',
+  'core/sdp/sdp_main.c',
+  'core/sdp/sdp_token.c',
+  'core/sdp/sdp_utils.c'
+]
 
 if targetPlatform in [ 'linux2', 'darwin' ]:
-    src_files += [ 'core/sdp/sdp_services_unix.c' ]
+  src_files += [ 'core/sdp/sdp_services_unix.c' ]
 elif targetPlatform == 'win32':
-    src_files += [ 'core/sdp/sdp_services_win32.c' ]
+  src_files += [ 'core/sdp/sdp_services_win32.c' ]
     
-src_files += Split("""
-        core/sipstack/ccsip_callinfo.c
-        core/sipstack/ccsip_cc.c
-        core/sipstack/ccsip_common_util.c
-        core/sipstack/ccsip_core.c
-        core/sipstack/ccsip_debug.c
-        core/sipstack/ccsip_info.c
-        core/sipstack/ccsip_messaging.c
-        core/sipstack/ccsip_platform.c
-        core/sipstack/ccsip_platform_tcp.c
-        core/sipstack/ccsip_platform_timers.c
-        core/sipstack/ccsip_platform_tls.c
-        core/sipstack/ccsip_platform_udp.c
-        core/sipstack/ccsip_pmh.c
-        core/sipstack/ccsip_publish.c
-        core/sipstack/ccsip_register.c
-        core/sipstack/ccsip_reldev.c
-        core/sipstack/ccsip_sdp.c
-        core/sipstack/ccsip_spi_utils.c
-        core/sipstack/ccsip_subsmanager.c
-        core/sipstack/ccsip_task.c
-        core/sipstack/httpish.c
-        core/sipstack/pmhutils.c
-        core/sipstack/sip_common_regmgr.c
-        core/sipstack/sip_common_transport.c
-        core/sipstack/sip_csps_transport.c
-        core/sipstack/sip_interface_regmgr.c
-    """)
+src_files += [
+  'core/sipstack/ccsip_callinfo.c',
+  'core/sipstack/ccsip_cc.c',
+  'core/sipstack/ccsip_common_util.c',
+  'core/sipstack/ccsip_core.c',
+  'core/sipstack/ccsip_debug.c',
+  'core/sipstack/ccsip_info.c',
+  'core/sipstack/ccsip_messaging.c',
+  'core/sipstack/ccsip_platform.c',
+  'core/sipstack/ccsip_platform_tcp.c',
+  'core/sipstack/ccsip_platform_timers.c',
+  'core/sipstack/ccsip_platform_tls.c',
+  'core/sipstack/ccsip_platform_udp.c',
+  'core/sipstack/ccsip_pmh.c',
+  'core/sipstack/ccsip_publish.c',
+  'core/sipstack/ccsip_register.c',
+  'core/sipstack/ccsip_reldev.c',
+  'core/sipstack/ccsip_sdp.c',
+  'core/sipstack/ccsip_spi_utils.c',
+  'core/sipstack/ccsip_subsmanager.c',
+  'core/sipstack/ccsip_task.c',
+  'core/sipstack/httpish.c',
+  'core/sipstack/pmhutils.c',
+  'core/sipstack/sip_common_regmgr.c',
+  'core/sipstack/sip_common_transport.c',
+  'core/sipstack/sip_csps_transport.c',
+  'core/sipstack/sip_interface_regmgr.c'
+]
 
 if targetPlatform == 'win32':  
-    src_files += ['core/sipstack/sip_platform_win32_task.c']
+  src_files += ['core/sipstack/sip_platform_win32_task.c']
 else:
-    src_files += ['core/sipstack/sip_platform_task.c']
+  src_files += ['core/sipstack/sip_platform_task.c']
     
-src_files += Split("""
-        core/src-common/configapp.c
-        core/src-common/dialplan.c
-        core/src-common/dialplanint.c
-        core/src-common/digcalc.c
-        core/src-common/kpml_common_util.c
-        core/src-common/kpmlmap.c
-        core/src-common/md5.c
-        core/src-common/misc_apps_task.c
-        core/src-common/pres_sub_not_handler.c
-        core/src-common/publish_int.c
-        core/src-common/singly_link_list.c
-        core/src-common/sll_lite.c
-        core/src-common/string_lib.c
-        core/src-common/util_ios_queue.c
-        core/src-common/util_parse.c
-        core/src-common/util_string.c
-    """)
-         
+src_files += [
+  'core/src-common/configapp.c',
+  'core/src-common/dialplan.c',
+  'core/src-common/dialplanint.c',
+  'core/src-common/digcalc.c',
+  'core/src-common/kpml_common_util.c',
+  'core/src-common/kpmlmap.c',
+  'core/src-common/md5.c',
+  'core/src-common/misc_apps_task.c',
+  'core/src-common/pres_sub_not_handler.c',
+  'core/src-common/publish_int.c',
+  'core/src-common/singly_link_list.c',
+  'core/src-common/sll_lite.c',
+  'core/src-common/string_lib.c',
+  'core/src-common/util_ios_queue.c',
+  'core/src-common/util_parse.c',
+  'core/src-common/util_string.c'
+]
+
 if targetPlatform == 'linux2':        
-    src_files += Split("""
-        cpr/linux/cpr_linux_chunk.c
-        cpr/linux/cpr_linux_errno.c
-        cpr/linux/cpr_linux_init.c
-        cpr/linux/cpr_linux_ipc.c
-        cpr/linux/cpr_linux_locks.c
-        cpr/linux/cpr_linux_memory.c
-        cpr/linux/cpr_linux_socket.c
-        cpr/linux/cpr_linux_stdio.c
-        cpr/linux/cpr_linux_stdlib.c
-        cpr/linux/cpr_linux_string.c
-        cpr/linux/cpr_linux_threads.c
-        cpr/linux/cpr_linux_timers_using_select.c 
-        """)
+  src_files += [
+    'cpr/linux/cpr_linux_chunk.c',
+    'cpr/linux/cpr_linux_errno.c',
+    'cpr/linux/cpr_linux_init.c',
+    'cpr/linux/cpr_linux_ipc.c',
+    'cpr/linux/cpr_linux_locks.c',
+    'cpr/linux/cpr_linux_memory.c',
+    'cpr/linux/cpr_linux_socket.c',
+    'cpr/linux/cpr_linux_stdio.c',
+    'cpr/linux/cpr_linux_stdlib.c',
+    'cpr/linux/cpr_linux_string.c',
+    'cpr/linux/cpr_linux_threads.c',
+    'cpr/linux/cpr_linux_timers_using_select.c'
+  ]
  
 elif targetPlatform == 'darwin': 
-    src_files += Split("""
-        cpr/darwin/cpr_darwin_chunk.c
-        cpr/darwin/cpr_darwin_errno.c
-        cpr/darwin/cpr_darwin_init.c
-        cpr/darwin/cpr_darwin_ipc.c
-        cpr/darwin/cpr_darwin_locks.c
-        cpr/darwin/cpr_darwin_memory.c
-        cpr/darwin/cpr_darwin_socket.c
-        cpr/darwin/cpr_darwin_stdio.c
-        cpr/darwin/cpr_darwin_stdlib.c
-        cpr/darwin/cpr_darwin_string.c
-        cpr/darwin/cpr_darwin_threads.c
-        cpr/darwin/cpr_darwin_timers_using_select.c 
-        """)
+  src_files += [
+    'cpr/darwin/cpr_darwin_chunk.c',
+    'cpr/darwin/cpr_darwin_errno.c',
+    'cpr/darwin/cpr_darwin_init.c',
+    'cpr/darwin/cpr_darwin_ipc.c',
+    'cpr/darwin/cpr_darwin_locks.c',
+    'cpr/darwin/cpr_darwin_memory.c',
+    'cpr/darwin/cpr_darwin_socket.c',
+    'cpr/darwin/cpr_darwin_stdio.c',
+    'cpr/darwin/cpr_darwin_stdlib.c',
+    'cpr/darwin/cpr_darwin_string.c',
+    'cpr/darwin/cpr_darwin_threads.c',
+    'cpr/darwin/cpr_darwin_timers_using_select.c'
+  ]
         
 elif targetPlatform == 'win32': 
   src_files += Glob('cpr/win32/*.c')
           
-src_files += Split("""
-    plat/common/plat_sec_api.c
-    plat/common/libxml_parser.c
-    plat/csf2g/model.c
-    plat/csf2g/reset_api.c
-    """)
+src_files += [
+  'plat/common/plat_sec_api.c',
+  'plat/common/libxml_parser.c',
+  'plat/csf2g/model.c',
+  'plat/csf2g/reset_api.c'
+]
 
 if targetPlatform == 'win32':
-    src_files += Glob('plat/win32/*.c')
+  src_files += Glob('plat/win32/*.c')
 elif targetPlatform == 'linux2':
   src_files += ['plat/linux/plat_api_stub.c']
 elif targetPlatform == 'darwin':
-    src_files += Glob('plat/darwin/*.c')
+  src_files += Glob('plat/darwin/*.c')
 
 if targetPlatform in [ 'linux2', 'darwin' ]:
-    src_files += ['plat/common/dns_utils.c']
-    src_files += Glob('plat/unix-common/*.c')
+  src_files += ['plat/common/dns_utils.c']
+  src_files += Glob('plat/unix-common/*.c')
 
-src_files_stub = Split("""
-    stub/cc_blf_stub.c
-    stub/vcm_stub.c
-    """)
+src_files_stub = [
+  'stub/cc_blf_stub.c',
+  'stub/vcm_stub.c'
+]
 
 env = build_env.Clone(CPPPATH=include_dirs)
  

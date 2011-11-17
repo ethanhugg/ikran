@@ -38,9 +38,10 @@
  * ***** END LICENSE BLOCK ***** */
 
 #include <sys/timeb.h>
+#include <stdarg.h>
 
 #include "csf_common.h"
-#include "CSFLog.h"
+#include "CSFLogStream.h"
 #include "debug-psipcc-types.h"
 #include "base/time.h"
 #include "base/threading/platform_thread.h"
@@ -146,7 +147,7 @@ public:
     virtual void onDeviceEvent         (ccapi_device_event_e deviceEvent, CC_DevicePtr device, CC_DeviceInfoPtr info );
     virtual void onFeatureEvent        (ccapi_device_event_e deviceEvent, CC_DevicePtr device, CC_FeatureInfoPtr feature_info);
     virtual void onLineEvent           (ccapi_line_event_e lineEvent,     CC_LinePtr line,     CC_LineInfoPtr info );
-    virtual void onCallEvent           (ccapi_call_event_e callEvent,     CC_CallPtr call,     CC_CallInfoPtr info );
+    virtual void onCallEvent           (ccapi_call_event_e callEvent,     CC_CallPtr call,     CC_CallInfoPtr info, char* sdp );
 };
 
 void MyPhoneListener::onDeviceEvent ( ccapi_device_event_e deviceEvent, CC_DevicePtr device, CC_DeviceInfoPtr info )
@@ -201,7 +202,7 @@ public:
 	}
 };
 
-void MyPhoneListener::onCallEvent   ( ccapi_call_event_e callEvent, CC_CallPtr call, CC_CallInfoPtr info )
+void MyPhoneListener::onCallEvent   ( ccapi_call_event_e callEvent, CC_CallPtr call, CC_CallInfoPtr info, char* sdp )
 {
 	CSFLogDebugS(logTag, "MyPhoneListener::onCallEvent");
 
@@ -580,7 +581,7 @@ static void handleOriginatePhoneCall (CallControlManagerPtr ccmPtr, const string
 
     	CSFLogDebug(logTag, " dialing (%s) # %s...", pMediaTypeStr, digits.c_str());
 
-        if (outgoingCall->originateCall(videoPref, digits))
+        if (outgoingCall->originateCall(videoPref, digits, (char *) "", 0, 0))
         {
         	CSFLogDebug(logTag, "Dialing (%s) %s...", pMediaTypeStr, digits.c_str());
         }
@@ -1373,6 +1374,22 @@ static int startInP2PMode ()
 std::string proxy_ip_address_="10.99.10.75";
 std::string local_ip_v4_address_;
 
+//Only POSIX Complaint as of 7/6/11
+#ifndef WIN32
+static std::string NetAddressToString(const struct sockaddr* net_address,
+                               socklen_t address_len) {
+
+  // This buffer is large enough to fit the biggest IPv6 string.
+  char buffer[128];
+  int result = getnameinfo(net_address, address_len, buffer, sizeof(buffer),
+                           NULL, 0, NI_NUMERICHOST);
+  if (result != 0) {
+    buffer[0] = '\0';
+  }
+  return std::string(buffer);
+}
+#endif
+
 // POSIX Only Implementation
 static bool GetLocalActiveInterfaceAddress() 
 {
@@ -1433,22 +1450,6 @@ static bool GetLocalActiveInterfaceAddress()
 	return true;
 }
 
-//Only POSIX Complaint as of 7/6/11
-#ifndef WIN32
-static std::string NetAddressToString(const struct sockaddr* net_address,
-                               socklen_t address_len) {
-
-  // This buffer is large enough to fit the biggest IPv6 string.
-  char buffer[128];
-  int result = getnameinfo(net_address, address_len, buffer, sizeof(buffer),
-                           NULL, 0, NI_NUMERICHOST);
-  if (result != 0) {
-    buffer[0] = '\0';
-  }
-  return std::string(buffer);
-}
-#endif
-
 static int runMainLoop ()
 {
     MyPhoneListener listener;
@@ -1491,7 +1492,6 @@ static int runMainLoop ()
 
 static void initLogging(int argc, char** argv)
 {
-	InitChromeLogging(argc, argv);
 }
 
 int main(int argc, char** argv)

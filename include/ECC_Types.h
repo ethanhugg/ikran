@@ -91,6 +91,7 @@ namespace CSF
 		} AuthenticationFailureCode;
 		std::string ECC_API toString(AuthenticationFailureCode value);
 	}
+
 	namespace AuthenticationStatusEnum
 	{
 		typedef enum {
@@ -115,7 +116,6 @@ namespace CSF
 		} DeviceRetrievalFailureCode;
 		std::string ECC_API toString(DeviceRetrievalFailureCode value);
 	};
-
 
     namespace ConnectionStatusEnum
     {
@@ -151,6 +151,16 @@ namespace CSF
 		} AvailablePhoneEvent;
 		std::string ECC_API toString(AvailablePhoneEvent value);
 	};
+
+	namespace ConfigPropertyKeysEnum
+	{
+		typedef enum {
+			eLocalVoipPort,
+			eRemoteVoipPort,
+			eVersion,
+			eTransport
+		} ConfigPropertyKeys;
+	}
 
 	typedef enum
 	{

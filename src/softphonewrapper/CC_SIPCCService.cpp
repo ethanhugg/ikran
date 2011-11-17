@@ -67,7 +67,7 @@ extern "C" {
 
 #include "csf_common.h"
 
-#include "CSFLog.h"
+#include "CSFLogStream.h"
 static const char* logTag = "CC_SIPCCService";
 
 using namespace std;
@@ -84,10 +84,7 @@ extern "C"
 #include "ccapi_device_info.h"
 #include "ccapi_call.h"
 
-#ifdef _CPR_USE_EXTERNAL_LOGGER_
 #include "cpr_stdio.h"
-#endif
-
 #include "config_api.h"
 #include "ccapi_service.h"
 #include "plat_api.h"
@@ -306,54 +303,6 @@ cc_boolean fcpFetchReq(int device_handle, char* fcpFileName)
     return 0;
 }
 
-#if defined (_CPR_USE_EXTERNAL_LOGGER_)
-
-static void _SIPCCLoggerFunction(int logLevel, const char * pFormat, va_list args)
-{
-
-    if ((logLevel >=0) && (logLevel < 4))
-    {
-        switch (logLevel)
-        {
-        case 0:
-          CSFLogErrorV("", pFormat, args);
-          break;
-        case 1:
-          CSFLogWarnV("", pFormat, args);
-          break;
-        case 2:
-          CSFLogInfoV("", pFormat, args);
-          break;
-        case 3:
-          CSFLogDebugV("", pFormat, args);
-          break;
-        }
-    }
-    else
-    {
-        CSFLogError("", "Unexpected logLevel %d sent by SIPCC. Logging as error.", logLevel);
-        CSFLogErrorV("", pFormat, args);
-        logLevel = 0;
-    }
-
-#ifdef WIN32
-#ifdef _DEBUG
-    {
-    static char * logLevelOptions[] = { "ERROR", "WARNING", "INFO", "DEBUG" };
-    char tempBuffer[200] = "";
-    int offset = csf_sprintf(tempBuffer, sizeof(tempBuffer), "%s: ", logLevelOptions[logLevel]);
-
-    if (offset >=0)
-    {
-      csf_vsprintf((tempBuffer + offset), sizeof(tempBuffer) - offset, pFormat, args);
-      OutputDebugStringA(tempBuffer);
-    }
-    }
-#endif
-#endif
-}
-#endif
-
 extern cc_int32_t SipDebugMessage;
 extern cc_int32_t SipDebugState;
 extern cc_int32_t SipDebugTask;
@@ -436,10 +385,10 @@ extern "C" void CCAPI_LineListener_onLineEvent(ccapi_line_event_e type, cc_linei
     CSF::CC_SIPCCService::onLineEvent(type, line, info);
 }
 
-extern "C" void CCAPI_CallListener_onCallEvent(ccapi_call_event_e type, cc_call_handle_t handle, cc_callinfo_ref_t info)
+extern "C" void CCAPI_CallListener_onCallEvent(ccapi_call_event_e type, cc_call_handle_t handle, cc_callinfo_ref_t info, char* sdp)
 {
     //CSFLogDebugS( logTag, "In CCAPI_CallListener_onCallEvent");
-	CSF::CC_SIPCCService::onCallEvent(type, handle, info);
+	CSF::CC_SIPCCService::onCallEvent(type, handle, info, sdp);
 }
 
 
@@ -473,10 +422,6 @@ CC_SIPCCService::~CC_SIPCCService()
 
 bool CC_SIPCCService::init(const std::string& user, const std::string& password, const std::string& domain, const std::string& device)
 {
-#if defined (_CPR_USE_EXTERNAL_LOGGER_)
-    cprRegisterLogger(_SIPCCLoggerFunction);
-#endif
-
     sipUser = user;
     sipPassword = password;
     sipDomain = domain;
@@ -582,8 +527,6 @@ bool CC_SIPCCService::startService()
     {
 		pVideo->setDSCPValue(136);
     }
-
-    CCAPI_Config_set_transport(false);
 
     bUseConfig = false;
     if (!(bStarted = (CCAPI_Service_start() == CC_SUCCESS)))
@@ -854,7 +797,7 @@ void CC_SIPCCService::onLineEvent(ccapi_line_event_e eventType, cc_lineid_t line
     _self->notifyLineEventObservers(eventType, linePtr, infoPtr);
 }
 
-void CC_SIPCCService::onCallEvent(ccapi_call_event_e eventType, cc_call_handle_t handle, cc_callinfo_ref_t info)
+void CC_SIPCCService::onCallEvent(ccapi_call_event_e eventType, cc_call_handle_t handle, cc_callinfo_ref_t info, char* sdp)
 {
     if (_self == NULL)
     {
@@ -881,7 +824,7 @@ void CC_SIPCCService::onCallEvent(ccapi_call_event_e eventType, cc_call_handle_t
 	set<CSF::CC_CallCapabilityEnum::CC_CallCapability> capSet = infoPtr->getCapabilitySet();
     CSFLogInfoS( logTag, "onCallEvent(" << call_event_getname(eventType) << ", " << callPtr->toString() <<
     		", [" << call_state_getname(infoPtr->getCallState()) << "|" << CC_CallCapabilityEnum::toString(capSet) << "] )");
-    _self->notifyCallEventObservers(eventType, callPtr, infoPtr);
+    _self->notifyCallEventObservers(eventType, callPtr, infoPtr, sdp);
 }
 
 void CC_SIPCCService::addCCObserver ( CC_Observer * observer )
@@ -933,13 +876,13 @@ void CC_SIPCCService::notifyLineEventObservers (ccapi_line_event_e eventType, CC
     }
 }
 
-void CC_SIPCCService::notifyCallEventObservers (ccapi_call_event_e eventType, CC_CallPtr callPtr, CC_CallInfoPtr info)
+void CC_SIPCCService::notifyCallEventObservers (ccapi_call_event_e eventType, CC_CallPtr callPtr, CC_CallInfoPtr info, char* sdp)
 {
 	base::AutoLock lock(m_lock);
 	set<CC_Observer*>::const_iterator it = ccObservers.begin();
 	for ( ; it != ccObservers.end(); it++ )
     {
-	    (*it)->onCallEvent(eventType, callPtr, info);
+	    (*it)->onCallEvent(eventType, callPtr, info, sdp);
     }
 }
 
@@ -1146,12 +1089,24 @@ void CC_SIPCCService::onMediaRestored( int callId )
 {
 }
 
-bool CC_SIPCCService::setVoipPort(int port) {
-	return CCAPI_Config_set_voip_port(port);
+bool CC_SIPCCService::setLocalVoipPort(int port) {
+	return CCAPI_Config_set_local_voip_port(port);
+}
+
+bool CC_SIPCCService::setRemoteVoipPort(int port) {
+	return CCAPI_Config_set_remote_voip_port(port);
 }
 
 bool CC_SIPCCService::setP2PMode(bool mode)  {
 	return CCAPI_Config_set_p2p_mode(mode);
+}
+
+bool CC_SIPCCService::setROAPProxyMode(bool mode)  {
+	return CCAPI_Config_set_roap_proxy_mode(mode);
+}
+
+bool CC_SIPCCService::setROAPClientMode(bool mode)  {
+	return CCAPI_Config_set_roap_client_mode(mode);
 }
 
 } // End of namespace CSF

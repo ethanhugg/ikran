@@ -107,6 +107,10 @@ const char *ring_names[] = {
     "Bellcore-dr5"
 };
 
+// <em>
+cc_global_sdp_t  gROAPSDP;
+//
+
 /* Forward function declarations */
 static int sip_sm_request_check_and_store(ccsipCCB_t *ccb, sipMessage_t *request,
                                                sipMethod_t request_method,
@@ -2338,7 +2342,7 @@ ccsip_send_callinfo (ccsipCCB_t *ccb, boolean update_caller_id,
         data.call_info.caller_id.orig_called_number = strlib_empty();
     }
     data.call_info.caller_id.call_type = ccb->call_type; 
-
+    
     /* Set UP update delay flag */
     data.call_info.feature_flag &= ~(CC_DELAY_UI_UPDATE);
     if (delay_update) {
@@ -3293,6 +3297,8 @@ ccsip_handle_idle_ev_cc_setup (ccsipCCB_t *ccb, sipSMEvent_t *event)
     cpr_ip_type     ip_type = CPR_IP_ADDR_IPV4;
     boolean         replace = FALSE;
 
+	int	roapproxy;
+
     CPR_IP_ADDR_INIT(proxy_ipaddr);
 
     ccb->gsm_id  = event->u.cc_msg->msg.setup.call_id;
@@ -3610,6 +3616,19 @@ ccsip_handle_idle_ev_cc_setup (ccsipCCB_t *ccb, sipSMEvent_t *event)
 
     /* Save the GSM's msg. bodies for future used */
     ccsip_save_local_msg_body(ccb, &event->u.cc_msg->msg.setup.msg_body);
+
+	// <em>
+	// replace SDP in ccb if this is the ROAP proxy
+	// we not inject directly into sdp generation
+    roapproxy = 0;
+	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
+	
+
+	if (roapproxy == TRUE) {
+		//strcpy(ccb->local_msg_body.parts[0].body, gROAPSDP.offerSDP);
+	}
+    //
+    
     /*
      * CC_REDIRECT_REASON_DEFLECTION shows that this is an attended transfer
      */
@@ -3705,7 +3724,6 @@ ccsip_handle_sentinvite_ev_sip_1xx (ccsipCCB_t *ccb, sipSMEvent_t *event)
     case SIP_1XX_RINGING:
         {
             sipsdp_status_t sdp_status;
-
             CCSIP_DEBUG_STATE(DEB_L_C_F_PREFIX"%d: %s <- SIP 180 RINGING\n",
                               DEB_L_C_F_PREFIX_ARGS(SIP_CALL_STATUS, ccb->dn_line, ccb->gsm_id, fname), 
 							  ccb->index, sip_util_state2string(ccb->state));
@@ -3720,7 +3738,7 @@ ccsip_handle_sentinvite_ev_sip_1xx (ccsipCCB_t *ccb, sipSMEvent_t *event)
              }
              */
             sdp_status = sip_util_extract_sdp(ccb, response);
-
+	
             switch (sdp_status) {
             case SIP_SDP_SUCCESS:
             case SIP_SDP_SESSION_AUDIT:
@@ -3855,6 +3873,7 @@ ccsip_handle_sentinvite_ev_sip_2xx (ccsipCCB_t *ccb, sipSMEvent_t *event)
     const char     *contact = NULL;
     sipsdp_status_t sdp_status;
     string_t        recv_info_list = strlib_empty();
+	int roapproxy;
 
     /* Unpack the event */
     response = event->u.pSipMessage;
@@ -3921,6 +3940,16 @@ ccsip_handle_sentinvite_ev_sip_2xx (ccsipCCB_t *ccb, sipSMEvent_t *event)
     /* Extract destination SDP and related fields */
     sdp_status = sip_util_extract_sdp(ccb, response);
 
+	//<em>
+	// extract SDP from ccb if this is the ROAP proxy
+    // youu are in function ccsip_handle_sentinvite_ev_sip_2xx
+    roapproxy = 0;
+	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
+	
+	if (roapproxy == TRUE) {
+		strcpy(gROAPSDP.answerSDP, response->mesg_body->msgBody);
+	}
+	//
 
     switch (sdp_status) {
     case SIP_SDP_SUCCESS:
@@ -5530,6 +5559,7 @@ ccsip_handle_disconnect_local (ccsipCCB_t *ccb, sipSMEvent_t *event)
 
     /* Send BYE message */
     ccb->authen.cred_type = 0;
+	
     sipSPISendBye(ccb, alsoString, NULL);
     if (ccb->state == SIP_STATE_SENT_MIDCALL_INVITE) {
         sip_sm_change_state(ccb, SIP_STATE_RELEASE);
@@ -9261,6 +9291,7 @@ sip_sm_request_check_and_store (ccsipCCB_t *ccb, sipMessage_t *request,
         content_length = sippmh_get_content_length(request);
 
         if (request->raw_body) {
+
             if ((size_t) content_length != strlen(request->raw_body)) {
                 CCSIP_DEBUG_ERROR(SIP_F_PREFIX"\n Mismatched Content length and "
                                   "Actual message body length:content length=%d\n"

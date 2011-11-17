@@ -45,27 +45,63 @@
 
 #include <string>
 #include "sipcc_controller.h"
+#include "test_configuration.h"
 
 using namespace std;
+
+//states that the test app can be in
+#define STATE_NOT_REGISTERED 0
+#define STATE_REGISTERED 1
+#define STATE_IN_CALL 2
+#define STATE_INCOMING_CALL 3
+
+//user input 
+#define USER_INPUT_QUIT 0
+#define USER_INPUT_PLACE_CALL 1
+#define USER_INPUT_ANSWER_CALL 2
+#define USER_INPUT_END_CALL 3
+#define USER_INPUT_FILE_CONFIG 4
+#define USER_INPUT_MANUAL_CONFIG 5
+#define USER_INPUT_PRINT_CONFIG 6
 
 class TestMain :
 		public SipccControllerObserver
 {
 public:
     TestMain();
-    bool BeginOSIndependentTesting();
-	virtual void OnIncomingCall(std::string callingPartyName, std::string callingPartyNumber);
- 	virtual void OnRegisterStateChange(std::string registrationState);
+	bool BeginOSIndependentTesting(string pathToConfigFile);
+	virtual void OnIncomingCall(string callingPartyName, string callingPartyNumber);
+ 	virtual void OnRegisterStateChange(string registrationState);
  	virtual void OnCallTerminated(); 
-	virtual void OnCallConnected();   
+	virtual void OnCallConnected(char* sdp);
+	virtual void OnCallHeld();
+	virtual void OnCallResume();
 private:
-	void FillInUserData();
-	bool videoWinEnabled;
-	std::string sipProxy;
-	std::string deviceName;
-	std::string userName;
-	std::string userPassword;
-	std::string p2pIPAddress;
+	void ManualConfiguration();
+	void LoadConfigurationFromFile();
+	void ReadConfig(string filePath);
+	void Register();
+	void PlaceCall();
+	int  GetUserInput();
+	void ProcessInput(int op);
+	void GetUserPhoneNumber();
+	void GetPhoneNumberToCall();
+	void GetP2PCallAddress();
+	void EndCall();
+	void RegisterSIPProxy();
+	void RegisterP2P();
+	void StartROAPProxy();
+	void GetStartupMode();
+	void GetVideoCalling();
+	void GetSIPProxy();
+	void GetPassword();
+	void GetDeviceName();
+	
+	int _state;
+	bool videoWinEnabled;	
+	
+	TestConfiguration* _config;
+	string p2pIPAddress;
 };
 
 #endif

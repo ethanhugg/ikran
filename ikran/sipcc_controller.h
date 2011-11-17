@@ -77,7 +77,9 @@ public:
 	virtual void OnIncomingCall(std::string callingPartyName, std::string callingPartyNumber) = 0;
 	virtual void OnRegisterStateChange(std::string registrationState) = 0;
  	virtual void OnCallTerminated() = 0;   // do we specify if terminated is local or remote
-	virtual void OnCallConnected() = 0;
+	virtual void OnCallConnected(char *sdp) = 0;
+	virtual void OnCallHeld() = 0;
+	virtual void OnCallResume() = 0;
 	
 };
 
@@ -92,12 +94,20 @@ public:
    	//Registration and Session Operations 
 	int Register(std::string device, std::string sipUser, std::string sipCredentials, std::string sipDomain);
 	void UnRegister();
-    void PlaceCall( std::string dial_number);
+	void PlaceCall(std::string dial_number, std::string ipAddress, int audioPort, int videoPort);
 	void EndCall();
 	void AnswerCall();
 	
+	void SetProperty(std::string key, std::string value);
+	std::string GetProperty(std::string key);
+
 	int StartP2PMode(std::string sipUser);
 	void PlaceP2PCall(std::string dial_number,  std::string sipDomain);
+	int StartROAPProxy(std::string device, std::string sipUser, std::string sipCredentials, std::string sipDomain);
+
+	void SendDigits(std::string digits);
+	void HoldCall();
+	void ResumeCall();
 
 	void SetExternalRenderer(void* renderer) {
 		ext_renderer = renderer;
@@ -111,7 +121,7 @@ public:
 	void onDeviceEvent(ccapi_device_event_e deviceEvent, CC_DevicePtr device, CC_DeviceInfoPtr info);
 	void onFeatureEvent(ccapi_device_event_e deviceEvent, CC_DevicePtr device, CC_FeatureInfoPtr feature_info);
 	void onLineEvent(ccapi_line_event_e lineEvent,     CC_LinePtr line,     CC_LineInfoPtr info);
-	void onCallEvent(ccapi_call_event_e callEvent,     CC_CallPtr call,     CC_CallInfoPtr info);	
+	void onCallEvent(ccapi_call_event_e callEvent,     CC_CallPtr call,     CC_CallInfoPtr info, char* sdp);	
 	
 	void onAvailablePhoneEvent(AvailablePhoneEventType::AvailablePhoneEvent event,const PhoneDetailsPtr availablePhoneDetails);
 	void onAuthenticationStatusChange(AuthenticationStatusEnum::AuthenticationStatus);
@@ -135,7 +145,6 @@ private:
 	CC_CallPtr GetFirstCallWithCapability(CallControlManagerPtr ccmPtr, CC_CallCapabilityEnum::CC_CallCapability cap);
 	void InitInternal();
 	bool RegisterInternal();
-	bool StartP2PInternal();
 #ifndef WIN32
 	std::string NetAddressToString(const struct sockaddr*, socklen_t); 
 #endif
@@ -159,6 +168,10 @@ private:
     std::string  preferred_line_;
     CC_DevicePtr device_ptr_;
     CC_CallPtr	outgoing_call_;	
+    std::string localVoipPort;
+    std::string remoteVoipPort;
+    std::string transport;
+    cc_sdp_direction_t videoDirection;
     
 	//State Variables for Reg and Session
     bool initDone;    

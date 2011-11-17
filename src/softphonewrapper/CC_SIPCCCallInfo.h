@@ -46,7 +46,7 @@
 #include "common/Wrapper.h"
 
 extern "C" {
-    void CCAPI_CallListener_onCallEvent(ccapi_call_event_e eventType, cc_call_handle_t handle, cc_callinfo_ref_t info);
+    void CCAPI_CallListener_onCallEvent(ccapi_call_event_e eventType, cc_call_handle_t handle, cc_callinfo_ref_t info, char* sdp);
 }
 
 namespace CSF

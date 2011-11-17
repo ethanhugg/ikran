@@ -46,6 +46,7 @@
 #include "lsm.h"
 #include "prot_configmgr.h"
 #include "ccapi_call_info.h"
+#include "util_string.h"
 
 /**
  * Get call info snapshot
@@ -120,8 +121,23 @@ cc_lineid_t CCAPI_Call_getLine(cc_call_handle_t call_handle){
  * @param [in] digits - digits to be dialed
  * @return SUCCESS or FAILURE
  */
-cc_return_t CCAPI_Call_originateCall(cc_call_handle_t handle, cc_sdp_direction_t video_pref, cc_string_t digits){
-     return CC_CallFeature_dial(handle, video_pref, digits);
+cc_return_t CCAPI_Call_originateCall(cc_call_handle_t handle, cc_sdp_direction_t video_pref, cc_string_t digits, char* ipaddress, int audioPort, int videoPort){
+	
+	// <em>
+	int roapproxy = 0;
+	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
+	
+	if (roapproxy == TRUE)	{
+		init_empty_str(gROAPSDP.offerAddress);
+		init_empty_str(gROAPSDP.answerSDP);
+		init_empty_str(gROAPSDP.offerSDP);
+		strcpy(gROAPSDP.offerAddress, ipaddress);
+		gROAPSDP.audioPort = audioPort;
+		gROAPSDP.videoPort = videoPort;
+	}
+	//
+	
+	return CC_CallFeature_dial(handle, video_pref, digits);
 }
 
 /**

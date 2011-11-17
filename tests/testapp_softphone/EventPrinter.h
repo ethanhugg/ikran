@@ -57,7 +57,7 @@ public:
     virtual void onDeviceEvent         (ccapi_device_event_e deviceEvent, CSF::CC_DevicePtr device, CSF::CC_DeviceInfoPtr info );
     virtual void onFeatureEvent        (ccapi_device_event_e deviceEvent, CSF::CC_DevicePtr device, CSF::CC_FeatureInfoPtr feature_info);
     virtual void onLineEvent           (ccapi_line_event_e lineEvent,     CSF::CC_LinePtr line,     CSF::CC_LineInfoPtr info );
-    virtual void onCallEvent           (ccapi_call_event_e callEvent,     CSF::CC_CallPtr call,     CSF::CC_CallInfoPtr info );
+    virtual void onCallEvent           (ccapi_call_event_e callEvent,     CSF::CC_CallPtr call,     CSF::CC_CallInfoPtr info, char* sdp );
 };
 
 

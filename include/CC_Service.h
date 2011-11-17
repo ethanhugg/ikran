@@ -109,8 +109,11 @@ namespace CSF
         virtual AudioControlPtr getAudioControl() = 0;
         virtual VideoControlPtr getVideoControl() = 0;
 
-        virtual bool setVoipPort(int port) = 0;
+        virtual bool setLocalVoipPort(int port) = 0;
+        virtual bool setRemoteVoipPort(int port) = 0;
         virtual bool setP2PMode(bool mode) = 0;
+        virtual bool setROAPProxyMode(bool mode) = 0;
+        virtual bool setROAPClientMode(bool mode) = 0;
 
     private:
         CC_Service(const CC_Service& rhs);

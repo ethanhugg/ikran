@@ -150,14 +150,31 @@ cc_boolean CCAPI_Config_set_server_address(const char *ip_address) {
 	return TRUE;
 }
 
-cc_boolean CCAPI_Config_set_transport(const cc_boolean is_udp) {
-	config_setup_transport(is_udp);
+cc_boolean CCAPI_Config_set_transport_udp(const cc_boolean is_udp) {
+	config_setup_transport_udp(is_udp);
 	return TRUE;
 }
 
-cc_boolean CCAPI_Config_set_voip_port(const int port) {
-	config_setup_voip_control_port(port);
+cc_boolean CCAPI_Config_set_local_voip_port(const int port) {
+	config_setup_local_voip_control_port(port);
 	return TRUE;
+}
+
+cc_boolean CCAPI_Config_set_remote_voip_port(const int port) {
+	config_setup_remote_voip_control_port(port);
+	return TRUE;
+}
+
+int CCAPI_Config_get_local_voip_port() {
+	return config_get_local_voip_control_port();
+}
+
+int CCAPI_Config_get_remote_voip_port() {
+	return config_get_remote_voip_control_port();
+}
+
+const char* CCAPI_Config_get_version() {
+	return config_get_version();
 }
 
 cc_boolean CCAPI_Config_checkValidity (int device_handle, const char *cfg_file_name, int from_memory) {
@@ -167,6 +184,16 @@ cc_boolean CCAPI_Config_checkValidity (int device_handle, const char *cfg_file_n
 
 cc_boolean CCAPI_Config_set_p2p_mode(const cc_boolean is_p2p) {
 	config_setup_p2p_mode(is_p2p);
+	return TRUE;
+}
+
+cc_boolean CCAPI_Config_set_roap_proxy_mode(const cc_boolean is_roap_proxy) {
+	config_setup_roap_proxy_mode(is_roap_proxy);
+	return TRUE;
+}
+
+cc_boolean CCAPI_Config_set_roap_client_mode(const cc_boolean is_roap_client) {
+	config_setup_roap_client_mode(is_roap_client);
 	return TRUE;
 }
 

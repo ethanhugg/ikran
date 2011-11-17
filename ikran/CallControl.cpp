@@ -96,7 +96,10 @@ public:
     }
    
     NS_IMETHOD Run() {
-        return m_M_Obs->OnMediaStateChange((char *)m_Msg, (char *)m_Arg);
+		if (m_M_Obs != NULL)
+			return m_M_Obs->OnMediaStateChange((char *)m_Msg, (char *)m_Arg);
+		else
+			return NS_OK;
     }
    
 private:
@@ -114,6 +117,7 @@ CallControl::Init()
 {
     m_session = PR_FALSE;
 	m_registered = PR_FALSE;
+	m_callHeld = PR_FALSE;
 	vSource = 0;
     return NS_OK;
 }
@@ -167,12 +171,26 @@ void CallControl::OnCallTerminated()
  * Callback from Sip Call Controller on
  * media connected between the peers 
  */
-void CallControl::OnCallConnected()
+void CallControl::OnCallConnected(char* sdp)
 {
 	 NS_DispatchToMainThread(new MediaCallback(
         mediaObserver, "call-connected", ""
     ));
 } 
+
+void CallControl::OnCallHeld()
+{
+	 NS_DispatchToMainThread(new MediaCallback(
+        mediaObserver, "call-held", ""
+    ));
+}
+
+void CallControl::OnCallResume()
+{
+	 NS_DispatchToMainThread(new MediaCallback(
+        mediaObserver, "call-resumed", ""
+    ));
+}
 
 /*
  * Start ikran session
@@ -207,6 +225,7 @@ CallControl::RegisterUser(
 	int res = SipccController::GetInstance()->Register(m_user_device, m_user, m_credentials, m_proxy_address);
 	if(res == 0) {
 		m_registered = PR_TRUE;	
+		m_session = PR_FALSE;
     	return NS_OK;
 	}
 	else
@@ -241,6 +260,7 @@ CallControl::StartP2PMode(
 	int res = SipccController::GetInstance()->StartP2PMode(m_user);
 	if(res == 0) {
 		m_registered = PR_TRUE;
+		m_session = PR_FALSE;
     	return NS_OK;
 	}
 	else
@@ -263,7 +283,8 @@ CallControl::UnregisterUser()
     
 	SipccController::GetInstance()->RemoveSipccControllerObserver();
 	SipccController::GetInstance()->UnRegister();
-	m_registered = PR_FALSE;	
+	m_registered = PR_FALSE;
+	m_session = PR_FALSE;
     return NS_OK;
 }
 
@@ -278,7 +299,7 @@ CallControl::PlaceCall(const char* dn,
 {
 	mediaObserver = obs;
 	vCanvas = ctx;
-	if(m_session) {
+	if(m_session && m_callHeld == PR_FALSE) {
 		Logger::Instance()->logIt("Place Call: call is in progress");
         NS_DispatchToMainThread(new MediaCallback(
             mediaObserver, "error", "call is in progress"
@@ -293,7 +314,7 @@ CallControl::PlaceCall(const char* dn,
 	 	Logger::Instance()->logIt("Vsource is null in PlaceCall");
 	}
 	SipccController::GetInstance()->SetExternalRenderer(vSource);
-	SipccController::GetInstance()->PlaceCall(m_dial_number);
+	SipccController::GetInstance()->PlaceCall(m_dial_number, (char *) "", 0, 0);
 	m_session = PR_TRUE;
 	return NS_OK;
 }
@@ -318,7 +339,7 @@ CallControl::PlaceP2PCall(const char* dn,
         return NS_ERROR_FAILURE;
 	}
 	m_dial_number = const_cast<char*>(dn);
-	m_remote_ip_address = const_cast<char*>(ip_address);
+	m_local_ip_address = const_cast<char*>(ip_address);
 	if(vSource == 0)
 	{
 		//hardcoding the width and height for now
@@ -326,11 +347,10 @@ CallControl::PlaceP2PCall(const char* dn,
 	 	Logger::Instance()->logIt("Vsource is null in PlaceCall");
 	}
 	SipccController::GetInstance()->SetExternalRenderer(vSource);
-	SipccController::GetInstance()->PlaceP2PCall(m_dial_number, m_remote_ip_address);
+	SipccController::GetInstance()->PlaceP2PCall(m_dial_number, m_local_ip_address);
 	m_session = PR_TRUE;
 	return NS_OK;
 }
-
 
 /*
  * End Call 
@@ -354,7 +374,6 @@ CallControl::HangupCall()
  * Answer Incoming Call for
  * registered user
  */
-
 NS_IMETHODIMP
 CallControl::AnswerCall(nsIDOMCanvasRenderingContext2D *ctx,
 				nsIMediaStateObserver* obs)
@@ -382,3 +401,101 @@ CallControl::AnswerCall(nsIDOMCanvasRenderingContext2D *ctx,
     return NS_OK;
 }
 
+/*
+ * SetProperty
+ */
+NS_IMETHODIMP
+CallControl::SetProperty(nsIPropertyBag2 *prop)
+{
+	nsresult rv;
+	nsEmbedString property;
+
+	rv = prop->GetPropertyAsAString(NS_LITERAL_STRING("localvoipport"), property);
+	if(NS_SUCCEEDED(rv))
+		SipccController::GetInstance()->SetProperty("localvoipport", ToNewUTF8String(property));
+
+	rv = prop->GetPropertyAsAString(NS_LITERAL_STRING("remotevoipport"), property);
+	if(NS_SUCCEEDED(rv))
+		SipccController::GetInstance()->SetProperty("remotevoipport", ToNewUTF8String(property));
+
+	bool transport;
+    rv = prop->GetPropertyAsBool(NS_LITERAL_STRING("udp"), &transport);
+    if(NS_SUCCEEDED(rv) && transport == true) {
+    	SipccController::GetInstance()->SetProperty("transport", "udp");
+    } else {
+    	rv = prop->GetPropertyAsBool(NS_LITERAL_STRING("tcp"), &transport);
+    	if(NS_SUCCEEDED(rv) && transport == true)
+    		SipccController::GetInstance()->SetProperty("transport", "tcp");
+    }
+
+	bool video;
+	rv = prop->GetPropertyAsBool(NS_LITERAL_STRING("video"), &video);
+	if(NS_SUCCEEDED(rv) && video == false) {
+		SipccController::GetInstance()->SetProperty("video", "false");
+	} else if(NS_SUCCEEDED(rv) && video == true) {
+		SipccController::GetInstance()->SetProperty("video", "true");
+	}
+
+    return NS_OK;
+}
+
+/*
+ * GetProperty
+ */
+NS_IMETHODIMP
+CallControl::GetProperty(const char* name,
+						 nsAString & value)
+{
+	char* strName = const_cast<char*>(name);
+	std::string tmpValue = SipccController::GetInstance()->GetProperty(strName);
+	value.Assign(NS_ConvertASCIItoUTF16(tmpValue.c_str()));
+    return NS_OK;
+}
+
+/*
+ * SendDigits
+ */
+NS_IMETHODIMP
+CallControl::SendDigits(const char* digits)
+{
+	std::string strDigits = const_cast<char*>(digits);
+	SipccController::GetInstance()->SendDigits(strDigits);
+    return NS_OK;
+}
+
+/*
+ * Hold Call
+ */
+NS_IMETHODIMP
+CallControl::HoldCall()
+{
+	if(!m_session) {
+		Logger::Instance()->logIt("HoldCall: no call is in progress");
+        NS_DispatchToMainThread(new MediaCallback(
+            mediaObserver, "error", " no call in progress"
+        ));
+        return NS_ERROR_FAILURE;
+	}
+	SipccController::GetInstance()->HoldCall();
+	m_callHeld = PR_TRUE;
+    return NS_OK;
+}
+
+
+/*
+ * Resume Call
+ */
+NS_IMETHODIMP
+CallControl::ResumeCall()
+{
+	if(!m_session) {
+		Logger::Instance()->logIt("ResumeCall: no call is in progress");
+        NS_DispatchToMainThread(new MediaCallback(
+            mediaObserver, "error", " no call in progress"
+        ));
+        return NS_ERROR_FAILURE;
+	}
+	SipccController::GetInstance()->ResumeCall();
+	m_callHeld = PR_FALSE;
+    return NS_OK;
+}

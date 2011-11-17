@@ -44,7 +44,7 @@
 #include <set>
 
 #include "csf_common.h"
-#include "CSFLog.h"
+#include "CSFLogStream.h"
 #include "CC_Device.h"
 #include "CC_DeviceInfo.h"
 #include "CC_FeatureInfo.h"
@@ -276,7 +276,7 @@ void ECC_CapsPrinter::onConnectionStatusChange(ConnectionStatusEnum::ConnectionS
     CSFLogDebug(logTag, "%*s ", EVENT_NAME_FIELD_WIDTH, toString(status).c_str());
 }
 
-void CC_CapsPrinter::onCallEvent (ccapi_call_event_e callEvent, CC_CallPtr call, CC_CallInfoPtr info )
+void CC_CapsPrinter::onCallEvent (ccapi_call_event_e callEvent, CC_CallPtr call, CC_CallInfoPtr info, char* sdp )
 {
 	base::AutoLock lock(eventPrinterMutex);
     printHeaderBlockIfNotAlreadyPrinted();

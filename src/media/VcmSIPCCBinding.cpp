@@ -39,7 +39,7 @@
 
 #include "CC_Common.h"
 
-#include "CSFLog.h"
+#include "CSFLogStream.h"
 
 #include "CSFMediaProvider.h"
 #include "CSFAudioTermination.h"
@@ -48,6 +48,7 @@
 #include "csf_common.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 
 extern "C" {
 #include "ccsdp.h"
