@@ -4109,7 +4109,6 @@ fsmdef_ev_connected (sm_event_t *event)
     cc_connected_t *msg = (cc_connected_t *) event->msg;
     cc_causes_t     cause;
     sm_rcs_t        sm_rc;
-	int roapproxy;
 
     FSM_DEBUG_SM(DEB_F_PREFIX"Entered.\n", DEB_F_PREFIX_ARGS(FSM, "fsmdef_ev_connected"));
 
