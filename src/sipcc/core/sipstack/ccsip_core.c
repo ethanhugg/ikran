@@ -3623,7 +3623,6 @@ ccsip_handle_idle_ev_cc_setup (ccsipCCB_t *ccb, sipSMEvent_t *event)
     roapproxy = 0;
 	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
 	
-
 	if (roapproxy == TRUE) {
 		//strcpy(ccb->local_msg_body.parts[0].body, gROAPSDP.offerSDP);
 	}
@@ -3942,7 +3941,7 @@ ccsip_handle_sentinvite_ev_sip_2xx (ccsipCCB_t *ccb, sipSMEvent_t *event)
 
 	//<em>
 	// extract SDP from ccb if this is the ROAP proxy
-    // youu are in function ccsip_handle_sentinvite_ev_sip_2xx
+    // you are in function ccsip_handle_sentinvite_ev_sip_2xx
     roapproxy = 0;
 	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
 	
