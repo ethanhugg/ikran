@@ -96,7 +96,7 @@ void OutgoingRoap::Init()
 	SipccController::GetInstance()->AddSipccControllerObserver(this);
 }
 
-void OutgoingRoap::Shutdown()
+void OutgoingRoap::Stop()
 {
 	SipccController::GetInstance()->RemoveSipccControllerObserver();
 }
@@ -151,20 +151,16 @@ void OutgoingRoap::OK(string callerSessionId, string calleeSessionId, string seq
   push(roapMessage);
 }
 
-void OutgoingRoap::TentativeAnswer(string callerSessionId, string calleeSessionId, string seq, string sdp)
+void OutgoingRoap::Shutdown(string callerSessionId, string calleeSessionId, string seq)
 {
   string roapMessage;
   
-  escapeForJSON(sdp);
-  
-  roapMessage += "{ \"messageType\":\"TENTATIVE_ANSWER\", \"callerSessionId\":\"";
+  roapMessage += "{ \"messageType\":\"SHUTDOWN\", \"callerSessionId\":\"";
   roapMessage += callerSessionId;
   roapMessage += "\", \"calleeSessionId:\"";
   roapMessage += calleeSessionId;
   roapMessage += "\", \"seq\":\"";
   roapMessage += seq;
-  roapMessage += "\", \"sdp\":\"";
-  roapMessage += sdp;
   roapMessage += "\" }";
   
   push(roapMessage);

@@ -59,11 +59,11 @@ public:
   static void replaceAll(string& str, const char* find, const char* replace);
   static void escapeForJSON(string& str);
   void Init();
-  void Shutdown();
+  void Stop();
   void Offer(string callerSessionId, string seq, string sdp);
   void Answer(string callerSessionId, string calleeSessionId, string seq, string sdp);
   void OK(string callerSessionId, string calleeSessionId, string seq);
-  void TentativeAnswer(string callerSessionId, string calleeSessionId, string seq, string sdp);
+  void Shutdown(string callerSessionId, string calleeSessionId, string seq);
 
   virtual void OnIncomingCall(std::string callingPartyName, std::string callingPartyNumber);
   virtual void OnRegisterStateChange(std::string registrationState);

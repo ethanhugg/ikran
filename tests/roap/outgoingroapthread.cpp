@@ -168,7 +168,7 @@ void OutgoingRoapThread::shutdown()
 {
   CSFLogDebugS(logTag, "OutgoingRoapThread shutdown called");
   
-  _outgoing.Shutdown();
+  _outgoing.Stop();
 
   _shutdown = true;
   if (_socket != -1)

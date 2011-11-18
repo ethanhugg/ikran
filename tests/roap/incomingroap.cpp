@@ -134,7 +134,7 @@ void IncomingRoap::OK(string callerSessionId, string calleeSessionId, string seq
   
 }
 
-void IncomingRoap::TentativeAnswer(string callerSessionId, string calleeSessionId, string seq, string sdp)
+void IncomingRoap::Shutdown(string callerSessionId, string calleeSessionId, string seq)
 {
   
 }
