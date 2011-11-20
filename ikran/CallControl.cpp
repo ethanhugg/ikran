@@ -118,6 +118,7 @@ CallControl::Init()
     m_session = PR_FALSE;
 	m_registered = PR_FALSE;
 	m_callHeld = PR_FALSE;
+	m_isROAPClient = PR_FALSE;
 	vSource = 0;
     return NS_OK;
 }
@@ -212,6 +213,14 @@ CallControl::RegisterUser(
     m_credentials  = const_cast<char*>(credentials);
     m_proxy_address = const_cast<char*>(proxy_address);
 
+	if(m_isROAPClient) {
+        NS_DispatchToMainThread(new SessionCallback(
+            sessionObserver, "error", "In ROAP Client Mode:  Inappropriate Action "
+        ));
+        return NS_ERROR_FAILURE;
+	}
+
+
     if (m_registered) {
         NS_DispatchToMainThread(new SessionCallback(
             sessionObserver, "error", "User Already Registered"
@@ -247,6 +256,14 @@ CallControl::StartP2PMode(
     sessionObserver = obs;
     m_user = const_cast<char*>(user);
 
+   if(m_isROAPClient) {
+      NS_DispatchToMainThread(new SessionCallback(
+          sessionObserver, "error", "In ROAP Client Mode:  Inappropriate Action "
+       ));
+       return NS_ERROR_FAILURE;
+    }
+
+
     if (m_registered) {
         NS_DispatchToMainThread(new SessionCallback(
             sessionObserver, "error", "User Already Registered"
@@ -274,6 +291,13 @@ CallControl::StartP2PMode(
 NS_IMETHODIMP
 CallControl::UnregisterUser()
 {
+   if(m_isROAPClient) {
+        NS_DispatchToMainThread(new SessionCallback(
+            sessionObserver, "error", "In ROAP Client Mode:  Inappropriate Action "
+        ));
+        return NS_ERROR_FAILURE;
+    }
+
     if (!m_registered) {
         NS_DispatchToMainThread(new SessionCallback(
             sessionObserver, "error", "no session in progress"
@@ -299,6 +323,14 @@ CallControl::PlaceCall(const char* dn,
 {
 	mediaObserver = obs;
 	vCanvas = ctx;
+
+   if(m_isROAPClient) {
+        NS_DispatchToMainThread(new SessionCallback(
+            sessionObserver, "error", "In ROAP Client Mode:  Inappropriate Action "
+        ));
+        return NS_ERROR_FAILURE;
+    }
+
 	if(m_session && m_callHeld == PR_FALSE) {
 		Logger::Instance()->logIt("Place Call: call is in progress");
         NS_DispatchToMainThread(new MediaCallback(
@@ -331,6 +363,15 @@ CallControl::PlaceP2PCall(const char* dn,
 {
 	mediaObserver = obs;
 	vCanvas = ctx;
+ 
+   if(m_isROAPClient) {
+        NS_DispatchToMainThread(new SessionCallback(
+            sessionObserver, "error", "In ROAP Client Mode:  Inappropriate Action "
+        ));
+        return NS_ERROR_FAILURE;
+    }
+
+
 	if(m_session) {
 		Logger::Instance()->logIt("Place P2P Call: call is in progress");
         NS_DispatchToMainThread(new MediaCallback(
@@ -358,6 +399,14 @@ CallControl::PlaceP2PCall(const char* dn,
 NS_IMETHODIMP
 CallControl::HangupCall()
 {
+
+   if(m_isROAPClient) {
+        NS_DispatchToMainThread(new SessionCallback(
+            sessionObserver, "error", "In ROAP Client Mode:  Inappropriate Action "
+        ));
+        return NS_ERROR_FAILURE;
+    }
+
 	if(!m_session) {
 		Logger::Instance()->logIt("HangupCall: no call is in progress");
         NS_DispatchToMainThread(new MediaCallback(
@@ -380,6 +429,14 @@ CallControl::AnswerCall(nsIDOMCanvasRenderingContext2D *ctx,
 {
 	mediaObserver = obs;
 	vCanvas = ctx;
+
+   if(m_isROAPClient) {
+        NS_DispatchToMainThread(new SessionCallback(
+            sessionObserver, "error", "In ROAP Client Mode:  Inappropriate Action "
+        ));
+        return NS_ERROR_FAILURE;
+    }  
+
     if(m_session) {
 		Logger::Instance()->logIt("AnswerCall: no call is in progress");
         NS_DispatchToMainThread(new MediaCallback(
@@ -409,6 +466,13 @@ CallControl::SetProperty(nsIPropertyBag2 *prop)
 {
 	nsresult rv;
 	nsEmbedString property;
+
+   if(m_isROAPClient) {
+        NS_DispatchToMainThread(new SessionCallback(
+            sessionObserver, "error", "In ROAP Client Mode:  Inappropriate Action "
+        ));
+        return NS_ERROR_FAILURE;
+    }  
 
 	rv = prop->GetPropertyAsAString(NS_LITERAL_STRING("localvoipport"), property);
 	if(NS_SUCCEEDED(rv))
@@ -446,6 +510,14 @@ NS_IMETHODIMP
 CallControl::GetProperty(const char* name,
 						 nsAString & value)
 {
+
+   if(m_isROAPClient) {
+        NS_DispatchToMainThread(new SessionCallback(
+            sessionObserver, "error", "In ROAP Client Mode:  Inappropriate Action "
+        ));
+        return NS_ERROR_FAILURE;
+    }  
+
 	char* strName = const_cast<char*>(name);
 	std::string tmpValue = SipccController::GetInstance()->GetProperty(strName);
 	value.Assign(NS_ConvertASCIItoUTF16(tmpValue.c_str()));
@@ -458,6 +530,13 @@ CallControl::GetProperty(const char* name,
 NS_IMETHODIMP
 CallControl::SendDigits(const char* digits)
 {
+
+   if(m_isROAPClient) {
+        NS_DispatchToMainThread(new SessionCallback(
+            sessionObserver, "error", "In ROAP Client Mode:  Inappropriate Action "
+        ));
+        return NS_ERROR_FAILURE;
+    }  
 	std::string strDigits = const_cast<char*>(digits);
 	SipccController::GetInstance()->SendDigits(strDigits);
     return NS_OK;
@@ -469,6 +548,14 @@ CallControl::SendDigits(const char* digits)
 NS_IMETHODIMP
 CallControl::HoldCall()
 {
+
+   if(m_isROAPClient) {
+        NS_DispatchToMainThread(new SessionCallback(
+            sessionObserver, "error", "In ROAP Client Mode:  Inappropriate Action "
+        ));
+        return NS_ERROR_FAILURE;
+    }  
+
 	if(!m_session) {
 		Logger::Instance()->logIt("HoldCall: no call is in progress");
         NS_DispatchToMainThread(new MediaCallback(
@@ -488,6 +575,14 @@ CallControl::HoldCall()
 NS_IMETHODIMP
 CallControl::ResumeCall()
 {
+
+   if(m_isROAPClient) {
+        NS_DispatchToMainThread(new SessionCallback(
+            sessionObserver, "error", "In ROAP Client Mode:  Inappropriate Action "
+        ));
+        return NS_ERROR_FAILURE;
+    }  
+
 	if(!m_session) {
 		Logger::Instance()->logIt("ResumeCall: no call is in progress");
         NS_DispatchToMainThread(new MediaCallback(
@@ -499,3 +594,80 @@ CallControl::ResumeCall()
 	m_callHeld = PR_FALSE;
     return NS_OK;
 }
+
+/*
+ * ROAP Cleint Media Functions
+ */
+ 
+NS_IMETHODIMP
+CallControl::InitROAPClient()
+{
+	Logger::Instance()->logIt(" This client is in ROAP mode ");
+	m_isROAPClient = PR_TRUE;
+    	return NS_OK;
+}
+
+NS_IMETHODIMP
+CallControl::DeInitROAPClient()
+{
+	Logger::Instance()->logIt(" This client is NO-MORE in ROAP mode ");
+	m_isROAPClient = PR_FALSE;
+    	return NS_OK;
+}
+
+NS_IMETHODIMP
+CallControl::StartROAPMedia(nsIDOMCanvasRenderingContext2D *ctx, 
+							const char* peer, const char* audioTxPort, 
+							const char* audioRxPort,const char *videoTxPort,
+							const char* videoRxPort)
+{
+	Logger::Instance()->logIt("StartROAPMedia: Called ");
+	vCanvas = ctx;
+	ViEMediaTest::GetInstance()->SetTxAudioPort(audioTxPort);
+	ViEMediaTest::GetInstance()->SetRxAudioPort(audioRxPort);
+	ViEMediaTest::GetInstance()->SetTxVideoPort(videoTxPort);
+	ViEMediaTest::GetInstance()->SetRxVideoPort(videoRxPort);
+
+	m_tx_audio_port = const_cast<char*>(audioTxPort);
+	m_rx_audio_port = const_cast<char*>(audioRxPort);
+	m_tx_video_port = const_cast<char*>(videoTxPort);
+	m_rx_video_port = const_cast<char*>(videoRxPort);
+	//Let's set peer ip, port information to our media engine
+	ViEMediaTest::GetInstance()->SetPeerIPAddress(peer);
+	thread = PR_CreateThread(
+        PR_SYSTEM_THREAD,
+        CallControl::StartROAPMediaThread, this,
+        PR_PRIORITY_NORMAL,
+        PR_GLOBAL_THREAD,
+        PR_JOINABLE_THREAD, 0
+    );
+
+	return NS_OK;
+}
+
+NS_IMETHODIMP
+CallControl::StopROAPMedia()
+{
+	Logger::Instance()->logIt("StopROAPMedia: Called ");
+	ViEMediaTest::GetInstance()->StopMedia();
+	PR_JoinThread(thread);
+	return NS_OK;
+	
+}
+
+void 
+CallControl::StartROAPMediaThread(void* data)
+{
+    CallControl* cc= static_cast<CallControl*>(data);
+    //hardcoding the width and height for now
+    cc->vSource = new VideoRenderer(640,480, cc->vCanvas);
+    Logger::Instance()->logIt("Vsource is null in PlaceCall");
+    ViEMediaTest::GetInstance()->SetExternalRenderer(cc->vSource);
+    ViEMediaTest::GetInstance()->InitMediaEngine();
+    Logger::Instance()->logIt("StartROAPMedia: Media Engine Inited ");
+    ViEMediaTest::GetInstance()->StartMedia();
+    Logger::Instance()->logIt("StartROAPMedia: Ended");
+
+}
+
+ 

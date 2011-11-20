@@ -62,6 +62,9 @@
 #include <nsThreadUtils.h>
 #include "video_renderer.h"
 
+//media test layer
+#include "vie_mediatest.h"
+
 
 //#include "VideoRenderer.h" //<-- External Webrtc Renderer
 //#include "VideoSourceCanvas.h"
@@ -91,6 +94,9 @@ public:
 	virtual void OnCallResume();
 	
 	void ParseProperties(nsIPropertyBag2* prop);
+    
+    //roap client mode - media apis
+    static void StartROAPMediaThread(void* data);
 
 protected:
 
@@ -99,7 +105,8 @@ protected:
 	PRBool m_registered;
 	PRBool m_callHeld;
     PRLogModuleInfo *log;
-    
+	PRBool m_isROAPClient;
+
 	nsCOMPtr<nsISessionStateObserver> sessionObserver; 
 	nsCOMPtr<nsIMediaStateObserver> mediaObserver; 
 
@@ -117,6 +124,10 @@ private:
 	char *m_proxy_address;
 	char *m_dial_number;
 	char *m_local_ip_address;
+    char *m_tx_audio_port;
+    char *m_rx_audio_port;
+    char *m_tx_video_port;
+    char *m_rx_video_port;
 };
 
 #endif
