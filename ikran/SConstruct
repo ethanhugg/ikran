@@ -39,7 +39,8 @@ src_files = [
   'Convert.cpp',
   'sipcc_controller.cpp',
   'CallControl.cpp',
-  'CallControlModule.cpp'
+  'CallControlModule.cpp',
+  'vie_mediatest.cc'
 ]
 
 libpath = ['../out/lib']
@@ -504,5 +505,4 @@ if sys.platform =='win32':
   Depends(buildResult, '../' + componentName + suffixName + '.lib')
 else:
   Depends(buildResult, '../lib' + componentName + suffixName + '.a')
-
 

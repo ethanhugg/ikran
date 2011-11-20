@@ -42,7 +42,19 @@ if (window && window.navigator) {
         },   
         resumeCall: function() {
             return callResume(window.location);
-        }             
+        },
+        initROAPClient: function() {
+            return initROAPClient(window.location);
+        },
+        deInitROAPClient: function() {
+            return deInitROAPClient(window.location);
+        },
+		startROAPMedia: function(ctx, peer, audioTxPort, audioRxPort, videoTxPort,videoRxPort) {
+            return startROAPMedia(window.location,ctx,peer,audioTxPort,audioRxPort,videoTxPort,videoRxPort);
+        },
+        stopROAPMedia: function() {
+            return stopROAPMedia(window.location);
+        },
     }
 }
 
