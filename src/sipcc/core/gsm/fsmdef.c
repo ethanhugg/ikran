@@ -4109,7 +4109,6 @@ fsmdef_ev_connected (sm_event_t *event)
     cc_connected_t *msg = (cc_connected_t *) event->msg;
     cc_causes_t     cause;
     sm_rcs_t        sm_rc;
-	int roapproxy;
 
     FSM_DEBUG_SM(DEB_F_PREFIX"Entered.\n", DEB_F_PREFIX_ARGS(FSM, "fsmdef_ev_connected"));
 
@@ -4117,15 +4116,10 @@ fsmdef_ev_connected (sm_event_t *event)
 
     cause = gsmsdp_negotiate_answer_sdp(fcb, &msg->msg_body);
     if (cause != CC_CAUSE_OK) {
-		// <em>
-		roapproxy = 0;
-		config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
 	
-		if (roapproxy == FALSE) {
-			cc_call_state(fcb->dcb->call_id, fcb->dcb->line, CC_STATE_UNKNOWN,
+		cc_call_state(fcb->dcb->call_id, fcb->dcb->line, CC_STATE_UNKNOWN,
 						NULL);
-			return (fsmdef_release(fcb, cause, dcb->send_release));
-		}
+		return (fsmdef_release(fcb, cause, dcb->send_release));
     }
 
     // Reset dcb->active_feature flag

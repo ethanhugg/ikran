@@ -49,6 +49,6 @@ public:
   void Offer(string callerSessionId, string seq, string sdp);
   void Answer(string callerSessionId, string calleeSessionId, string seq, string sdp);
   void OK(string callerSessionId, string calleeSessionId, string seq);
-  void TentativeAnswer(string callerSessionId, string calleeSessionId, string seq, string sdp);
+  void Shutdown(string callerSessionId, string calleeSessionId, string seq);
 
 };

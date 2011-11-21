@@ -240,33 +240,28 @@ void IncomingRoapThread::HandleMessage(map<string, string> message)
         _incoming.OK((*itCallerSessionId).second, (*itCalleeSessionId).second, (*itSeq).second);
       }
     }
-    else if (messageType.compare("TENTATIVE_ANSWER") == 0)
+    else if (messageType.compare("SHUTDOWN") == 0)
     {
       map<string,string>::iterator itCallerSessionId = message.find("callerSessionId");
       map<string,string>::iterator itCalleeSessionId = message.find("calleeSessionId");
       map<string,string>::iterator itSeq = message.find("seq");
-      map<string,string>::iterator itSdp = message.find("sdp");
       
       if (itCallerSessionId == message.end())
       {
-        CSFLogDebugS(logTag, "TENTATIVE_ANSWER is missing callerSessionId");  
+        CSFLogDebugS(logTag, "SHUTDOWN is missing callerSessionId");  
       }
       else if (itCalleeSessionId == message.end())
       {
-        CSFLogDebugS(logTag, "TENTATIVE_ANSWER is missing calleeSessionId");  
+        CSFLogDebugS(logTag, "SHUTDOWN is missing calleeSessionId");  
       }
       else if (itSeq == message.end())
       {
-        CSFLogDebugS(logTag, "TENTATIVE_ANSWER is missing seq");  
-      }
-      else if (itSdp == message.end())
-      {
-        CSFLogDebugS(logTag, "TENTATIVE_ANSWER is missing sdp");  
+        CSFLogDebugS(logTag, "SHUTDOWN is missing seq");  
       }
       else
       {
-        CSFLogDebugS(logTag, "Calling TENTATIVE_ANSWER");
-        _incoming.TentativeAnswer((*itCallerSessionId).second, (*itCalleeSessionId).second, (*itSeq).second, (*itSdp).second);
+        CSFLogDebugS(logTag, "Calling SHUTDOWN");
+        _incoming.Shutdown((*itCallerSessionId).second, (*itCalleeSessionId).second, (*itSeq).second);
       }
     }
     else

@@ -92,7 +92,7 @@ void IncomingRoap::Offer(string callerSessionId, string seq, string sdp)
 		  CSFLogDebugS(logTag, "Found  ipaddress in the string @ " << ipIdx );
 	  }
 	  //grab the ip address
-	  ipAddress = sdp.substr(ipIdx+4,14);
+	  ipAddress = sdp.substr(ipIdx+4,15);
 	  CSFLogDebugS(logTag, " IP Address extracted is " << ipAddress.c_str());
 
 	  //get the audioport Index
@@ -103,7 +103,7 @@ void IncomingRoap::Offer(string callerSessionId, string seq, string sdp)
 		  CSFLogDebugS(logTag, "Found  audiolinein the string @ " );
 	  }
 	  audioTxPort = sdp.substr(aIdx+8,13);
-	  CSFLogDebugS(logTag, " IP Address extracted is " << audioTxPort.c_str());
+	  CSFLogDebugS(logTag, " Audio Port extracted is " << audioTxPort.c_str());
 
 	  //get the vodeoport Index
 	  vIdx = sdp.find("m=video");
@@ -114,7 +114,7 @@ void IncomingRoap::Offer(string callerSessionId, string seq, string sdp)
 	  }
 	  videoTxPort=sdp.substr(vIdx+8,13);
 
-	  CSFLogDebugS(logTag, " IP Address extracted is " << videoTxPort.c_str());
+	  CSFLogDebugS(logTag, " Video Port extracted is " << videoTxPort.c_str());
 
 	  audioTxPort = "16384";
 	  videoTxPort = "1024";
@@ -134,7 +134,7 @@ void IncomingRoap::OK(string callerSessionId, string calleeSessionId, string seq
   
 }
 
-void IncomingRoap::TentativeAnswer(string callerSessionId, string calleeSessionId, string seq, string sdp)
+void IncomingRoap::Shutdown(string callerSessionId, string calleeSessionId, string seq)
 {
   
 }

@@ -89,4 +89,13 @@ interface ICallControl : nsISupports
 	void sendDigits(in string digits);
 	void holdCall();
 	void resumeCall();
+	void initROAPClient();
+	void deInitROAPClient();
+    void startROAPMedia(in nsIDOMCanvasRenderingContext2D ctx,
+                        in string peer, 
+                        in string audioTxPort,
+                        in string audioRxPort,
+                        in string videoTxPort,
+                        in string videoRxPort);
+	void stopROAPMedia();
 };

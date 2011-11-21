@@ -847,12 +847,12 @@ gsmsdp_get_local_source_v4_address (fsmdef_media_t *media)
 
         	//<em>
             roapproxy = 0;
-        	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
-        	if (roapproxy == TRUE) {
-        		str2ip(gROAPSDP.offerAddress, &addr);
-        	} else {
+        //	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
+        //	if (roapproxy == TRUE) {
+        //		str2ip(gROAPSDP.offerAddress, &addr);
+        //	} else {
         		str2ip(curr_media_ip, &addr);
-        	}
+        //	}
              util_ntohl(&addr, &addr);
              if (util_check_if_ip_valid(&media->src_addr) == FALSE)  {
                  // Update the media Src address only if it is invalid
