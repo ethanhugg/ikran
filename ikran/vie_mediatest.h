@@ -34,6 +34,8 @@
 //#include "video_render_defines.h"
 
 #include <string>
+#include <string.h>
+
 
 const unsigned int kMaxIPLength = 16;
 
@@ -51,7 +53,7 @@ public:
     int StartMedia();
     void StopMedia();
 	// we need this to do a poor software color model conversion
-	 void SetExternalRenderer(void* renderer) 
+	void SetExternalRenderer(void* renderer)
 	{
     	ext_renderer = renderer;
     }
