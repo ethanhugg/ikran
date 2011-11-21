@@ -257,7 +257,24 @@ Ikran.prototype = {
 
     resumeCall: function() {
     	this._ikran.resumeCall();
+    },
+    	
+    initROAPClient: function() {
+    	this._ikran.initROAPClient();
     },	
+
+    deInitROAPClient: function() {
+    	this._ikran.deInitROAPClient();
+	},
+
+	startROAPMedia: function(ctx,peer,audioTxPort,audioRxPort,videoTxPort,videoRxPort) {
+        this._ikran.startROAPMedia(ctx,peer,audioTxPort,audioRxPort,videoTxPort,videoRxPort);
+    },
+    
+    stopROAPMedia: function() {
+    	this._ikran.stopROAPMedia();
+	},
+
 };
 
 var EXPORTED_SYMBOLS = ["Ikran"];

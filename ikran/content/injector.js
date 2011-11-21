@@ -177,6 +177,38 @@ var IkranObserver = {
             });
             return ret;
         }, "callResume");                                     
+		sandbox.importFunction(function(loc) {
+            let ret;
+            ikran._verifyPermission(window, loc, function(allowed) {
+                if (allowed) ret = ikran.initROAPClient();
+                else throw "Permission denied";
+            });
+            return ret;
+        }, "initROAPClient");
+		sandbox.importFunction(function(loc) {
+            let ret;
+            ikran._verifyPermission(window, loc, function(allowed) {
+                if (allowed) ret = ikran.deInitROAPClient();
+                else throw "Permission denied";
+            });
+            return ret;
+        }, "deInitROAPClient");
+		sandbox.importFunction(function(loc,ctx,peer,audioTxPort,audioRxPort,videoTxPort,videoRxPort) {
+            let ret;
+            ikran._verifyPermission(window, loc, function(allowed) {
+                if (allowed) ret = ikran.startROAPMedia(ctx,peer,audioTxPort,audioRxPort,videoTxPort,videoRxPort);
+                else throw "Permission denied";
+            });
+            return ret;
+        }, "startROAPMedia");
+        sandbox.importFunction(function(loc) {
+            let ret;
+            ikran._verifyPermission(window, loc, function(allowed) {
+                if (allowed) ret = ikran.stopROAPMedia();
+                else throw "Permission denied";
+            });
+            return ret;
+        }, "stopROAPMedia");     
         sandbox.importFunction(function(loc, isFile) {
            let ret;
            ikran._verifyPermission(window, loc, function(allowed) {
