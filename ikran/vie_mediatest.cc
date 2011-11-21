@@ -15,12 +15,16 @@
 
 #include "vie_mediatest_defines.h"
 #include "vie_mediatest.h"
-#include "Logger.h"
+#include "CSFLogStream.h"
 
 #include <iostream>
 
+using namespace std;
+
 #define VCM_RED_PAYLOAD_TYPE        96
 #define VCM_ULPFEC_PAYLOAD_TYPE     97
+
+static const char* logTag = "Ikran";
 
 ViEMediaTest* ViEMediaTest::_instance = 0;
 
@@ -44,64 +48,61 @@ ViEMediaTest::ViEMediaTest():videoRxPort(8888),
 
 int ViEMediaTest::InitMediaEngine()
 {
-	Logger::Instance()->logIt(" Init Media Engine ");
+  CSFLogDebugS(logTag, " Init Media Engine ");
 
-   // obtain all the interfaces
-	int error = 0;
-    std::string str;
+  // obtain all the interfaces
+  int error = 0;
+  std::string str;
 	
+  // VoE
+  ptrVE = webrtc::VoiceEngine::Create();
 	
-    // VoE
-    ptrVE = webrtc::VoiceEngine::Create();
+  ptrVEBase = webrtc::VoEBase::GetInterface(ptrVE);
 	
-    ptrVEBase = webrtc::VoEBase::GetInterface(ptrVE);
+  error = ptrVEBase->Init();
+ 
+  CSFLogDebugS(logTag, "VoEBase::Init() error: " << error); 
 	
-    error = ptrVEBase->Init();
+  ptrVECodec = webrtc::VoECodec::GetInterface(ptrVE);
 	
-    ptrVECodec = webrtc::VoECodec::GetInterface(ptrVE);
+  ptrVEHardware = webrtc::VoEHardware::GetInterface(ptrVE);
 	
-    ptrVEHardware =
-	webrtc::VoEHardware::GetInterface(ptrVE);
+  ptrVEAPM = webrtc::VoEAudioProcessing::GetInterface(ptrVE);
+  CSFLogDebugS(logTag, " Voice Engine Init'ed ");		
+    
+  // ViE
+  ptrViE = webrtc::VideoEngine::Create();
 	
-    ptrVEAPM =
-	webrtc::VoEAudioProcessing::GetInterface(ptrVE);
-	Logger::Instance()->logIt(" Voice Engine Init'ed ");		
-    // ViE
-    ptrViE = webrtc::VideoEngine::Create();
+  ptrViEBase = webrtc::ViEBase::GetInterface(ptrViE);
 	
-    ptrViEBase = webrtc::ViEBase::GetInterface(ptrViE);
+  error = ptrViEBase->Init();
+
+  CSFLogDebugS(logTag, "ViEBase::Init() error: " << error);
+
+  ptrViECapture = webrtc::ViECapture::GetInterface(ptrViE);
 	
-    error = ptrViEBase->Init();
+  ptrViERender = webrtc::ViERender::GetInterface(ptrViE);
 	
-    ptrViECapture =
-	webrtc::ViECapture::GetInterface(ptrViE);
+  ptrViECodec = webrtc::ViECodec::GetInterface(ptrViE);
 	
-    ptrViERender = webrtc::ViERender::GetInterface(ptrViE);
-	
-    ptrViECodec = webrtc::ViECodec::GetInterface(ptrViE);
-	
-    ptrViENetwork =
-	webrtc::ViENetwork::GetInterface(ptrViE);
-	
+  ptrViENetwork = webrtc::ViENetwork::GetInterface(ptrViE);
 		
+  CSFLogDebugS(logTag, " Video Engine Init'ed ");		
 	
-	Logger::Instance()->logIt(" Video Engine Init'ed ");		
+  // video codecs
+  memset((void*)&videoCodec, 0, sizeof(videoCodec));
+  GetVideoCodec(ptrViECodec, videoCodec);
 	
-	// video codecs
-	memset((void*)&videoCodec, 0, sizeof(videoCodec));
-	GetVideoCodec(ptrViECodec, videoCodec);
+  // audio codec
+  memset((void*)&audioCodec, 0, sizeof(audioCodec));
+  GetAudioCodec(ptrVECodec, audioCodec);
 	
-	
-	// audio codec
-	memset((void*)&audioCodec, 0, sizeof(audioCodec));
-	GetAudioCodec(ptrVECodec, audioCodec);
-	
-	return 0;
+  return 0;
 }
 
 int ViEMediaTest::StartMedia()
 {
-    Logger::Instance()->logIt(" StartMedia ");
+    CSFLogDebugS(logTag, " StartMedia ");
     const unsigned int KMaxUniqueIdLength = 256;
     int error = 0;
     std::string str;
@@ -272,55 +273,70 @@ int ViEMediaTest::StartMedia()
 
 void ViEMediaTest::StopMedia()
 {
-	Logger::Instance()->logIt(" Stop Media Invoked ");
-	int error = 0;
-	// audio engine first
-	error = ptrVEBase->StopReceive(audioChannel);
+  CSFLogDebugS(logTag, " Stop Media Invoked ");
+  int error = 0;
 	
-	error = ptrVEBase->StopPlayout(audioChannel);
+  // audio engine first
+  error = ptrVEBase->StopReceive(audioChannel);
+  CSFLogDebugS(logTag, "StopReceive error: " << error);
 	
-	error = ptrVEBase->DeleteChannel(audioChannel);
+  error = ptrVEBase->StopPlayout(audioChannel);
+  CSFLogDebugS(logTag, "StopPlayout error: " << error);
 	
-	// now do video
-	error = ptrViEBase->DisconnectAudioChannel(videoChannel);
+  error = ptrVEBase->DeleteChannel(audioChannel);
+  CSFLogDebugS(logTag, "DeleteChannel error: " << error);
 	
-	error = ptrViEBase->StopReceive(videoChannel);
+  // now do video
+  error = ptrViEBase->DisconnectAudioChannel(videoChannel);
+  CSFLogDebugS(logTag, "DisconnectAudioChannel error: " << error);
 	
-	error = ptrViEBase->StopSend(videoChannel);
+  error = ptrViEBase->StopReceive(videoChannel);
+  CSFLogDebugS(logTag, "StopReceive error: " << error);
 	
-	error = ptrViERender->StopRender(captureId);
+  error = ptrViEBase->StopSend(videoChannel);
+  CSFLogDebugS(logTag, "StopSend error: " << error);
 	
-	error = ptrViERender->StopRender(videoChannel);
+  error = ptrViERender->StopRender(captureId);
+  CSFLogDebugS(logTag, "StopRender error: " << error);
 	
-	error = ptrViERender->RemoveRenderer(captureId);
+  error = ptrViERender->StopRender(videoChannel);
+  CSFLogDebugS(logTag, "StopRender error: " << error);
 	
-	error = ptrViERender->RemoveRenderer(videoChannel);
+  error = ptrViERender->RemoveRenderer(captureId);
+  CSFLogDebugS(logTag, "RemoveRender error: " << error);
 	
-	error = ptrViECapture->StopCapture(captureId);
+  error = ptrViERender->RemoveRenderer(videoChannel);
+  CSFLogDebugS(logTag, "RemoveRender error: " << error);
 	
-	error = ptrViECapture->DisconnectCaptureDevice(videoChannel);
+  error = ptrViECapture->StopCapture(captureId);
+  CSFLogDebugS(logTag, "StopCapture error: " << error);
 	
-	error = ptrViECapture->ReleaseCaptureDevice(captureId);
+  error = ptrViECapture->DisconnectCaptureDevice(videoChannel);
+  CSFLogDebugS(logTag, "DisconnectCaptureDevice error: " << error);
 	
-	error = ptrViEBase->DeleteChannel(videoChannel);
+  error = ptrViECapture->ReleaseCaptureDevice(captureId);
+  CSFLogDebugS(logTag, "ReleaseCaptureDevice error: " << error);
 	
-	int remainingInterfaces = 0;
-	remainingInterfaces = ptrViECodec->Release();
+  error = ptrViEBase->DeleteChannel(videoChannel);
+  CSFLogDebugS(logTag, "DeleteChannel error: " << error);
 	
-	remainingInterfaces = ptrViECapture->Release();
+  int remainingInterfaces = 0;
+  remainingInterfaces = ptrViECodec->Release();
 	
-	remainingInterfaces = ptrViERtpRtcp->Release();
+  remainingInterfaces = ptrViECapture->Release();
 	
-	remainingInterfaces = ptrViERender->Release();
+  remainingInterfaces = ptrViERtpRtcp->Release();
 	
-	remainingInterfaces = ptrViENetwork->Release();
+  remainingInterfaces = ptrViERender->Release();
 	
-	remainingInterfaces = ptrViEBase->Release();
+  remainingInterfaces = ptrViENetwork->Release();
 	
-	webrtc::VideoEngine::Delete(ptrViE);
+  remainingInterfaces = ptrViEBase->Release();
+  CSFLogDebugS(logTag, "Call Teardown complete remaining interfaces: " << remainingInterfaces);
 	
-	std::cout << " CALL TEAR DOWN DONE NOW ";
-
+  webrtc::VideoEngine::Delete(ptrViE);
+	
+  std::cout << " CALL TEAR DOWN DONE NOW ";
 }
 
 //***************************************************************
@@ -359,6 +375,8 @@ bool ViEMediaTest::GetVideoDevice(webrtc::ViEBase* ptrViEBase,
                                                     KMaxDeviceNameLength,
                                                     uniqueId,
                                                     KMaxUniqueIdLength);
+            CSFLogDebugS(logTag, "GetCaptureDevice error: " << error);
+
             std::cout << "   " << captureIdx+1 << ". " << deviceName
                       << std::endl;
         }
@@ -389,6 +407,7 @@ bool ViEMediaTest::GetVideoDevice(webrtc::ViEBase* ptrViEBase,
                                                     KMaxDeviceNameLength,
                                                     uniqueId,
                                                     KMaxUniqueIdLength);
+            CSFLogDebugS(logTag, "GetCaptureDevice error: " << error);
             strcpy(captureDeviceName, uniqueId);
             strcpy(captureDeviceName, deviceName);
             return true;
@@ -413,6 +432,7 @@ bool ViEMediaTest::GetAudioDevices(webrtc::VoEBase* ptrVEBase,
 
     int numberOfRecordingDevices = -1;
     error = ptrVEHardware->GetNumOfRecordingDevices(numberOfRecordingDevices);
+    CSFLogDebugS(logTag, "GetNumOfRecordingDevices error: " << error);
 
     while(1)
     {
@@ -441,6 +461,8 @@ bool ViEMediaTest::GetAudioDevices(webrtc::VoEBase* ptrVEBase,
             error = ptrVEHardware->GetRecordingDeviceName(
                 recordingDeviceIndex, recordingDeviceName,
                 recordingDeviceUniqueName);
+            CSFLogDebugS(logTag, "GetRecordingDeviceName error: " << error);
+
             break;
         }
         else if(captureDeviceIndex < 0
@@ -455,12 +477,15 @@ bool ViEMediaTest::GetAudioDevices(webrtc::VoEBase* ptrVEBase,
             error = ptrVEHardware->GetRecordingDeviceName(
                 recordingDeviceIndex, recordingDeviceName,
                 recordingDeviceUniqueName);
+            CSFLogDebugS(logTag, "GetRecordingDeviceName error: " << error);
+
             break;
         }
     }
 
     int numberOfPlaybackDevices = -1;
     error = ptrVEHardware->GetNumOfPlayoutDevices(numberOfPlaybackDevices);
+    CSFLogDebugS(logTag, "GetNumOfPlayoutDevices error: " << error);
 
     while(1)
     {
@@ -476,6 +501,7 @@ bool ViEMediaTest::GetAudioDevices(webrtc::VoEBase* ptrVEBase,
             memset(playbackDeviceUniqueName, 0, KMaxDeviceNameLength);
             error = ptrVEHardware->GetPlayoutDeviceName(
                 captureIdx, playbackDeviceName, playbackDeviceUniqueName);
+            CSFLogDebugS(logTag, "GetPlayoutDeviceName error: " << error);
             std::cout << "   " << captureIdx+1 << ". " << playbackDeviceName
                       << std::endl;
         }
@@ -489,6 +515,7 @@ bool ViEMediaTest::GetAudioDevices(webrtc::VoEBase* ptrVEBase,
             error = ptrVEHardware->GetPlayoutDeviceName(
                 playbackDeviceIndex, playbackDeviceName,
                 playbackDeviceUniqueName);
+            CSFLogDebugS(logTag, "GetPlayoutDeviceName error: " << error);
             return true;
         }
         else if(captureDeviceIndex < 0
@@ -503,6 +530,7 @@ bool ViEMediaTest::GetAudioDevices(webrtc::VoEBase* ptrVEBase,
             error = ptrVEHardware->GetPlayoutDeviceName(
                 playbackDeviceIndex, playbackDeviceName,
                 playbackDeviceUniqueName);
+            CSFLogDebugS(logTag, "GetPlayoutDeviceName error: " << error);
             return true;
         }
     }
