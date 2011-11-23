@@ -4049,14 +4049,14 @@ gsmsdp_add_media_line (fsmdef_dcb_t *dcb_p, const cc_media_cap_t *media_cap,
         // <em>
         roapproxy = 0;
     	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
-    	if (roapproxy == TRUE) {
-    		if (SDP_MEDIA_AUDIO == media->type)
-    			media->src_port = gROAPSDP.audioPort;
-    		else
-    			media->src_port = gROAPSDP.videoPort;
-    	} else {
+    //	if (roapproxy == TRUE) {
+    //		if (SDP_MEDIA_AUDIO == media->type)
+    //			media->src_port = gROAPSDP.audioPort;
+    //		else
+    //			media->src_port = gROAPSDP.videoPort;
+    //	} else {
     		media->src_port = data.open_rcv.port;
-    	}
+    //	}
 
         /*
          * Setup the local soruce address.

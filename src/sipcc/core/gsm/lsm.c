@@ -662,6 +662,13 @@ lsm_open_rx (lsm_lcb_t *lcb, cc_action_data_open_rcv_t *data,
     			rc = CC_RC_SUCCESS;
     		}
     	} else {
+
+    		// <em>
+    		if (CC_AUDIO_1 == media->cap_index )
+    			data->port = gROAPSDP.audioPort;
+    		if (CC_VIDEO_1 == media->cap_index )
+    			data->port = gROAPSDP.videoPort;
+
     		rc = CC_RC_SUCCESS;
     	}
     } else {
@@ -680,6 +687,12 @@ lsm_open_rx (lsm_lcb_t *lcb, cc_action_data_open_rcv_t *data,
     			rc = CC_RC_SUCCESS;
     		}
     	} else {
+    		//<em>
+    		if (CC_AUDIO_1 == media->cap_index )
+    			data->port = gROAPSDP.audioPort;
+    		if (CC_VIDEO_1 == media->cap_index )
+    			data->port = gROAPSDP.videoPort;
+
         	rc = CC_RC_SUCCESS;
     	}
     }
