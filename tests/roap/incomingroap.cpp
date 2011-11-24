@@ -56,6 +56,7 @@ void IncomingRoap::Init(string device, string user, string password, string doma
   else
   {
     SipccController::GetInstance()->SetProperty("transport", "tcp");
+    SipccController::GetInstance()->SetProperty("video", "true");
     
     int regResult = SipccController::GetInstance()->StartROAPProxy(device, user, password, domain);
 

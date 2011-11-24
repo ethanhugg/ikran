@@ -12,10 +12,9 @@
 </head>
 <body onLoad="pageLoad()" style="margin:10px 0px;padding:0px;text-align:center;">
 	<h2>ROAP GATEWAY CLIENT SAMPLE</h2>
-    <h3> ( not a complete ROAP client ) <h3>
 	<canvas id="thecanvas" width="640" height="480"></canvas>
     <div>
-	<p><input type="button" id="roaptestbutton" value="Start ROAP Media"/></p>
+	<p><input type="button" id="roaptestbutton" value="Roap Message Tester!"/></p>
     </div>
 	<p id='tehmsg'/>
     <div id='ajax-status'>This is ajax status DIV </div>
@@ -29,9 +28,10 @@
 	var poll_again = true;
 	var poll_timeout = 1000;
 	var audioTxPort = 16384;
-    var videoTxPort = 1024;
-    var peerIp = "127.0.0.1";
-    var isROAPMediaOn = false;
+        var videoTxPort = 1024;
+        var peerIp = "127.0.0.1";
+	var isROAPMediaOn = false;
+
 
 	// JUST ENUF PEER CONNECTION CLASS
 	var PeerConnection = function(signalingCallback) {
@@ -74,34 +74,34 @@
     	var make_offer = function() {
 			return {
 				messageType:"OFFER",
-				callerSessionId:"1023",
-				seq:"7222",
-				sdp:"v=0 \
-					o=Cisco-SIPUA 13578 0 IN IP4 171.68.20.199 \
-					s=SIP Call \
-					t=0 0 \
-					m=audio 8800 RTP/AVP 0 8 9 101 \
-					c=IN IP4 171.68.20.199 \
-					a=rtpmap:0 PCMU/8000 \
-					a=rtpmap:8 PCMA/8000 \
-					a=rtpmap:9 G722/8000 \
-					a=rtpmap:101 telephone-event/8000 \
-					a=fmtp:101 0-15 \
-					a=sendrecv \
-					m=video 9900 RTP/AVP 97 \
-					c=IN IP4 171.68.20.199 \
-					a=rtpmap:97 H264/90000 \
-					a=fmtp:97 profile-level-id=42E00C \
+				callerSessionId:"7772",
+				seq:"9995",
+				sdp:"v=0 \n\
+					o=Cisco-SIPUA 13578 0 IN IP4 144.254.150.100 \n\
+					s=SIP Call \n\
+					t=0 0 \n\
+					m=audio 16384 RTP/AVP 0 8 9 101 \n\
+					c=IN IP4 144.254.150.100 \n\
+					a=rtpmap:0 PCMU/8000 \n\
+					a=rtpmap:8 PCMA/8000 \n\
+					a=rtpmap:9 G722/8000 \n\
+					a=rtpmap:101 telephone-event/8000 \n\
+					a=fmtp:101 0-15 \n\
+					a=sendrecv \n\
+					m=video 1024 RTP/AVP 97 \n\
+					c=IN IP4 144.254.150.100 \n\
+					a=rtpmap:97 H264/90000 \n\
+					a=fmtp:97 profile-level-id=42E00C \n\
 					a=sendrecv"	
 			};
 		};
 
 		var make_ok = function() {
 	 		return {
-       	    	 messageType:"OK",
-            	callerSessionId:"1023",
-            	seq:"7222"
-        	};
+     	    			messageType:"OK",
+            			callerSessionId:"7772",
+            			seq:"9995"
+        		};
 		};
 
 		var make_answer = function() {
@@ -129,7 +129,6 @@
 			var vIdx = sdp.search(/m=video/);
 			videoTxPort = sdp.substring(vIdx+8,vIdx+13); 	
 			alert("Video TxPort " + videoTxPort);
-			
 		};
 
 		return {
@@ -145,52 +144,64 @@
 
 	function xport_success(msg)
 	{
+		alert("in success");
+		alert(JSON.parse(JSON.stringify(msg)));
 		pc.processMessage(JSON.parse(JSON.stringify(msg)));
 		alert("poll again is " + poll_again);
 		if(poll_again == true) {
-			poll();
+			//	poll();
 		} else {
 			//we got the answer
 			alert("Video port is" + videoTxPort);
-				
 		}
-			
 	}
 
 
 	function xport_error(msg)
 	{
 		//... lets just poll
-		setTimeout(poll, poll_timeout);
+		var response = msg.responseText;
+		alert(response);
+		var answerIdx = response.search(/ANSWER/);
+		if(answerIdx != -1)
+		{
+            		var aIdx = response.search(/m=audio/);
+            		audioPort = response.substring(aIdx+8,aIdx+13);    
+            		var vIdx = response.search(/m=video/);
+            		videoPort = response.substring(vIdx+8,vIdx+13);    
+			if (isROAPMediaOn == false) {	
+				ikranService.startROAPMedia(ctx,"144.254.86.101",16384,16384,1024,1024);
+				isROAPMediaOn = true;
+			}
+		} else {
+		        setTimeout(poll, poll_timeout);
+		}
 	}
 	
 	function sig_transport(params)
 	{
 		if (params.type == "POST") 
 		{
+		alert("in post " + params.data);
 			   $.ajax({
                 type:"POST",
                 url: "/roap.php",
                 dataType: "json",
-				data: params.data,
-                contentType: "application/json",
+		data: params.data,
+                contentType: "application/x-www-form-urlencoded",
                 success:xport_success,
                 error:xport_error
 			});
-		}else
-		{
+		} else {
 			   $.ajax({
                 type:"GET",
                 url: "/roap.php",
-                dataType: "json",
-                contentType: "application/json",
+                dataType: "plain",
                 success:xport_success,
                 error:xport_error
                	}); 
 
 		}
-
-
 	}
 
 
@@ -207,16 +218,13 @@
 		alert(" signalingChannelCb " + JSON.stringify(msg));
 		sig_transport({
 		     type: "POST",
-			data:  JSON.stringify(msg) 
+			data: "roap="+JSON.stringify(msg) 
 			});
 	}
 
 
 	function InitROAPClient()
 	{
-        // Let the ROAP client know abt itself
-        ikranService.initROAPClient();
-        
 		//create peer connection object
 		pc = new PeerConnection(signalingChannelCb);	
 	}
@@ -228,10 +236,10 @@
 	img.onload = function() { ctx.drawImage(img, 192, 112); }
 
     if (!ikranService) {
-        alert(" The Ikran add-on could not be loaded ! ");
+        msg.innerHTML = "The Ikran add-on could not be loaded!";
     }
-    
-    roaptestbut.onclick = function() {
+
+   roaptestbut.onclick = function() {
     //please note this code is not a complete ROAP client
         if(isROAPMediaOn == true)
         {
@@ -240,18 +248,13 @@
             ikranService.stopROAPMedia();
             isROAPMediaOn = false;
             roaptestbut.value = "Start ROAP Media ";
-        
-        } else
-        {
-            //pc.addStream();
-		    //msg.innerHTML = " Starting the media now ";
-            //poll();
-            audioTxPort = 5555;
-            videoTxPort = 6666;
-            ikranService.startROAPMedia(ctx,"127.0.0.1",audioTxPort,audioTxPort,videoTxPort,videoTxPort);
-            isROAPMediaOn = true;
+
+        } else {
+            pc.addStream();
+            msg.innerHTML = " Starting the media now ";
             roaptestbut.value = " Stop ROAP Media ";
         }
   }
+    
 </script>
 </html>
