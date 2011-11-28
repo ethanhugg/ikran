@@ -84,7 +84,7 @@ if sys.platform =='win32':
     '../src/common/browser_logging',
     mozobjpath + '/dist/lib',
     mozobjpath + '/dist/bin',
-    webrtcpath + '/Debug/lib'
+    webrtcpath + '/Build/Debug/lib'
   ]
   libs += [
     componentName + suffixName + '.lib',
@@ -128,6 +128,7 @@ if sys.platform =='win32':
     'audio_conference_mixer.lib',
     'audio_device.lib',
     'audio_processing.lib',
+	'audioproc_debug_proto.lib',
     'CNG.lib',
     'G711.lib',
     'G722.lib',
@@ -141,7 +142,7 @@ if sys.platform =='win32':
     'PCM16B.lib',
     'resampler.lib',
     'rtp_rtcp.lib',
-    'spl.lib',
+	'signal_processing.lib',
     'protobuf_lite.lib',
     'system_wrappers.lib',
     'udp_transport.lib',
