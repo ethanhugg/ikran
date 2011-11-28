@@ -173,7 +173,9 @@ void OutgoingRoap::OnRegisterStateChange(std::string registrationState)
 {}
 
 void OutgoingRoap::OnCallTerminated()
-{}
+{
+	Shutdown("callerSessionId" "calleeSessionId", "seq", "");
+}
 
 void OutgoingRoap::OnCallConnected(char* sdp)
 {
