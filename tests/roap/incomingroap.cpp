@@ -137,8 +137,6 @@ void IncomingRoap::OK(string callerSessionId, string calleeSessionId, string seq
 
 void IncomingRoap::Shutdown(string callerSessionId, string calleeSessionId, string seq)
 {
-  
+	SipccController::GetInstance()->EndCall();
 }
-
-
 
