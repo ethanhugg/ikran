@@ -44,7 +44,7 @@
     };
 
     var removeStream = function() {
-	//not yet implemented
+	signalingCallback(make_shutdown());	
     };
 
     var processMessage = function(message) {
@@ -96,6 +96,15 @@
        		callerSessionId:"7772",
        		seq:"9995"
        	};
+    };
+
+    var make_shutdown = function() {
+        return {
+                messageType:"SHUTDOWN",
+                callerSessionId:"9995",
+		calleeSessionId:"7772",
+                seq:"9995"
+        };
     };
 
     var make_answer = function() {
@@ -228,9 +237,8 @@
         //please note this code is not a complete ROAP client
         if(isROAPMediaOn == true)
         {
-            //let's ed the media
-            // send ROAP:Shutdown via pc.removeStream()
-	    stopROAPMedia();
+            //let's end the media
+	    pc.removeStream();
         } else {
             pc.addStream();
             msg.innerHTML = " Starting the media now ";
