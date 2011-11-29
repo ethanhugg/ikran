@@ -85,15 +85,15 @@ void IncomingRoap::Offer(string callerSessionId, string seq, string sdp)
 	  unsigned int ipIdx, aIdx, vIdx ;
 	  std::string ipAddress, audioTxPort, videoTxPort;
 	  ipIdx=aIdx=vIdx = -1;
-	  //get IP Addrss index
-	  ipIdx = sdp.find("IP4");
+	  //get IP Address index
+	  ipIdx = sdp.find("c=IN IP4");
 	  if(ipIdx == std::string::npos) {
 		  CSFLogDebugS(logTag, "Unable to find ipaddress in the string" );
 	  } else {
 		  CSFLogDebugS(logTag, "Found  ipaddress in the string @ " << ipIdx );
 	  }
 	  //grab the ip address
-	  ipAddress = sdp.substr(ipIdx+4,15);
+	  ipAddress = sdp.substr(ipIdx+11,15);
 	  CSFLogDebugS(logTag, " IP Address extracted is " << ipAddress.c_str());
 
 	  //get the audioport Index
