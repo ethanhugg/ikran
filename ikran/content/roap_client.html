@@ -66,29 +66,34 @@
     }; 
 
     var make_offer = function() {
-	return {
-		messageType:"OFFER",
-		callerSessionId:"7772",
-		seq:"9995",
-		sdp:"v=0 \n\
-			o=Cisco-SIPUA 13578 0 IN IP4 144.254.150.100 \n\
-			s=SIP Call \n\
-			t=0 0 \n\
-			m=audio 16384 RTP/AVP 0 8 9 101 \n\
-			c=IN IP4 144.254.150.100 \n\
-			a=rtpmap:0 PCMU/8000 \n\
-			a=rtpmap:8 PCMA/8000 \n\
-			a=rtpmap:9 G722/8000 \n\
-			a=rtpmap:101 telephone-event/8000 \n\
-			a=fmtp:101 0-15 \n\
-			a=sendrecv \n\
-			m=video 1024 RTP/AVP 97 \n\
-			c=IN IP4 144.254.150.100 \n\
-			a=rtpmap:97 H264/90000 \n\
-			a=fmtp:97 profile-level-id=42E00C \n\
-			a=sendrecv"	
-	};
-    };
+        let localIP  = ikranService.getProperty("localIPAddress").value;
+        var offer_sdp = "v=0 \n\
+            o=Cisco-SIPUA 13578 0 IN IP4 "+ " " + localIP  + "  " + " \n\
+            s=SIP Call \n\
+            t=0 0 \n\
+            m=audio 16384 RTP/AVP 0 8 9 101 \n\
+            c=IN IP4 "+ "  " + localIP  + "  " + " \n\
+            a=rtpmap:0 PCMU/8000 \n\
+            a=rtpmap:8 PCMA/8000 \n\
+            a=rtpmap:9 G722/8000 \n\
+            a=rtpmap:101 telephone-event/8000 \n\
+            a=fmtp:101 0-15 \n\
+            a=sendrecv \n\
+            m=video 1024 RTP/AVP 97 \n\
+            c=IN IP4"+ "  " + localIP + "  "+" \n\
+            a=rtpmap:97 H264/90000 \n\
+            a=fmtp:97 profile-level-id=42E00C \n\
+            a=sendrecv"
+
+        var offer_json = {
+            messageType:"OFFER",
+            callerSessionId:"7772",
+            seq:"9995",
+            sdp: offer_sdp
+        }
+ 
+      return offer_json;
+    }
 
     var make_ok = function() {
 	return {
@@ -145,10 +150,10 @@
     function register_me() {
 		var reg_msg = {
   			messageType:"INIT",
-  			device:"snandakusip01",
-  			user:"7223",
+  			device:"ecpemannion",
+  			user:"9995",
   			password:"",
-  			domain:"172.27.190.5"
+  			domain:"10.53.47.140"
 		};
 		alert("registration message "+ JSON.stringify(reg_msg));
 		  $.ajax({
@@ -190,12 +195,16 @@
 	
 	var answerIdx = response.search(/ANSWER/);
 	if(answerIdx != -1) {
+       		var iIdx = response.search(/c=IN IP4/);
+       		peerIp = response.substring(iIdx+9,iIdx+22);    
+		let cleanIP = peerIp.replace("\\"," ");
+		alert(cleanIP);
        		var aIdx = response.search(/m=audio/);
        		audioPort = response.substring(aIdx+8,aIdx+13);    
        		var vIdx = response.search(/m=video/);
        		videoPort = response.substring(vIdx+8,vIdx+13);    
 		if (isROAPMediaOn == false) {	
-			ikranService.startROAPMedia(ctx,"144.254.86.101", 16384, 16384, 1024, 1024);
+			ikranService.startROAPMedia(ctx ,cleanIP, 16384, 16384, 1024, 1024);
 			isROAPMediaOn = true;
 			setTimeout(poll, 3000);	
 		}
