@@ -220,9 +220,9 @@ int ViEMediaTest::StartMedia()
 
         std::cout << " Added the renderer: " << ext_renderer << " error " << error << endl ;	
         error = ptrViENetwork->SetSendDestination(videoChannel, ipAddress,
-                                                  9000);
+                                                  videoTxPort);
 
-        error = ptrViENetwork->SetLocalReceiver(videoChannel, 9000);
+        error = ptrViENetwork->SetLocalReceiver(videoChannel, videoRxPort);
 
         error = ptrViECodec->SetSendCodec(videoChannel, videoCodec);
 
