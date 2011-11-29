@@ -140,6 +140,29 @@
 
 };
 
+	//Out of band registration of the client
+	//this is an incomplete function. Error is not handled
+    function register_me() {
+		var reg_msg = {
+  			messageType:"INIT",
+  			device:"snandakusip01",
+  			user:"7223",
+  			password:"",
+  			domain:"172.27.190.5"
+		};
+		alert("registration message "+ JSON.stringify(reg_msg));
+		  $.ajax({
+                    type:"POST",
+                    url: "/roap.php",
+                    dataType: "json",
+            		data: "roap="+JSON.stringify(reg_msg),
+                    contentType: "application/x-www-form-urlencoded",
+                    success: function(data, textStatus) {
+        				alert("Registration_ROAP returned "+textStatus);
+      				}
+        });
+	}
+
     //TRANSPORT and POLL
 
     function xport_success(msg) {
@@ -219,6 +242,8 @@
     }
 
     function InitROAPClient() {
+	// let's register the client to CUCM. This is just a hacky way to do so
+   	register_me(); 
 	//create peer connection object
 	pc = new PeerConnection(signalingChannelCb);	
     } 
