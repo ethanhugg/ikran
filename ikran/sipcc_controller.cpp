@@ -323,6 +323,9 @@ std::string SipccController::GetProperty(std::string key)
 	} else if (key == "version") {
 		if (ccm_ptr_ != NULL)
 			returnValue = ccm_ptr_->getProperty(ConfigPropertyKeysEnum::eVersion);
+	} else if (key == "localIPAddress") {
+		GetLocalActiveInterfaceAddress();	
+		returnValue = local_ip_v4_address_;
 	}
 
 	return returnValue;
