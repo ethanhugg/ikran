@@ -647,7 +647,6 @@ lsm_open_rx (lsm_lcb_t *lcb, cc_action_data_open_rcv_t *data,
 
     if (data->keep == TRUE) {
 
-    	//<em>
         roapproxy = 0;
     	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
     	if (roapproxy == FALSE) {
@@ -663,7 +662,6 @@ lsm_open_rx (lsm_lcb_t *lcb, cc_action_data_open_rcv_t *data,
     		}
     	} else {
 
-    		// <em>
     		if (CC_AUDIO_1 == media->cap_index )
     			data->port = gROAPSDP.audioPort;
     		if (CC_VIDEO_1 == media->cap_index )
@@ -673,7 +671,6 @@ lsm_open_rx (lsm_lcb_t *lcb, cc_action_data_open_rcv_t *data,
     	}
     } else {
 
-    	//<em>
         roapproxy = 0;
     	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
 
@@ -687,7 +684,6 @@ lsm_open_rx (lsm_lcb_t *lcb, cc_action_data_open_rcv_t *data,
     			rc = CC_RC_SUCCESS;
     		}
     	} else {
-    		//<em>
     		if (CC_AUDIO_1 == media->cap_index )
     			data->port = gROAPSDP.audioPort;
     		if (CC_VIDEO_1 == media->cap_index )
@@ -788,7 +784,6 @@ lsm_close_rx (lsm_lcb_t *lcb, boolean refresh, fsmdef_media_t *media)
                           dcb->line, fname, "port closed", 
                           media->src_port);
 
-            	//<em>
                 roapproxy = 0;
             	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
             	if (roapproxy == FALSE) {
@@ -859,7 +854,6 @@ lsm_close_tx (lsm_lcb_t *lcb, boolean refresh, fsmdef_media_t *media)
                 (refresh && 
                  gsmsdp_sdp_differs_from_previous_sdp(FALSE, media))) {
 
-            	//<em>
                 roapproxy = 0;
             	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
             	if (roapproxy == FALSE) {
@@ -1030,7 +1024,6 @@ lsm_rx_start (lsm_lcb_t *lcb, const char *fname, fsmdef_media_t *media)
                         media->local_dynamic_payload_type_value = media->payload;
                     }
 
-                    //<em>
                     roapproxy = 0;
                 	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
                 	if (roapproxy == FALSE) {
@@ -1209,7 +1202,6 @@ lsm_tx_start (lsm_lcb_t *lcb, const char *fname, fsmdef_media_t *media)
              * the SDP for the remote end.
              */
 
-            //<em>
             roapproxy = 0;
         	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
         	if (roapproxy == FALSE) {
@@ -1241,7 +1233,6 @@ lsm_tx_start (lsm_lcb_t *lcb, const char *fname, fsmdef_media_t *media)
 
             dcb->cur_video_avail &= ~CC_ATTRIB_CAST;
 
-            //<em>
             roapproxy = 0;
         	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
         	if (roapproxy == FALSE) {
@@ -1875,7 +1866,6 @@ static void lsm_release_port (lsm_lcb_t *lcb)
     
     GSMSDP_FOR_MEDIA_LIST(media, start_media, end_media, dcb) {
 
-    	//<em>
         roapproxy = 0;
     	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
     	if (roapproxy == FALSE) {
@@ -6408,7 +6398,6 @@ static void lsm_util_start_tone(vcm_tones_t tone, short alert_info,
     DEF_DEBUG(DEB_F_PREFIX"Enter, line=%d, call_id=%d.\n",
               DEB_F_PREFIX_ARGS(MED_API, fname), line, call_id);
 
-	//<em>
     roapproxy = 0;
 	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
 	if (roapproxy == FALSE) {

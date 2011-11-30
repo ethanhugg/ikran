@@ -123,7 +123,6 @@ cc_lineid_t CCAPI_Call_getLine(cc_call_handle_t call_handle){
  */
 cc_return_t CCAPI_Call_originateCall(cc_call_handle_t handle, cc_sdp_direction_t video_pref, cc_string_t digits, char* ipaddress, int audioPort, int videoPort){
 	
-	// <em>
 	int roapproxy = 0;
 	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
 	
@@ -135,7 +134,6 @@ cc_return_t CCAPI_Call_originateCall(cc_call_handle_t handle, cc_sdp_direction_t
 		gROAPSDP.audioPort = audioPort;
 		gROAPSDP.videoPort = videoPort;
 	}
-	//
 	
 	return CC_CallFeature_dial(handle, video_pref, digits);
 }
