@@ -709,13 +709,13 @@ sdp_result_e sdp_build_connection (sdp_t *sdp_p, u16 level, char **ptr,
                              conn_p->conn_addr, conn_p->ttl);
         }
     } else {
-    	//<em>
+
         roapproxy = 0;
     	config_get_value(CFGID_ROAPPROXY, &roapproxy, sizeof(roapproxy));
     	if (roapproxy == TRUE) {
     		strcpy(conn_p->conn_addr, gROAPSDP.offerAddress);
     	}
-    	//
+
         *ptr += snprintf(*ptr, MAX((endbuf_p - *ptr), 0), "c=%s %s %s\r\n", 
                          sdp_get_network_name(conn_p->nettype),
                          sdp_get_address_name(conn_p->addrtype),
