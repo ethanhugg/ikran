@@ -66,7 +66,7 @@ typedef unsigned int cc_call_priority_e;
 extern cc_reg_state_t ccapp_get_state();
 
 
-// <em>   global sdp structure
+//  global sdp structure
 typedef struct cc_global_sdp_ {
 	char			offerSDP[1020];
 	char			answerSDP[1024];
@@ -76,7 +76,7 @@ typedef struct cc_global_sdp_ {
 } cc_global_sdp_t;
 
 extern cc_global_sdp_t  gROAPSDP;
-//
+
 
 typedef enum {
     CC_FEATURE_MIN = -1L,

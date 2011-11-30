@@ -107,9 +107,9 @@ const char *ring_names[] = {
     "Bellcore-dr5"
 };
 
-// <em>
+
 cc_global_sdp_t  gROAPSDP;
-//
+
 
 /* Forward function declarations */
 static int sip_sm_request_check_and_store(ccsipCCB_t *ccb, sipMessage_t *request,
@@ -3617,7 +3617,6 @@ ccsip_handle_idle_ev_cc_setup (ccsipCCB_t *ccb, sipSMEvent_t *event)
     /* Save the GSM's msg. bodies for future used */
     ccsip_save_local_msg_body(ccb, &event->u.cc_msg->msg.setup.msg_body);
 
-	// <em>
 	// replace SDP in ccb if this is the ROAP proxy
 	// we not inject directly into sdp generation
     roapproxy = 0;
@@ -3939,7 +3938,6 @@ ccsip_handle_sentinvite_ev_sip_2xx (ccsipCCB_t *ccb, sipSMEvent_t *event)
     /* Extract destination SDP and related fields */
     sdp_status = sip_util_extract_sdp(ccb, response);
 
-	//<em>
 	// extract SDP from ccb if this is the ROAP proxy
     // you are in function ccsip_handle_sentinvite_ev_sip_2xx
     roapproxy = 0;
@@ -3948,7 +3946,6 @@ ccsip_handle_sentinvite_ev_sip_2xx (ccsipCCB_t *ccb, sipSMEvent_t *event)
 	if (roapproxy == TRUE) {
 		strcpy(gROAPSDP.answerSDP, response->mesg_body->msgBody);
 	}
-	//
 
     switch (sdp_status) {
     case SIP_SDP_SUCCESS:
