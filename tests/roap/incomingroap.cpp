@@ -88,9 +88,9 @@ void IncomingRoap::Offer(string callerSessionId, string seq, string sdp)
 	  //get IP Address index
 	  ipIdx = sdp.find("c=IN IP4");
 	  if(ipIdx == std::string::npos) {
-		  CSFLogDebugS(logTag, "Unable to find ipaddress in the string" );
+		  CSFLogDebugS(logTag, "Unable to find IP address in the string" );
 	  } else {
-		  CSFLogDebugS(logTag, "Found  ipaddress in the string @ " << ipIdx );
+		  CSFLogDebugS(logTag, "Found  IP address in the string @ " << ipIdx );
 	  }
 	  //grab the ip address
 	  ipAddress = sdp.substr(ipIdx+11,15);
@@ -101,9 +101,12 @@ void IncomingRoap::Offer(string callerSessionId, string seq, string sdp)
 	  if(aIdx == std::string::npos) {
 		  CSFLogDebugS(logTag, "Unable to find audio line in the string" );
 	  } else {
-		  CSFLogDebugS(logTag, "Found  audiolinein the string @ " );
+		  CSFLogDebugS(logTag, "Found  audio line in the string @ " );
 	  }
 	  audioTxPort = sdp.substr(aIdx+8,13);
+	  aIdx = audioTxPort.find_first_of("R");
+	  audioTxPort = audioTxPort.substr(0, aIdx-1);
+
 	  CSFLogDebugS(logTag, " Audio Port extracted is " << audioTxPort.c_str());
 
 	  //get the vodeoport Index
@@ -111,14 +114,13 @@ void IncomingRoap::Offer(string callerSessionId, string seq, string sdp)
 	  if(vIdx == std::string::npos) {
 		  CSFLogDebugS(logTag, "Unable to find video line in the string" );
 	  } else {
-	      CSFLogDebugS(logTag, "Found  vode line the string @ " );
+	      CSFLogDebugS(logTag, "Found video line the string @ " );
 	  }
 	  videoTxPort=sdp.substr(vIdx+8,13);
+	  vIdx = videoTxPort.find_first_of("R");
+	  videoTxPort = videoTxPort.substr(0, aIdx-2);
 
 	  CSFLogDebugS(logTag, " Video Port extracted is " << videoTxPort.c_str());
-
-	  audioTxPort = "16384";
-	  videoTxPort = "1024";
 
 	  SipccController::GetInstance()->PlaceCall(callerSessionId, ipAddress.c_str(), atoi(audioTxPort.c_str()), atoi(videoTxPort.c_str()) );
 	  //roapProxyCallState = CALLSTATE_IN_CALL;
