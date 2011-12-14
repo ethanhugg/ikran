@@ -20,241 +20,232 @@
     <div id='ajax-status'>This is ajax status DIV </div>
 </body>
 <script type="application/javascript;version=1.8">
+
     let img = new Image();
     let roaptestbut = document.getElementById("roaptestbutton");
     let ctx = document.getElementById("thecanvas").getContext("2d");
     let msg = document.getElementById("tehmsg");
-	var pc; 
-	var poll_again = true;
-	var poll_timeout = 1000;
-	var audioTxPort = 16384;
-        var videoTxPort = 1024;
-        var peerIp = "127.0.0.1";
-	var isROAPMediaOn = false;
+    var pc; 
+    var poll_again = true;
+    var poll_timeout = 1000;
+    var audioTxPort = 16384;
+    var videoTxPort = 1024;
+    var peerIp = "127.0.0.1";
+    var isROAPMediaOn = false;
 
 
-	// JUST ENUF PEER CONNECTION CLASS
-	var PeerConnection = function(signalingCallback) {
+    // JUST ENUF PEER CONNECTION CLASS
+    var PeerConnection = function(signalingCallback) {
 
-		var addStream = function() {
-			//hardcoded offer, call the signaling callback
-			msg.innerHTML=" In Add Stream ";	
-			//parseSDP(JSON.parse(JSON.stringify(make_offer())));
-			signalingCallback(make_offer());	
-		};
+    var addStream = function() {
+	//hardcoded offer, call the signaling callback
+	msg.innerHTML=" In Add Stream ";	
+	signalingCallback(make_offer());	
+    };
 
-		var removeStream = function() {
-			//not yet implemented
-		};
+    var removeStream = function() {
+	signalingCallback(make_shutdown());	
+    };
 
-    	var processMessage = function(message) {
-			if(message.messageType == "OFFER")
-			{
-				//not yet implemented
-				poll_again = true;
-			}	
-			else if(message.messageType == "ANSWER")
-			{
-				processAnswer(message);
-				signalingCallback(make_ok())
-				poll_again = false;
-			}else if(message.messageType == "OK") 
-			{
-				alert(" Got OK message ");
-				poll_again=true;
-			}else 
-			{
-				alert("Got message :" + message.messageType);
-				//let's poll again
-				poll_again = true;
-			}
-		}; 
+    var processMessage = function(response) {
+    	
+	var shutdownIdx = response.search(/SHUTDOWN/);
+        if(shutdownIdx != -1) {
+            stopROAPMedia();
+            return;
+        }
+        
+        var answerIdx = response.search(/ANSWER/);
+        if(answerIdx != -1) {
+            var iIdx = response.search(/c=IN IP4/);
+            peerIp = response.substring(iIdx+9,iIdx+23);    
+            let cleanIP = peerIp.replace("\\"," ");
+            alert("ANSWER IP: " + cleanIP);
+            var aIdx = response.search(/m=audio/);
+            audioPort = response.substring(aIdx+8,aIdx+13);    
+            var vIdx = response.search(/m=video/);
+            videoPort = response.substring(vIdx+8,vIdx+13);    
+            if (isROAPMediaOn == false) {   
+                ikranService.startROAPMedia(ctx ,cleanIP, audioTxPort, audioTxPort, videoTxPort, videoTxPort);
+                isROAPMediaOn = true;
+                setTimeout(poll, 3000); 
+            }
+        } else {
+                setTimeout(poll, poll_timeout);
+        }
 
+    }; 
 
-    	var make_offer = function() {
-			return {
-				messageType:"OFFER",
-				callerSessionId:"7772",
-				seq:"9995",
-				sdp:"v=0 \n\
-					o=Cisco-SIPUA 13578 0 IN IP4 144.254.150.100 \n\
-					s=SIP Call \n\
-					t=0 0 \n\
-					m=audio 16384 RTP/AVP 0 8 9 101 \n\
-					c=IN IP4 144.254.150.100 \n\
-					a=rtpmap:0 PCMU/8000 \n\
-					a=rtpmap:8 PCMA/8000 \n\
-					a=rtpmap:9 G722/8000 \n\
-					a=rtpmap:101 telephone-event/8000 \n\
-					a=fmtp:101 0-15 \n\
-					a=sendrecv \n\
-					m=video 1024 RTP/AVP 97 \n\
-					c=IN IP4 144.254.150.100 \n\
-					a=rtpmap:97 H264/90000 \n\
-					a=fmtp:97 profile-level-id=42E00C \n\
-					a=sendrecv"	
-			};
-		};
+    var make_offer = function() {
+        let localIP  = ikranService.getProperty("localIPAddress").value;
+        var offer_sdp = "v=0 \n\
+	    o=Cisco-SIPUA 13578 0 IN IP4 172.27.190.5 \n\
+            s=SIP Call \n\
+            t=0 0 \n\
+            m=audio 16384 RTP/AVP 0 8 9 101 \n\
+            c=IN IP4 "+ "  " + localIP  + "  " + " \n\
+            a=rtpmap:0 PCMU/8000 \n\
+            a=rtpmap:8 PCMA/8000 \n\
+            a=rtpmap:9 G722/8000 \n\
+            a=rtpmap:101 telephone-event/8000 \n\
+            a=fmtp:101 0-15 \n\
+            a=sendrecv \n\
+            m=video 1024 RTP/AVP 97 \n\
+            c=IN IP4"+ "  " + localIP + "  "+" \n\
+            a=rtpmap:97 H264/90000 \n\
+            a=fmtp:97 profile-level-id=42E00C \n\
+            a=sendrecv"
 
-		var make_ok = function() {
-	 		return {
-     	    			messageType:"OK",
-            			callerSessionId:"7772",
-            			seq:"9995"
-        		};
-		};
+        var offer_json = {
+            messageType:"OFFER",
+            callerSessionId:"7222",
+            seq:"9995",
+            sdp: offer_sdp
+        }
+ 
+        return offer_json;
+    }
 
-		var make_answer = function() {
+    var make_ok = function() {
+	return {
+      	    messageType:"OK",
+       	    callerSessionId:"7222",
+       	    seq:"9995"
+       	};
+    };
 
-			//not yet implemented
-		};
+    var make_shutdown = function() {
+        return {
+            messageType:"SHUTDOWN",
+            callerSessionId:"9995",
+	    calleeSessionId:"7772",
+            seq:"9995"
+        };
+    };
 
-		var processAnswer = function(message) {
-			var sdp = message.sdp;
-			parseSDP(sdp);
-		};
+    var make_answer = function() {
+	//not yet implemented
+    };
 
-		var parseSDP = function(sdp)
-		{
-			alert(sdp.sdp);
-			var sdp = sdp.sdp;
-			//get IP address
-			var ipIdx = sdp.search(/IP4/);	
-			peerIp = sdp.substring(ipIdx+4, ipIdx+20); 
-			alert("IP Address " + peerIp);
-			//get m= lines
-			var aIdx = sdp.search(/m=audio/);
-			audioTxPort = sdp.substring(aIdx+8,aIdx+13); 	
-			alert("Audio TxPort " + audioTxPort);
-			var vIdx = sdp.search(/m=video/);
-			videoTxPort = sdp.substring(vIdx+8,vIdx+13); 	
-			alert("Video TxPort " + videoTxPort);
-		};
-
-		return {
-			addStream: addStream,
-			removeStream: removeStream,
-			processMessage: processMessage
-		};
+    return {
+	addStream: addStream,
+	removeStream: removeStream,
+	processMessage: processMessage
+    };
 
 };
 
-	//TRANSPORT and POLL
-
-
-	function xport_success(msg)
-	{
-		alert("in success");
-		alert(JSON.parse(JSON.stringify(msg)));
-		pc.processMessage(JSON.parse(JSON.stringify(msg)));
-		alert("poll again is " + poll_again);
-		if(poll_again == true) {
-			//	poll();
-		} else {
-			//we got the answer
-			alert("Video port is" + videoTxPort);
-		}
-	}
-
-
-	function xport_error(msg)
-	{
-		//... lets just poll
-		var response = msg.responseText;
-		alert(response);
-		var answerIdx = response.search(/ANSWER/);
-		if(answerIdx != -1)
-		{
-            		var aIdx = response.search(/m=audio/);
-            		audioPort = response.substring(aIdx+8,aIdx+13);    
-            		var vIdx = response.search(/m=video/);
-            		videoPort = response.substring(vIdx+8,vIdx+13);    
-			if (isROAPMediaOn == false) {	
-				ikranService.startROAPMedia(ctx,"144.254.86.101",16384,16384,1024,1024);
-				isROAPMediaOn = true;
-			}
-		} else {
-		        setTimeout(poll, poll_timeout);
-		}
-	}
+    //Out of band registration of the client
+    //this is an incomplete function. Error is not handled
+    function register_me() {
+	var reg_msg = {
+  	    messageType:"INIT",
+  	    device:"snandakusip01",
+  	    user:"7223",
+  	    password:"",
+  	    domain:"172.27.190.5"
+	};
 	
-	function sig_transport(params)
-	{
-		if (params.type == "POST") 
-		{
-		alert("in post " + params.data);
-			   $.ajax({
-                type:"POST",
-                url: "/roap.php",
-                dataType: "json",
-		data: params.data,
-                contentType: "application/x-www-form-urlencoded",
-                success:xport_success,
-                error:xport_error
-			});
-		} else {
-			   $.ajax({
-                type:"GET",
-                url: "/roap.php",
-                dataType: "plain",
-                success:xport_success,
-                error:xport_error
-               	}); 
-
-		}
-	}
-
-
-	function poll()
-	{
-		sig_transport({
-		 type: "GET"
-	     });
-	}
-
-
-	function signalingChannelCb(msg) 
-	{
-		alert(" signalingChannelCb " + JSON.stringify(msg));
-		sig_transport({
-		     type: "POST",
-			data: "roap="+JSON.stringify(msg) 
-			});
-	}
-
-
-	function InitROAPClient()
-	{
-		//create peer connection object
-		pc = new PeerConnection(signalingChannelCb);	
-	}
-
-	function pageLoad() {
-		InitROAPClient();	
+	alert("registration message "+ JSON.stringify(reg_msg));
+	$.ajax({
+            type:"POST",
+            url: "/roap.php",
+            dataType: "json",
+       	    data: "roap="+JSON.stringify(reg_msg),
+            contentType: "application/x-www-form-urlencoded",
+            success: function(data, textStatus) {
+       	       alert("Registration_ROAP returned "+textStatus);
+      	    }
+        });
     }
 
-	img.onload = function() { ctx.drawImage(img, 192, 112); }
+    //TRANSPORT and POLL
+
+    function xport_success(msg) {
+	var response = JSON.parse(JSON.stringify(msg));
+        alert("success " + response);
+	pc.processMessage(response);
+    }
+
+    function xport_error(msg) {
+	//... lets just poll
+	//var response = JSON.parse(JSON.stringify(msg));
+	//var response = msg.responseText;
+	//alert("in error");
+	setTimeout(poll, poll_timeout);
+    }
+	
+    function sig_transport(params) {
+	if (params.type == "POST") {
+ 	    $.ajax({
+                    type:"POST",
+                    url: "/roap.php",
+                    dataType: "json",
+		    data: params.data,
+                    contentType: "application/x-www-form-urlencoded",
+                    success:xport_success,
+                    error:xport_error
+	    });
+	} else {
+	    $.ajax({
+                type:"GET",
+                url: "/roap.php",
+                dataType: "text",
+                success:xport_success,
+                error:xport_error
+       	    }); 
+	}
+    }
+
+    function poll() {
+	sig_transport({
+	    type: "GET"
+        });
+    }
+
+    function signalingChannelCb(msg) {
+	alert(" signalingChannelCb " + JSON.stringify(msg));
+	sig_transport({
+	     type: "POST",
+		data: "roap="+JSON.stringify(msg) 
+		});
+    }
+
+    function InitROAPClient() {
+	// let's register the client to CUCM. This is just a hacky way to do so
+   	register_me(); 
+	//create peer connection object
+	pc = new PeerConnection(signalingChannelCb);	
+    } 
+
+    function pageLoad() {
+	InitROAPClient();	
+    }
+
+    img.onload = function() { ctx.drawImage(img, 192, 112); }
 
     if (!ikranService) {
         msg.innerHTML = "The Ikran add-on could not be loaded!";
     }
 
-   roaptestbut.onclick = function() {
-    //please note this code is not a complete ROAP client
-        if(isROAPMediaOn == true)
-        {
-            //let's ed the media
-            // send ROAP:Shutdown via pc.removeStream()
-            ikranService.stopROAPMedia();
-            isROAPMediaOn = false;
-            roaptestbut.value = "Start ROAP Media ";
-
+    roaptestbut.onclick = function() {
+        //please note this code is not a complete ROAP client
+        if(isROAPMediaOn == true) {
+            //let's end the media
+	    pc.removeStream();
         } else {
             pc.addStream();
             msg.innerHTML = " Starting the media now ";
             roaptestbut.value = " Stop ROAP Media ";
         }
-  }
+    }
+
+    function stopROAPMedia() {
+        msg.innerHTML = " Stopping the media now ";
+  	ikranService.stopROAPMedia();
+        isROAPMediaOn = false;
+        roaptestbut.value = "Start ROAP Media ";
+    }
     
 </script>
 </html>

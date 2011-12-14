@@ -511,15 +511,9 @@ CallControl::GetProperty(const char* name,
 						 nsAString & value)
 {
 
-   if(m_isROAPClient) {
-        NS_DispatchToMainThread(new SessionCallback(
-            sessionObserver, "error", "In ROAP Client Mode:  Inappropriate Action "
-        ));
-        return NS_ERROR_FAILURE;
-    }  
-
 	char* strName = const_cast<char*>(name);
 	std::string tmpValue = SipccController::GetInstance()->GetProperty(strName);
+	Logger::Instance()->logIt(tmpValue);
 	value.Assign(NS_ConvertASCIItoUTF16(tmpValue.c_str()));
     return NS_OK;
 }

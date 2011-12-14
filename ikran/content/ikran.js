@@ -91,7 +91,7 @@ Ikran.prototype = {
     },
     
     _makePropertyBag: function(prop) {
-        let iP = ["localvoipport", "remotevoipport", "version"];
+        let iP = ["localvoipport", "remotevoipport", "version", "localIPAddress"];
         let bP = ["udp", "tcp", "video"];
 
         let bag = Cc["@mozilla.org/hash-property-bag;1"].
