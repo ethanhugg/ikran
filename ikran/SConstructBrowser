@@ -1,0 +1,472 @@
+Import('build_env')
+import os, sys
+
+Import('debug')
+Import('x64')
+Import('mozsrcpath')
+Import('componentName')
+Import('suffixName')
+Import('webrtcpath')
+Import('chromiumbaseincludepath')
+Import('chromiumbaselibpath')
+
+if(chromiumbaseincludepath == 'third_party'):
+  chromiumbaseincludepath = '../third_party/chromium_base'
+
+if(chromiumbaselibpath == 'third_party'):
+  chromiumbaselibpath = '../third_party/chromium_base'
+
+## Add Tests folders here
+# Temp using absolute paths
+include_dirs = [
+  '.',
+  '../include',
+  '../src/sipcc/include',
+  '../src/common',
+  '../out/include/system',
+  chromiumbaseincludepath,
+  '../src/common/browser_logging',
+  webrtcpath + '/src',
+  webrtcpath + '/src/video_engine/main/interface',
+  webrtcpath + '/src/voice_engine/main/interface'
+]
+
+## Add test src files here
+#
+
+src_files_browser = [
+  'Logger.cpp',
+  'video_renderer.cpp',
+  'Convert.cpp',
+  'sipcc_controller.cpp',
+  'vie_mediatest.cc'
+]
+
+libpath = ['../out/lib']
+libs = []
+
+
+env = build_env.Clone(CPPPATH=include_dirs)
+
+if sys.platform =='win32':
+  mozobjpath = mozsrcpath + '\\obj-i686-pc-mingw32'
+  outputlibbrowsername = 'libsessioncontrolbrowser'
+  env["CPPPATH"] += [
+    mozobjpath + '/dist/include',
+  ]
+  env["CPPDEFINES"] += [
+    'WIN32',
+    '_CONSOLE',
+    'MBCS',
+    'XP_WIN',
+    'MOZ_NO_MOZALLOC',
+  ]
+  env["CPPFLAGS"] += [
+    '/c',
+    '/W4',
+    '/wd4100',
+    '/wd4275',
+    '/wd4512'
+  ]
+  windows_sdk_lib_dir=os.environ['MS_WINDOWS_SDK_PATH'] + '/lib'
+  ms_vc_lib_dir=os.environ['MS_VC_PATH'] + '/VC/lib'
+  ms_vc_atlmfc_lib_dir=os.environ['MS_VC_PATH'] + '/VC/ATLMFC/lib'
+  ms_dx_sdk_dir = os.environ['DXSDK_DIR'] + 'Lib/x86'
+  
+  libpath += [ 
+    ms_vc_lib_dir,
+    windows_sdk_lib_dir,
+    ms_vc_atlmfc_lib_dir,
+    ms_dx_sdk_dir,
+    '../third_party/lib',
+    chromiumbaselibpath,
+    '../src/common/browser_logging',
+    mozobjpath + '/dist/lib',
+    mozobjpath + '/dist/bin',
+    webrtcpath + '/Build/Debug/lib'
+  ]
+  libs += [
+    componentName + suffixName + '.lib',
+    'xpcomglue_s.lib',
+    'xpcom.lib',
+    'nspr4.lib',
+    'mozalloc.lib',
+    'plds4.lib',
+    'plc4.lib',
+    'winmm.lib',
+    'kernel32.lib',
+    'user32.lib',
+    'gdi32.lib',
+    'winspool.lib',
+    'comdlg32.lib',
+    'advapi32.lib',
+    'shell32.lib',
+    'ole32.lib',
+    'oleaut32.lib',
+    'uuid.lib',
+    'odbc32.lib',
+    'odbccp32.lib', 
+    'atls.lib',  
+    'avrt.lib', 
+    'DelayImp.lib',  
+    'dmoguids.lib',
+    'msdmo.lib', 
+    'WinMM.lib',
+    'wmcodecdspuuid.lib',
+    'ws2_32.lib', 
+    'mswsock.lib', 
+    'dbghelp.lib', 
+    'Psapi.lib',
+    'chromium.lib',
+    'browser_logging.lib',
+    'aec.lib',
+    'aecm.lib',
+    'agc.lib',
+    'apm_util.lib',
+    'audio_coding_module.lib',
+    'audio_conference_mixer.lib',
+    'audio_device.lib',
+    'audio_processing.lib',
+	'audioproc_debug_proto.lib',
+    'CNG.lib',
+    'G711.lib',
+    'G722.lib',
+    'iLBC.lib',
+    'iSAC.lib',
+    'iSACFix.lib',
+    'libjpeg.lib',
+    'media_file.lib',
+    'NetEq.lib',
+    'ns.lib',
+    'PCM16B.lib',
+    'resampler.lib',
+    'rtp_rtcp.lib',
+	'signal_processing.lib',
+    'protobuf_lite.lib',
+    'system_wrappers.lib',
+    'udp_transport.lib',
+    'vad.lib',
+    'video_capture_module.lib',
+    'video_engine_core.lib',
+    'video_processing.lib',
+    'video_render_module.lib',
+    'voice_engine_core.lib',
+    'libvpx.lib',
+    'webrtc_i420.lib',
+    'webrtc_jpeg.lib',
+    'webrtc_utility.lib',
+    'webrtc_video_coding.lib',
+    'webrtc_vp8.lib',
+    'webrtc_vplib.lib'
+  ]
+  if int(debug):
+    libs += [
+      'libcmtd.lib',
+      'libxml2_mtd.lib'
+    ]
+  else:
+    libs += [
+      'libcmt.lib',
+      'libxml2_mt.lib'
+    ]
+  env["LINKFLAGS"] = [
+    '/nologo',
+    '/dll',
+    '/DELAYLOAD:"avrt.dll"',
+    '/SUBSYSTEM:CONSOLE',
+    '/DYNAMICBASE',
+    '/NXCOMPAT',
+    '/MACHINE:X86',
+    '/FORCE:MULTIPLE',
+    '/NODEFAULTLIB:"libcmtd.lib"',
+    '/NODEFAULTLIB:"libcmt.lib"',
+    '/NODEFAULTLIB:"libmmt.lib"',
+    '/NODEFAULTLIB:"libcpmt.lib"',
+    '/NODEFAULTLIB:"avrt.lib"',
+    '/NODEFAULTLIB:"libirc.lib"',
+    '/NODEFAULTLIB:"advapi32.lib"'
+  ]
+  if int(debug):
+    env["LINKFLAGS"] += [
+      '/DEBUG '
+    ]
+    
+elif sys.platform=='darwin':
+  mozobjpath = mozsrcpath + '/obj-ff-dbg'
+  outputlibbrowsername = 'libsessioncontrolbrowser.dylib'
+  env["CPPPATH"] += [
+    mozobjpath + '/dist/include',
+  ]
+  env["CPPDEFINES"] += [
+    'MOZ_NO_MOZALLOC'
+  ]
+  env["CPPFLAGS"] += [
+    '-c',
+    '-pipe',
+    '-Os',
+    '-dynamiclib',
+    '-shared',
+    '-Wall',
+    '-mmacosx-version-min=10.5',
+    '-fPIC',
+    '-fno-rtti',
+    '-fno-exceptions',
+    '-fno-strict-aliasing',
+    '-fno-common',
+    '-fshort-wchar',
+    '-fpascal-strings',
+    '-pthread',
+    '-Wconversion',
+    '-Wpointer-arith',
+    '-Woverloaded-virtual',
+    '-Wsynth',
+    '-Wno-ctor-dtor-privacy',
+    '-Wno-non-virtual-dtor',
+    '-Wcast-align',
+    '-Wno-long-long',
+  ]
+  env["LINKFLAGS"] += [
+    '-pthread',
+    '-pipe',
+    '-mmacosx-version-min=10.5',
+    '-Wl,-executable_path,' + mozobjpath + '/dist/bin',
+    '-Wl,-dead_strip',
+    '-read_only_relocs',
+    'suppress',
+    '-framework',
+    'Cocoa',
+    '-framework',
+    'AGL',
+    '-framework',
+    'OpenGl',
+    '-framework',
+    'Carbon',
+    '-framework',
+    'CoreAudio',
+    '-framework',
+    'QuartzCore',
+    '-framework',
+    'QuickTime',
+    '-framework',
+    'AudioUnit',
+    '-framework',
+    'AudioToolbox',
+    '-framework',
+    'CoreServices',
+    '-fvisibility=default'
+  ]
+  libpath += [
+    '..',
+    chromiumbaselibpath,
+    '../third_party/lib',
+    mozobjpath + '/dist/sdk/lib',
+    mozobjpath + '/dist/sdk/bin',
+    webrtcpath + '/xcodebuild/Debug',
+  ]
+  libs += [
+    componentName + suffixName,
+    'xpcom',
+    'xpcomglue_s',
+    'nspr4',
+    'mozalloc',
+    'plds4',
+    'plc4',
+    'ssl',
+    'crypto',
+    'apr-1',
+    'aprutil-1',
+    'z', 
+    'libxml2', 
+    'iconv',
+    'X11',
+    'chromium',
+    'libaec.a',
+    'libaecm.a',
+    'libagc.a',
+    'libapm_util.a',
+    'libaudio_coding_module.a',
+    'libaudio_conference_mixer.a',
+    'libaudio_device.a',
+    'libaudio_processing.a',
+    'libaudioproc_debug_proto.a',
+    'libCNG.a',
+    'libG711.a',
+    'libG722.a',
+    'libgenperf_libs.a',
+    'libiLBC.a',
+    'libiSAC.a',
+    'libiSACFix.a',
+    'libjpeg_turbo.a',
+    'libmedia_file.a',
+    'libNetEq.a',
+    'libns.a',
+    'libPCM16B.a',
+    'libresampler.a',
+    'librtp_rtcp.a',
+    'libsignal_processing.a',
+    'libprotobuf_lite.a',
+    'libsystem_wrappers.a',
+    'libudp_transport.a',
+    'libvad.a',
+    'libvideo_capture_module.a',
+    'libvideo_engine_core.a',
+    'libvideo_processing.a',
+    'libvideo_render_module.a',
+    'libvoice_engine_core.a',
+    'libvpx.a',
+    'libwebrtc_i420.a',
+    'libwebrtc_jpeg.a',
+    'libwebrtc_utility.a',
+    'libwebrtc_video_coding.a',
+    'libwebrtc_vp8.a',
+    'libwebrtc_vplib.a'
+  ]
+
+elif sys.platform=='linux2':
+  env.ParseConfig('pkg-config --cflags --libs gtk+-2.0')
+
+  if x64 == 'yes':
+    mozobjpath = mozsrcpath + '/obj-x86_64-unknown-linux-gnu'
+  else:
+    mozobjpath = mozsrcpath + '/obj-i686-pc-linux-gnu'
+
+  outputlibbrowsername = 'libsessioncontrolbrowser.so'
+  env["CPPPATH"] += [
+    mozobjpath + '/dist/include',
+  ]
+  env["CPPDEFINES"] += [
+    'MOZ_NO_MOZALLOC',
+    'MOZILLA_STRICT_API',
+    'IKRAN_LINUX'
+  ]
+  env["CPPFLAGS"] += [
+    '-std=gnu++0x',
+    '-pipe',
+    '-Os',
+    '-shared',
+    '-fshort-wchar',
+    '-fPIC',
+    '-fno-rtti',
+    '-fno-exceptions',
+    '-fno-strict-aliasing',
+    '-fno-common',
+    '-pthread',
+    '-Wall',
+    '-Wpointer-arith',
+    '-Woverloaded-virtual',
+    '-Wsynth',
+    '-Wno-ctor-dtor-privacy',
+    '-Wno-non-virtual-dtor',
+    '-Wcast-align',
+    '-Wno-long-long',
+    '-Wno-enum-compare'
+#    '-include',
+#    'xpcom-config.h'
+  ]
+  libpath += [
+    chromiumbaselibpath,
+    '../third_party/lib',
+    '/usr/include'
+  ]
+  if x64 == 'yes':
+    libpath += [
+      '/usr/lib64'
+    ]
+  else:
+    libpath += [
+      '/usr/lib'
+    ]
+
+  libpath += [
+    mozobjpath + '/dist/lib',
+    mozobjpath + '/dist/bin',
+    webrtcpath + '/out/Debug/obj.target/src/video_engine',
+    webrtcpath + '/out/Debug/obj.target/src/voice_engine',
+    webrtcpath + '/out/Debug/obj.target/src/modules',
+    webrtcpath + '/out/Debug/obj.target/src/common_video',
+    webrtcpath + '/out/Debug/obj.target/third_party/libvpx',
+    webrtcpath + '/out/Debug/obj.target/third_party/libjpeg_turbo',
+    webrtcpath + '/out/Debug/obj.target/src/common_audio',
+    webrtcpath + '/out/Debug/obj.target/third_party/protobuf',
+    webrtcpath + '/out/Debug/obj.target/src/system_wrappers/source'
+  ]
+  libs += [
+    componentName + suffixName, 
+    'mozsqlite3',
+    'xul',
+    'xpcomglue_s',
+    'xpcom',
+    'nspr4',
+    'mozalloc',
+    'plds4',
+    'plc4',
+    'ssl',
+    'pthread',
+    'z', 
+    'idn', 
+    'dl', 
+    'rt',
+    'xml2', 
+    'asound',
+    'Xext',
+    'chromium',
+    'libvideo_engine_core.a',
+    'libvoice_engine_core.a',
+    'libvideo_render_module.a',
+    'libmedia_file.a',
+    'libvideo_processing.a',
+    'libvideo_capture_module.a',
+    'libwebrtc_utility.a',
+    'libwebrtc_video_coding.a',
+    'libwebrtc_vp8.a',
+    'libwebrtc_jpeg.a',
+    'libvpx.a',
+    'libjpeg_turbo.a',
+    'libaudio_coding_module.a',
+    'libaudio_processing.a',
+    'libaudioproc_debug_proto.a',
+    'libaudio_device.a',
+    'libNetEq.a',
+    'libns.a',
+    'libaecm.a',
+    'libaec.a',
+    'libresampler.a',
+    'libiLBC.a',
+    'libagc.a',
+    'libCNG.a',
+    'libiSACFix.a',
+    'libiSAC.a',
+    'libvad.a',
+    'libudp_transport.a',
+    'libaudio_conference_mixer.a',
+    'librtp_rtcp.a',
+    'libwebrtc_i420.a',
+    'libwebrtc_vplib.a',
+    'libG711.a',
+    'libapm_util.a',
+    'libsignal_processing.a',
+    'libG722.a',
+    'libPCM16B.a',
+    'libprotobuf_lite.a',
+    'libsystem_wrappers.a'
+  ]
+  env["LINKFLAGS"] += [
+    '-shared',
+    '-pthread',
+    '-pipe',
+    '-Wl',
+    '-z',
+    'muldefs'
+  ]
+  if x64 == 'yes':
+    env["LINKFLAGS"] += [
+      '-m64',
+    ]
+  else:
+    env["LINKFLAGS"] += [
+      '-m32',
+    ]
+
+
+buildResult = env.SharedLibrary(outputlibbrowsername, src_files_browser, LIBS=libs, LIBPATH=libpath)
+

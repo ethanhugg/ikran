@@ -32,7 +32,7 @@ Required for all platforms:
   WEBRTCPATH environment variable pointing to a built webrtc source trunk
   
 Linux:
-  Should build on Ubuntu 11.04 or Fedora15
+  Should build on Ubuntu 11.04, 11.10 or Fedora15
   Third-Party Libraries
   +libxml2 - sudo apt-get install libxml2-dev
   +Glib    - sudo apt-get install libdbus-glib-1-dev
@@ -64,8 +64,6 @@ Windows:
       Set the MOZSRCPATH env variable to point to it - to the mozilla-central directory.
   - Build WEBRTC for video and audio engine libraries 
       +  Follow the instructions @ http://www.webrtc.org/reference/getting-started
-      +  webtrc version > 595 has been tested. To download a specific version use 
-		gclient sync --revision 595 
       +  Set WEBRTCPATH to point to it : export WEBRTCPATH=/Users/XTM/HTML5/webrtc/trunk
   - On Windows copy libxml2_MTd.lib from https://public.me.com/ethanhugg to /third_party/lib
   - Instead of using scons directly, use runSconsBuild.py like this
@@ -76,7 +74,7 @@ Windows:
 ---------
 4. Output
 ---------
-  Build will create a standalone test app and an addon for Firefox 4, 5 or 6.
+  Build will create a standalone test app and an addon for Firefox nightly build.
   Test App Exe: TestApp_Softphone
   Addon: ikran-0.2-dev.xpi
 
@@ -144,6 +142,7 @@ The test application requires the nspr4 library in your dynamic library path.  I
 ------------
 The JS API offers support for 
     SIP Registration, Place Call, HangUp Call, Answer Call, Send DTMF
+    HoldCall, ResumeCall
     P2P Mode, Place P2P Call
     SetProperty, GetProperty
 
