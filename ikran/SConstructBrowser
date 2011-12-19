@@ -50,7 +50,7 @@ env = build_env.Clone(CPPPATH=include_dirs)
 
 if sys.platform =='win32':
   mozobjpath = mozsrcpath + '\\obj-i686-pc-mingw32'
-  outputlibname = 'libsessioncontrol'
+  outputlibbrowsername = 'libsessioncontrolbrowser'
   env["CPPPATH"] += [
     mozobjpath + '/dist/include',
   ]
@@ -190,16 +190,7 @@ if sys.platform =='win32':
     env["LINKFLAGS"] += [
       '/DEBUG '
     ]
-  
-  # Execute  xpcom commands
-  env.AppendENVPath('PYTHONPATH', mozobjpath + '\\dist\\sdk\\bin')
-  idlIncludePath =  mozobjpath + '\\dist\\idl'
-  xpidl_h_cmd =  'c:\\python27\\python ' + mozobjpath + '\\dist\\sdk\\bin\\header.py  --cachedir=. -I ' + idlIncludePath + ' ./ICallControl.idl -o ./ICallControl.h'
-  xpidl_tl_cmd = 'c:\\python27\\python ' + mozobjpath + '\\dist\\sdk\\bin\\typelib.py --cachedir=. -I ' + idlIncludePath + ' ./ICallControl.idl -o ICallControl.xpt'
-
-  env.Execute(xpidl_h_cmd)
-  env.Execute(xpidl_tl_cmd)
-  
+    
 elif sys.platform=='darwin':
   mozobjpath = mozsrcpath + '/obj-ff-dbg'
   outputlibbrowsername = 'libsessioncontrolbrowser.dylib'
