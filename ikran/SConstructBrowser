@@ -339,7 +339,7 @@ elif sys.platform=='linux2':
   else:
     mozobjpath = mozsrcpath + '/obj-i686-pc-linux-gnu'
 
-  outputlibname = 'libsessioncontrol.so'
+  outputlibbrowsername = 'libsessioncontrolbrowser.so'
   env["CPPPATH"] += [
     mozobjpath + '/dist/include',
   ]
@@ -368,9 +368,9 @@ elif sys.platform=='linux2':
     '-Wno-non-virtual-dtor',
     '-Wcast-align',
     '-Wno-long-long',
-    '-Wno-enum-compare',
-    '-include',
-    'xpcom-config.h'
+    '-Wno-enum-compare'
+#    '-include',
+#    'xpcom-config.h'
   ]
   libpath += [
     chromiumbaselibpath,
@@ -475,15 +475,6 @@ elif sys.platform=='linux2':
     env["LINKFLAGS"] += [
       '-m32',
     ]
-
-  # Execute  xpcom commands
-  env.AppendENVPath('PYTHONPATH', mozobjpath + '/dist/sdk/bin')
-  idlIncludePath =  mozobjpath + '/dist/idl'
-  xpidl_h_cmd =  'python ' + mozobjpath + '/dist/sdk/bin/header.py --cachedir=. -I ' + idlIncludePath + ' ./ICallControl.idl -o ICallControl.h'
-  xpidl_tl_cmd = 'python ' + mozobjpath + '/dist/sdk/bin/typelib.py --cachedir=. -I ' + idlIncludePath + ' ./ICallControl.idl -o ICallControl.xpt'
-  
-  env.Execute(xpidl_h_cmd)
-  env.Execute(xpidl_tl_cmd)
 
 
 buildResult = env.SharedLibrary(outputlibbrowsername, src_files_browser, LIBS=libs, LIBPATH=libpath)
