@@ -45,7 +45,6 @@ src_files_browser = [
 libpath = ['../out/lib']
 libs = []
 
-
 env = build_env.Clone(CPPPATH=include_dirs)
 
 if sys.platform =='win32':
@@ -467,6 +466,4 @@ elif sys.platform=='linux2':
       '-m32',
     ]
 
-
 buildResult = env.SharedLibrary(outputlibbrowsername, src_files_browser, LIBS=libs, LIBPATH=libpath)
-
