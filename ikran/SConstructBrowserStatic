@@ -1,5 +1,5 @@
 Import('build_env')
-import os, sys
+import os,sys,shutil
 
 Import('debug')
 Import('x64')
@@ -30,7 +30,6 @@ include_dirs = [
   webrtcpath + '/src/video_engine/main/interface',
   webrtcpath + '/src/voice_engine/main/interface'
 ]
-
 
 libpath = ['../out/lib']
 libs = []
@@ -382,7 +381,7 @@ elif sys.platform=='linux2':
   libs += [
     '../lib' + componentName + suffixName + '.a',
 #    'xpcom',
-     mozobjpath + '/dist/sdk/lib/' + 'libxpcomglue_s.a',
+#     mozobjpath + '/dist/sdk/lib/' + 'libxpcomglue_s.a',
 #    'mozsqlite3',
 #    'xul',
 #    'xpcomglue_s',
@@ -401,6 +400,7 @@ elif sys.platform=='linux2':
 #    'asound',
 #    'Xext',
     '../third_party/chromium_base/libchromium.a',
+    '../src/common/browser_logging/CSFLog.o',
     'Logger.o',
     'video_renderer.o',
     'Convert.o',
@@ -425,7 +425,6 @@ elif sys.platform=='linux2':
     webrtcpath + '/out/Debug/obj.target/src/modules/' + 'libNetEq.a',
     webrtcpath + '/out/Debug/obj.target/src/modules/' + 'libns.a',
     webrtcpath + '/out/Debug/obj.target/src/modules/' + 'libaecm.a',
-    webrtcpath + '/out/Debug/obj.target/src/modules/' + 'libaec.a',
     webrtcpath + '/out/Debug/obj.target/src/common_audio/' + 'libresampler.a',
     webrtcpath + '/out/Debug/obj.target/src/modules/' + 'libiLBC.a',
     webrtcpath + '/out/Debug/obj.target/src/modules/' + 'libagc.a',
@@ -462,5 +461,6 @@ elif sys.platform=='linux2':
       '-m32',
     ]
 
+print os.getcwd();
 
 buildResult = env.StaticLibrary(outputlibbrowsername, libs, LIBPATH=libpath)
