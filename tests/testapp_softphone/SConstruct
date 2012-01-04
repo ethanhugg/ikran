@@ -258,6 +258,8 @@ elif sys.platform == 'darwin':
     'libwebrtc_video_coding.a',
     'libwebrtc_vp8.a',
     'libwebrtc_vplib.a',
+    'libwebrtc_libyuv.a',
+    'libyuv.a',
     'sipcc_controller.o'
   ]
   env["LINKFLAGS"] += [

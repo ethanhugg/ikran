@@ -27,7 +27,7 @@ include_dirs = [
   chromiumbaseincludepath,
   '../src/common/browser_logging',
   webrtcpath + '/src',
-  webrtcpath + '/src/video_engine/main/interface',
+  webrtcpath + '/src/video_engine/include',
   webrtcpath + '/src/voice_engine/main/interface'
 ]
 

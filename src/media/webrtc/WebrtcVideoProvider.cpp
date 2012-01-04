@@ -717,15 +717,15 @@ int WebrtcVideoProvider::rxStart ( int groupId, int streamId, int payloadType, i
                     return -1;
                 }
 
-                if(vieEncryption->EnableSRTPReceive(channel,
-                    webrtc::kCipherAes128CounterMode,
-                    WEBRTC_CIPHER_LENGTH,
-                    webrtc::kAuthNull, 0, 0, webrtc::kEncryption, key) != 0)
-                {
-                    LOG_WEBRTC_ERROR( logTag, "rxStartVideo: GIPSVE_EnableSRTPReceive on channel %d failed, error %d", channel, vieBase->LastError() );
-                    memset(key, 0x00, sizeof(key));
-                    return -1;
-                }
+                //if(vieEncryption->EnableSRTPReceive(channel,
+                //    webrtc::kCipherAes128CounterMode,
+                //    WEBRTC_CIPHER_LENGTH,
+                //    webrtc::kAuthNull, 0, 0, webrtc::kEncryption, key) != 0)
+                //{
+                //    LOG_WEBRTC_ERROR( logTag, "rxStartVideo: GIPSVE_EnableSRTPReceive on channel %d failed, error %d", channel, vieBase->LastError() );
+                //    memset(key, 0x00, sizeof(key));
+                //    return -1;
+                //}
 
                 memset(key, 0x00, sizeof(key));
 
@@ -839,15 +839,15 @@ int WebrtcVideoProvider::txStart( int groupId, int streamId, int payloadType, in
                     return -1;
                 }
 
-                if(vieEncryption->EnableSRTPSend(channel,
-                    webrtc::kCipherAes128CounterMode,
-                    WEBRTC_CIPHER_LENGTH,
-                    webrtc::kAuthNull, 0, 0, webrtc::kEncryption, key) != 0)
-                {
-                    LOG_WEBRTC_ERROR( logTag, "txStartVideo: EnableSRTPSend on channel %d failed, error %d", channel, vieBase->LastError() );
-                    memset(key, 0x00, sizeof(key));
-                    return -1;
-                }
+                //if(vieEncryption->EnableSRTPSend(channel,
+                //    webrtc::kCipherAes128CounterMode,
+                //    WEBRTC_CIPHER_LENGTH,
+                //    webrtc::kAuthNull, 0, 0, webrtc::kEncryption, key) != 0)
+                //{
+                //    LOG_WEBRTC_ERROR( logTag, "txStartVideo: EnableSRTPSend on channel %d failed, error %d", channel, vieBase->LastError() );
+                //    memset(key, 0x00, sizeof(key));
+                //    return -1;
+                //}
 
                 memset(key, 0x00, sizeof(key));
 

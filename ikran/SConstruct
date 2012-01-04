@@ -27,7 +27,7 @@ include_dirs = [
   chromiumbaseincludepath,
   '../src/common/browser_logging',
   webrtcpath + '/src',
-  webrtcpath + '/src/video_engine/main/interface',
+  webrtcpath + '/src/video_engine/include',
   webrtcpath + '/src/voice_engine/main/interface'
 ]
 
@@ -332,7 +332,9 @@ elif sys.platform=='darwin':
     'libwebrtc_utility.a',
     'libwebrtc_video_coding.a',
     'libwebrtc_vp8.a',
-    'libwebrtc_vplib.a'
+    'libwebrtc_vplib.a',
+    'libwebrtc_libyuv.a',
+    'libyuv.a'
   ]
 
   # Execute  xpcom commands

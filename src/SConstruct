@@ -50,7 +50,7 @@ src_files += Glob('media/*.cpp')
 # OpenSource media libraries from Google's WebRTC project 
 include_dirs += [
   webrtcpath + '/src',
-  webrtcpath + '/src/video_engine/main/interface',
+  webrtcpath + '/src/video_engine/include',
   webrtcpath + '/src/voice_engine/main/interface' 
 ]
 
