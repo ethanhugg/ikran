@@ -313,7 +313,8 @@ elif sys.platform=='linux2':
     webrtcpath + '/out/Debug/obj.target/third_party/libjpeg_turbo',
     webrtcpath + '/out/Debug/obj.target/src/common_audio',
     webrtcpath + '/out/Debug/obj.target/third_party/protobuf',
-    webrtcpath + '/out/Debug/obj.target/src/system_wrappers/source'
+    webrtcpath + '/out/Debug/obj.target/src/system_wrappers/source',
+    webrtcpath + '/out/Debug/obj.target/third_party/libyuv',
   ]
   libs += [
     componentName + suffixName, 
@@ -367,7 +368,9 @@ elif sys.platform=='linux2':
     'X11',
     'Xext',
     'rt',
-    'dl'
+    'dl',
+    'libwebrtc_libyuv.a',
+    'libyuv.a',
   ]
   env["LINKFLAGS"] += [
     '-z',
