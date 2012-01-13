@@ -158,7 +158,6 @@ if sys.platform =='win32':
     'webrtc_utility.lib',
     'webrtc_video_coding.lib',
     'webrtc_vp8.lib',
-    'webrtc_vplib.lib',
     'webrtc_libyuv.lib',
     'libyuv.lib'
   ]
@@ -259,7 +258,6 @@ elif sys.platform == 'darwin':
     'libwebrtc_utility.a',
     'libwebrtc_video_coding.a',
     'libwebrtc_vp8.a',
-    'libwebrtc_vplib.a',
     'libwebrtc_libyuv.a',
     'libyuv.a',
     'sipcc_controller.o'
@@ -358,7 +356,6 @@ elif sys.platform=='linux2':
     'libaudio_conference_mixer.a',
     'librtp_rtcp.a',
     'libwebrtc_i420.a',
-    'libwebrtc_vplib.a',
     'libG711.a',
     'libapm_util.a',
     'libsignal_processing.a',

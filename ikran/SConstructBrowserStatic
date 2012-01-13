@@ -150,7 +150,6 @@ if sys.platform =='win32':
     webrtcpath + '/Build/Debug/lib/' + 'webrtc_utility.lib',
     webrtcpath + '/Build/Debug/lib/' + 'webrtc_video_coding.lib',
     webrtcpath + '/Build/Debug/lib/' + 'webrtc_vp8.lib',
-    webrtcpath + '/Build/Debug/lib/' + 'webrtc_vplib.lib'
   ]
   if int(debug):
     libs += [
@@ -315,7 +314,6 @@ elif sys.platform=='darwin':
     webrtcpath + '/xcodebuild/Debug/' + 'libwebrtc_utility.a',
     webrtcpath + '/xcodebuild/Debug/' + 'libwebrtc_video_coding.a',
     webrtcpath + '/xcodebuild/Debug/' + 'libwebrtc_vp8.a',
-    webrtcpath + '/xcodebuild/Debug/' + 'libwebrtc_vplib.a'
   ]
 
 elif sys.platform=='linux2':
@@ -441,7 +439,6 @@ elif sys.platform=='linux2':
     webrtcpath + '/out/Debug/obj.target/src/modules/' + 'libaudio_conference_mixer.a',
     webrtcpath + '/out/Debug/obj.target/src/modules/' + 'librtp_rtcp.a',
     webrtcpath + '/out/Debug/obj.target/src/modules/' + 'libwebrtc_i420.a',
-    webrtcpath + '/out/Debug/obj.target/src/common_video/' + 'libwebrtc_vplib.a',
     webrtcpath + '/out/Debug/obj.target/src/modules/' + 'libG711.a',
     webrtcpath + '/out/Debug/obj.target/src/modules/' + 'libapm_util.a',
     webrtcpath + '/out/Debug/obj.target/src/common_audio/' + 'libsignal_processing.a',
