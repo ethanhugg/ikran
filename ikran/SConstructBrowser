@@ -126,7 +126,7 @@ if sys.platform =='win32':
     'audio_conference_mixer.lib',
     'audio_device.lib',
     'audio_processing.lib',
-	'audioproc_debug_proto.lib',
+    'audioproc_debug_proto.lib',
     'CNG.lib',
     'G711.lib',
     'G722.lib',
@@ -140,7 +140,7 @@ if sys.platform =='win32':
     'PCM16B.lib',
     'resampler.lib',
     'rtp_rtcp.lib',
-	'signal_processing.lib',
+    'signal_processing.lib',
     'protobuf_lite.lib',
     'system_wrappers.lib',
     'udp_transport.lib',
@@ -317,6 +317,8 @@ elif sys.platform=='darwin':
     'libwebrtc_utility.a',
     'libwebrtc_video_coding.a',
     'libwebrtc_vp8.a',
+    'libwebrtc_libyuv.a',
+    'libyuv.a'
   ]
 
 elif sys.platform=='linux2':
