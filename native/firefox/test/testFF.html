@@ -1,0 +1,41 @@
+<html>
+<head>
+
+<script type="application/javascript;version=1.8">
+    var sipCall = new Sip();
+</script>
+
+</head>
+<body>  
+    <canvas id="thecanvas" width="640" height="480"></canvas>
+    <p><input type="button" id="regbutton" value="Register"/></p>
+    <p><input type="button" id="callbutton" value="Place Call"/></p>
+    <p><input type="button" id="endbutton" value="End Call"/></p>
+</body>
+<script type="application/javascript;version=1.8">
+
+    let ctx = document.getElementById("thecanvas").getContext("2d");
+    let regbut = document.getElementById("regbutton");
+    let callbut = document.getElementById("callbutton");
+    let endbut = document.getElementById("endbutton");
+
+    function foo () {
+        alert("test foo");
+    }
+
+    regbut.onclick = function() {
+        sipCall.register("ecpemannion", "9995", "", "10.53.47.140");
+    }
+
+    callbut.onclick = function() {
+	sipCall.setVideoWindow(ctx);
+        sipCall.placeCall("7772");
+    }
+
+    endbut.onclick = function() {
+        sipCall.endCall();
+    }
+
+
+</script>
+</html>
