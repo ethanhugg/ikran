@@ -158,7 +158,7 @@ CPPSRCS		= \
 		jsxml.cpp \
 		prmjtime.cpp \
 		sharkctl.cpp \
-		CallObject.cpp \
+		ScopeObject.cpp \
 		Debugger.cpp \
 		GlobalObject.cpp \
 		Stack.cpp \
@@ -172,6 +172,7 @@ CPPSRCS		= \
 		SemanticAnalysis.cpp \
 		TokenStream.cpp \
 		LifoAlloc.cpp \
+		MemoryMetrics.cpp \
 		RegExpObject.cpp \
 		RegExpStatics.cpp \
 		RegExp.cpp \
@@ -270,6 +271,7 @@ EXPORTS_NAMESPACES += js
 EXPORTS_js = \
 		HashTable.h \
 		LegacyIntTypes.h \
+		MemoryMetrics.h \
 		TemplateLib.h \
 		Utility.h \
 		Vector.h \
@@ -452,17 +454,17 @@ endif
 
 LOCAL_INCLUDES += \
     -I. \
-    -I../../../modules/sip/include \
-    -I../../../modules/sip/browser_logging \
-    -I../../../ipc/chromium/src \
-    -I../../../xpcom/base \
-    -I../../../obj-ff-dbg/xpcom \
-    -I../../../modules/sip/sipcc/include/
+    -I/Users/Enda/code/mozilla/mozilla_test/mozilla-central/modules/sip/include \
+    -I/Users/Enda/code/mozilla/mozilla_test/mozilla-central/modules/sip/browser_logging \
+    -I/Users/Enda/code/mozilla/mozilla_test/mozilla-central/ipc/chromium/src \
+    -I/Users/Enda/code/mozilla/mozilla_test/mozilla-central/xpcom/base \
+    -I/Users/Enda/code/mozilla/mozilla_test/mozilla-central/obj-ff-dbg/xpcom \
+    -I/Users/Enda/code/mozilla/mozilla_test/mozilla-central/modules/sip/sipcc/include/
     $(NULL)
 
 
 ifdef MOZ_NATIVE_FFI
-EXTRA_DSO_LDOPTS += $(MOZ_FFI_LIBS) 
+EXTRA_DSO_LDOPTS += $(MOZ_FFI_LIBS)
 else
 ifeq ($(OS_ARCH),OS2)
 SHARED_LIBRARY_LIBS += \
@@ -516,6 +518,8 @@ endif
 endif
 
 include $(topsrcdir)/config/config.mk
+
+EXTRA_DSO_LDOPTS += $(NSPR_LIBS)
 
 ifndef BUILD_OPT
 MOCHAFILE	= 1
@@ -785,9 +789,9 @@ endif # GNU_CC
 
 endif
 ifeq ($(OS_RELEASE),4.1)
-EXTRA_LIBS	+= -ldl -lnsl 
+EXTRA_LIBS	+= -ldl -lnsl
 else
-EXTRA_LIBS	+= -lposix4 -ldl -lnsl -lsocket 
+EXTRA_LIBS	+= -lposix4 -ldl -lnsl -lsocket
 endif
 endif
 
