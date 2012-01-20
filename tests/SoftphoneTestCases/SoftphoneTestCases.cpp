@@ -1874,7 +1874,7 @@ AutoInputHandler autoInputHandler;
 MyPhoneListener listener;
 CC_CapsPrinter CCCapsPrinter;
 ECC_CapsPrinter ECCCapsPrinter;
-/*
+
 TEST(RegisterTest, RegisterValidInputTest){
 	const char* vxccCfgFilename ="valid.txt";
 	promptUserForInitialConfigInfo(vxccCfgFilename);
@@ -1924,7 +1924,7 @@ TEST(RegisterTest, RegisterInValidInputTest){
 
 }
 
-*/
+
 
 TEST(CallTest, CallTestWithAudio){
 	const char* vxccCfgFilename ="valid.txt";
