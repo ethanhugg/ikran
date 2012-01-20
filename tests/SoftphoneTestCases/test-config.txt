@@ -1,0 +1,9 @@
+usernumber=5562103
+password=cisco
+sipaddress=172.27.190.5
+devicename=cawbkaichen2
+usevideo=false
+usep2p=false
+p2paddress=171.68.20.199
+numbertodial=5551002
+usebatchmode=true

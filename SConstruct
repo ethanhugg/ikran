@@ -287,6 +287,10 @@ SCRIPT_FILES += [
   'tests/testapp_softphone/SConstruct',
 ]
 
+SCRIPT_FILES += [
+  'tests/SoftphoneTestCases/SConstruct',
+]
+
 if sys.platform != 'win32':
   SCRIPT_FILES += [
     'tests/roap/SConstruct'
