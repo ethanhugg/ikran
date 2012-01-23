@@ -448,7 +448,10 @@ elif sys.platform=='linux2':
     'libG722.a',
     'libPCM16B.a',
     'libprotobuf_lite.a',
-    'libsystem_wrappers.a'
+    'libsystem_wrappers.a',
+    'libwebrtc_libyuv.a',
+    'libaec_sse2.a',
+    'libvideo_processing_sse2.a'    
   ]
   env["LINKFLAGS"] += [
     '-shared',
