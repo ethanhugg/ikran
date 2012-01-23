@@ -83,3 +83,60 @@ VideoRenderer::DeliverFrame(unsigned char* buffer, int bufferSize, unsigned int 
 
     return 0;
 }
+
+
+/*
+VideoCanvasRenderer::VideoCanvasRenderer(int w, int h,void *ctx) :width(w),
+										    height(h),
+											vCanvas((nsIDOMCanvasRenderingContext2D*)ctx)
+{
+	//vCanvas = (nsIDOMCanvasRenderingContext2D*)ctx;
+	Logger::Instance()->logIt(" VideoCanvasRenderer Created for Canvas");
+}
+
+VideoCanvasRenderer::~VideoCanvasRenderer()
+{
+	Logger::Instance()->logIt(" VideoCanvasRenderer Destroyed" );
+}
+
+int
+VideoCanvasRenderer::FrameSizeChange(
+    unsigned int width, unsigned int height, unsigned int numberOfStreams)
+{
+    // XXX: Hmm?
+	Logger::Instance()->logIt(" VideoCanvasRenderer: FrameSizeChange() ");
+    return -1;
+}
+
+int
+VideoCanvasRenderer::DeliverFrame(unsigned char* buffer, int bufferSize, unsigned int timestamp)
+{
+    PRTime epoch_c = PR_Now();
+    PRFloat64 epoch = (PRFloat64)(epoch_c / MICROSECONDS);
+    epoch += ((PRFloat64)(epoch_c % MICROSECONDS)) / MICROSECONDS;
+
+ //   int fsize = width * height * 4;
+    if (vCanvas) {
+
+    	//(PRInt32, PRInt32, PRUint32, PRUint32, PRUint8*, PRUint32, bool, PRInt32, PRInt32, PRInt32, PRInt32)
+    	vCanvas->PutImageData_explicit((PRUint32)0, (PRUint32)0, (PRUint32)width, (PRUint32)height,
+                (PRUint8*)buffer, (PRUint32)bufferSize, true, (PRUint32)0,(PRUint32)0,(PRUint32)width,(PRUint32)height);
+
+    //   putImageData
+
+
+        nsAutoArrayPtr<PRUint8> rgb32(new PRUint8[fsize]);
+        I420toRGB32(width, height,
+            (const char *)buffer, (char *)rgb32.get()
+        );
+        nsCOMPtr<nsIRunnable> render = new CanvasRenderer(
+            vCanvas, width, height, rgb32, fsize
+        );
+        NS_DispatchToMainThread(render);
+
+    }
+
+    return 0;
+}
+
+*/
