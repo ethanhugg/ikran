@@ -314,6 +314,8 @@ elif sys.platform=='darwin':
     webrtcpath + '/xcodebuild/Debug/' + 'libwebrtc_utility.a',
     webrtcpath + '/xcodebuild/Debug/' + 'libwebrtc_video_coding.a',
     webrtcpath + '/xcodebuild/Debug/' + 'libwebrtc_vp8.a',
+    webrtcpath + '/xcodebuild/Debug/' + 'libaec_sse2.a',
+    webrtcpath + '/xcodebuild/Debug/' + 'libvideo_processing_sse2.a'
   ]
 
 elif sys.platform=='linux2':
@@ -445,7 +447,10 @@ elif sys.platform=='linux2':
     webrtcpath + '/out/Debug/obj.target/src/modules/' + 'libG722.a',
     webrtcpath + '/out/Debug/obj.target/src/modules/' + 'libPCM16B.a',
     webrtcpath + '/out/Debug/obj.target/third_party/protobuf/' + 'libprotobuf_lite.a',
-    webrtcpath + '/out/Debug/obj.target/src/system_wrappers/source/' + 'libsystem_wrappers.a'
+    webrtcpath + '/out/Debug/obj.target/src/system_wrappers/source/' + 'libsystem_wrappers.a',
+    webrtcpath + '/out/Debug/obj.target/src/common_video/' + 'libwebrtc_libyuv.a',
+    webrtcpath + '/out/Debug/obj.target/src/modules/' + 'libaec_sse2.a',
+    webrtcpath + '/out/Debug/obj.target/src/modules/' + 'libvideo_processing_sse2.a'
   ]
   env["LINKFLAGS"] += [
     '-pthread',

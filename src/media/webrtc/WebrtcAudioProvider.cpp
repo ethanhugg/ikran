@@ -532,6 +532,7 @@ int WebrtcAudioProvider::rxStart( int groupId, int streamId, int payloadType, in
                     return -1;
                 }
 
+                /*  EnableSRTPReceive removed from webrtc
                 if(voeEncryption->EnableSRTPReceive(channel,
                     webrtc::kCipherAes128CounterMode,
                     WEBRTC_CIPHER_LENGTH,
@@ -540,6 +541,7 @@ int WebrtcAudioProvider::rxStart( int groupId, int streamId, int payloadType, in
                     memset(key, 0x00, sizeof(key));
                     return -1;
                 }
+                */
 
                 memset(key, 0x00, sizeof(key));
                 break;
@@ -649,6 +651,7 @@ int WebrtcAudioProvider::txStart( int groupId, int streamId, int payloadType, in
                     return -1;
                 }
 
+                /*
                 if(voeEncryption->EnableSRTPSend(channel,
                     webrtc::kCipherAes128CounterMode,
                     WEBRTC_CIPHER_LENGTH,
@@ -657,6 +660,7 @@ int WebrtcAudioProvider::txStart( int groupId, int streamId, int payloadType, in
                     memset(key, 0x00, sizeof(key));
                     return -1;
                 }
+				*/
 
                 memset(key, 0x00, sizeof(key));
 

@@ -260,7 +260,9 @@ elif sys.platform == 'darwin':
     'libwebrtc_vp8.a',
     'libwebrtc_libyuv.a',
     'libyuv.a',
-    'sipcc_controller.o'
+    'sipcc_controller.o',
+    'libaec_sse2.a',
+    'libvideo_processing_sse2.a'
   ]
   env["LINKFLAGS"] += [
     '-framework',
@@ -370,6 +372,8 @@ elif sys.platform=='linux2':
     'dl',
     'libwebrtc_libyuv.a',
     'libyuv.a',
+    'libaec_sse2.a',
+    'libvideo_processing_sse2.a'
   ]
   env["LINKFLAGS"] += [
     '-z',

@@ -65,10 +65,8 @@
 //media test layer
 #include "vie_mediatest.h"
 
-
-//#include "VideoRenderer.h" //<-- External Webrtc Renderer
-//#include "VideoSourceCanvas.h"
 #include "sipcc_controller.h"
+#include "SipccControllerObserver.h"
 
 #define CALL_CONTROL_CONTRACTID "@cto.cisco.com/call/control;1"
 #define CALL_CONTROL_CID { 0xc467b1f4, 0x551c, 0x4e2f, \

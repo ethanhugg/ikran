@@ -11,14 +11,17 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * The Original Code is Rainbow.
+ * The Original Code is the Cisco Systems SIP Stack.
  *
- * The Initial Developer of the Original Code is Mozilla Labs.
- * Portions created by the Initial Developer are Copyright (C) 2010
+ * The Initial Developer of the Original Code is
+ * Cisco Systems (CSCO).
+ * Portions created by the Initial Developer are Copyright (C) 2002
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- *   Anant Narayanan <anant@kix.in>
+ *  Enda Mannion <emannion@cisco.com>
+ *  Suhas Nandakumar <snandaku@cisco.com>
+ *  Ethan Hugg <ehugg@cisco.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -33,45 +36,24 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
-#include "VideoSource.h"
 
-#include <stdio.h>
-#include "VideoSource.h"
-#include <prmem.h>
-#include "vie_base.h"
-#include "vie_codec.h"
-#include "vie_render.h"
-#include "vie_capture.h"
-#include "common_types.h"
+#ifndef _SIPCC_CONTROLLER_OBSERVER_H_
+#define _SIPCC_CONTROLLER_OBSERVER_H_
+#pragma once
 
-class VideoRenderer: public webrtc::ExternalRenderer {
-public:
-    VideoRenderer(int w, int h,nsIDOMCanvasRenderingContext2D *ctx);
-    ~VideoRenderer();
+#include <string>
 
-protected:
-    int FrameSizeChange(
-        unsigned int width, unsigned int height, unsigned int numberOfStreams
-    );
-    int DeliverFrame(unsigned char* buffer, int bufferSize, unsigned timestamp);
-	int width;
-	int height;	
-    nsIDOMCanvasRenderingContext2D *vCanvas;
+
+// Observer for events to be propogated to WebKit
+class SipccControllerObserver {
+public:	
+	virtual void OnIncomingCall(std::string callingPartyName, std::string callingPartyNumber) = 0;
+	virtual void OnRegisterStateChange(std::string registrationState) = 0;
+ 	virtual void OnCallTerminated() = 0;   // do we specify if terminated is local or remote
+	virtual void OnCallConnected(char *sdp) = 0;
+	virtual void OnCallHeld() = 0;
+	virtual void OnCallResume() = 0;
+	
 };
 
-/* can remove after I rule out rendering using nsIDOMCanvasRenderingContext2D in firefox */
-class VideoCanvasRenderer: public webrtc::ExternalRenderer {
-public:
-	VideoCanvasRenderer(int w, int h, void *ctx);
-    ~VideoCanvasRenderer();
-
-protected:
-    int FrameSizeChange(
-        unsigned int width, unsigned int height, unsigned int numberOfStreams
-    );
-    int DeliverFrame(unsigned char* buffer, int bufferSize, unsigned timestamp);
-	int width;
-	int height;
-    nsIDOMCanvasRenderingContext2D *vCanvas;
-};
-
+#endif  //_SIPCC_CONTROLLER_OBSERVER_H_ 
