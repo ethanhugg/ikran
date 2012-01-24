@@ -150,6 +150,8 @@ if sys.platform =='win32':
     webrtcpath + '/Build/Debug/lib/' + 'webrtc_utility.lib',
     webrtcpath + '/Build/Debug/lib/' + 'webrtc_video_coding.lib',
     webrtcpath + '/Build/Debug/lib/' + 'webrtc_vp8.lib',
+    webrtcpath + '/Build/Debug/lib/' + 'webrtc_libyuv.lib',
+    webrtcpath + '/Build/Debug/lib/' + 'libyuv.lib'
   ]
   if int(debug):
     libs += [
