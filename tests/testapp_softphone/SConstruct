@@ -159,7 +159,9 @@ if sys.platform =='win32':
     'webrtc_video_coding.lib',
     'webrtc_vp8.lib',
     'webrtc_libyuv.lib',
-    'libyuv.lib'
+    'libyuv.lib',
+    'aec_sse2.lib',
+    'video_processing_sse2.lib'
   ]
   if int(debug):
     libs += [
