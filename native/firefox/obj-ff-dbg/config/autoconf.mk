@@ -300,7 +300,7 @@ WCHAR_CFLAGS	= -fshort-wchar
 OS_CPPFLAGS	= 
 OS_CFLAGS	= $(OS_CPPFLAGS) -Wall -W -Wno-unused -Wpointer-arith -Wdeclaration-after-statement -Wcast-align -W -fno-strict-aliasing -fno-common -pthread -DNO_X11 -pipe
 OS_CXXFLAGS	= $(OS_CPPFLAGS) -fno-rtti -Wall -Wpointer-arith -Woverloaded-virtual -Wsynth -Wno-ctor-dtor-privacy -Wno-non-virtual-dtor -Wcast-align -Wno-invalid-offsetof -Wno-variadic-macros -Werror=return-type -fno-exceptions -fno-strict-aliasing -fno-common -fshort-wchar -pthread -DNO_X11 -pipe
-OS_LDFLAGS	=   -framework Cocoa -lobjc
+OS_LDFLAGS	=   -framework Cocoa -lobjc  -L/usr/X11/lib -lX11
 
 OS_COMPILE_CFLAGS = $(OS_CPPFLAGS) -include $(DEPTH)/mozilla-config.h -DMOZILLA_CLIENT $(filter-out %/.pp,-MD -MF $(MDDEPDIR)/$(basename $(@F)).pp)
 OS_COMPILE_CXXFLAGS = $(OS_CPPFLAGS) -DMOZILLA_CLIENT -include $(DEPTH)/mozilla-config.h $(filter-out %/.pp,-MD -MF $(MDDEPDIR)/$(basename $(@F)).pp)
