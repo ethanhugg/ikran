@@ -51,6 +51,9 @@
 
 #include <string>
 
+//#import <Cocoa/Cocoa.h>
+//#import "cocoa_render_view.h"
+
 
 class CallControl : public SipccControllerObserver {
 public:

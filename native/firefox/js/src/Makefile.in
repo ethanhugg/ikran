@@ -194,10 +194,7 @@ INSTALLED_HEADERS = \
 		jsclass.h \
 		jsclist.h \
 		jsclone.h \
-		jscntxt.h \
 		jscompat.h \
-		jscrashreport.h \
-		jsdate.h \
 		jsdbgapi.h \
 		jsdhash.h \
 		jsfriendapi.h \
@@ -212,14 +209,10 @@ INSTALLED_HEADERS = \
 		jsopcode.h \
 		jsproxy.h \
 		jsprf.h \
-		jspropertycache.h \
-		jspropertytree.h \
 		jsproto.tbl \
 		jsprvtd.h \
 		jspubtd.h \
-		jsreflect.h \
 		jsstdint.h \
-		jsstr.h \
 		jstypedarray.h \
 		jstypes.h \
 		jsutil.h \
@@ -227,7 +220,6 @@ INSTALLED_HEADERS = \
 		jswrapper.h \
 		jsxdrapi.h \
 		jsval.h \
-		prmjtime.h \
 		$(NULL)
 
 ######################################################
@@ -238,12 +230,9 @@ EXPORTS_NAMESPACES += vm ds gc
 
 EXPORTS_vm = \
 		String.h \
-		StackSpace.h \
-		Unicode.h  \
 		$(NULL)
 
 EXPORTS_ds = \
-		LifoAlloc.h \
 		BitArray.h \
 		$(NULL)
 
@@ -334,6 +323,9 @@ endif
 ifeq (sparc, $(findstring sparc,$(TARGET_CPU)))
 ASFILES +=	TrampolineSparc.s
 endif
+ifeq (mips, $(findstring mips,$(TARGET_CPU)))
+CPPSRCS +=	TrampolineMIPS.cpp
+endif
 #
 # END enclude sources for the method JIT
 #############################################
@@ -362,7 +354,7 @@ CPPSRCS += 	checks.cc \
 # For architectures without YARR JIT, PCRE is faster than the YARR
 # interpreter (bug 684559).
 
-ifeq (,$(filter arm% sparc %86 x86_64,$(TARGET_CPU)))
+ifeq (,$(filter arm% sparc %86 x86_64 mips%,$(TARGET_CPU)))
 
 VPATH +=        $(srcdir)/yarr/pcre \
 		$(NULL)
@@ -454,14 +446,16 @@ endif
 
 LOCAL_INCLUDES += \
     -I. \
-    -I/Users/Enda/code/mozilla/mozilla_test/mozilla-central/modules/sip/include \
-    -I/Users/Enda/code/mozilla/mozilla_test/mozilla-central/modules/sip/browser_logging \
-    -I/Users/Enda/code/mozilla/mozilla_test/mozilla-central/ipc/chromium/src \
-    -I/Users/Enda/code/mozilla/mozilla_test/mozilla-central/xpcom/base \
-    -I/Users/Enda/code/mozilla/mozilla_test/mozilla-central/obj-ff-dbg/xpcom \
-    -I/Users/Enda/code/mozilla/mozilla_test/mozilla-central/modules/sip/sipcc/include/
+    -I../../../modules/sip/include \
+    -I../../../modules/sip/browser_logging \
+    -I../../../ipc/chromium/src \
+    -I../../../xpcom/base \
+    -I../../../obj-ff-dbg/xpcom \
+    -I../../../modules/sip/sipcc/include/ \
+    -I../../../modules/sip/webrtc \
     $(NULL)
 
+#OS_CXXFLAGS += -x objective-c++
 
 ifdef MOZ_NATIVE_FFI
 EXTRA_DSO_LDOPTS += $(MOZ_FFI_LIBS)
@@ -519,7 +513,7 @@ endif
 
 include $(topsrcdir)/config/config.mk
 
-EXTRA_DSO_LDOPTS += $(NSPR_LIBS)
+EXTRA_DSO_LDOPTS += $(NSPR_LIBS) 
 
 ifndef BUILD_OPT
 MOCHAFILE	= 1
