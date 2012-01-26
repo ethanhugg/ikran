@@ -372,6 +372,8 @@ elif sys.platform=='linux2':
     'dl',
     'libwebrtc_libyuv.a',
     'libyuv.a',
+    'libaec_sse2.a',
+    'libvideo_processing_sse2.a'
   ]
   env["LINKFLAGS"] += [
     '-z',
