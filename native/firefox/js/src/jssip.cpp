@@ -308,7 +308,6 @@ sip_setVideoWindow(JSContext *cx, uintN argc, Value *vp) {
     if (JSVAL_IS_OBJECT(*vp)) { 
         JSObject *obj = JSVAL_TO_OBJECT(*vp);
         //SipccController::GetInstance()->SetExternalRenderer((void*)obj);
-        SipccController::GetInstance()->SetCanvas((void*)obj);
     }
     return true;
 }

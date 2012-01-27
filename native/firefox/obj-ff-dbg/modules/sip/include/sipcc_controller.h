@@ -103,8 +103,6 @@ public:
 		ext_renderer = renderer;
 	}
 
-	void SetCanvas(void* canvas);
-
 	void SetVideoWindow(void* videoWin) {
 		video_window =  videoWin;
 	}
@@ -182,9 +180,6 @@ private:
 
 	//sole observer
 	SipccControllerObserver* observer_;
-
-	//store nsIDOMCanvasRenderingContext2D from jssip but keeping type out of interface as void*
-	void* _canvas;
 };
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_SIPCC_CONTROLLER_HOST_H_
