@@ -48,11 +48,7 @@
 #include "jsobj.h"
 
 #include "SipccControllerObserver.h"
-
 #include <string>
-
-//#import <Cocoa/Cocoa.h>
-//#import "cocoa_render_view.h"
 
 
 class CallControl : public SipccControllerObserver {
@@ -68,10 +64,6 @@ public:
 
 extern JSObject *
 js_InitSipClass(JSContext *cx, JSObject *obj);
-
-//char* sessionCallback;
-//JSContext *mycx;
-//JSObject *myobj;
 
 
 #endif /* jssip_h___ */

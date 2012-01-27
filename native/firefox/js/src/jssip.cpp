@@ -70,8 +70,11 @@
 #include "common_types.h"
 #include <iostream>
 #include <memory>
-#include "CoreFoundation/CoreFoundation.h"
 #include "sipcc_controller.h"
+
+#ifdef XP_MACOSX
+#include "CoreFoundation/CoreFoundation.h"
+#endif
 
 using namespace js;
 using namespace js::types;
@@ -88,6 +91,7 @@ class VideoRenderer: public webrtc::ExternalRenderer {
 public:
     VideoRenderer(int w, int h);
     ~VideoRenderer();
+    Window* GetWindow() {return _window;};
 
 protected:
     int FrameSizeChange(unsigned int width, unsigned int height, unsigned int numberOfStreams);
@@ -174,6 +178,13 @@ int VideoRenderer::DeliverFrame(unsigned char* buffer, int bufferSize, unsigned 
 
 VideoRenderer *renderSource;
 
+static void RunWindowThread ( void *info )
+{
+        renderSource = new VideoRenderer(640, 480);
+        PR_Sleep(PR_MillisecondsToInterval(500));
+}
+
+#ifdef XP_MACOSX
 static void _input(void *info)
 {
     //CFRunLoopSourceSignal((__CFRunLoopSource*)info);
@@ -195,7 +206,7 @@ static void RunMyLoop ( void *info )
 
 	CFRunLoopRun();
 }
-
+#endif
 
 JSBool invokeCallback() {
     JSBool ok;
@@ -243,7 +254,7 @@ static JSBool
 sip_register(JSContext *cx, uintN argc, Value *vp) {
     mycx = cx;
 
-    if ( (search_tid = PR_CreateThread( PR_USER_THREAD, RunMyLoop,
+    if ( (search_tid = PR_CreateThread( PR_USER_THREAD, RunWindowThread,
             NULL, PR_PRIORITY_NORMAL, PR_GLOBAL_THREAD, PR_UNJOINABLE_THREAD,
             0 )) == NULL ) {
                 perror( "PR_CreateThread search_thread" );
@@ -278,13 +289,14 @@ sip_placeCall(JSContext *cx, uintN argc, Value *vp) {
     PR_Sleep(PR_MillisecondsToInterval(500));
 */
 
-
+#ifdef XP_MACOSX
     SipccController::GetInstance()->SetExternalRenderer(renderSource);
     SipccController::GetInstance()->PlaceCall(/*JS_EncodeString(cx, fmt)*/"7772", (char *) "", 0, 0);
-
-    //SipccController::GetInstance()->PlaceCallWithWindow(VideoRenderer::GetVideoWindow(), "7772", (char *) "", 0, 0);
+#else
+    SipccController::GetInstance()->PlaceCallWithWindow(renderSource->GetWindow(), "7772", (char *) "", 0, 0);
     //SipccController::GetInstance()->PlaceCallWithWindow(NULL, JS_EncodeString(cx, fmt), (char *) "", 0, 0);
     //SipccController::GetInstance()->PlaceCall(/*JS_EncodeString(cx, fmt)*/"7772", (char *) "", 0, 0);
+#endif
 
     return true;
 }
