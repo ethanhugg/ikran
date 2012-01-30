@@ -91,7 +91,10 @@ PRThread *search_tid;
 
 int RGB32toI420(int width, int height, const char *src, char *dst);
 int I420toRGB32(int width, int height, const char *src, char *dst);
+
+#ifdef XP_MACOSX
 static void EndMyLoop();
+#endif
 
 class VideoRenderer: public webrtc::ExternalRenderer {
 public:
@@ -132,7 +135,9 @@ VideoRenderer::~VideoRenderer() {
   XShmDetach(_display, &_shminfo);
   XDestroyImage(image);
   shmdt(_shminfo.shmaddr);
+#ifdef XP_MACOSX
   EndMyLoop();
+#endif
 }
 
 void VideoRenderer::CreateWindow( void *info ) {
@@ -305,7 +310,7 @@ sip_placeCall(JSContext *cx, uintN argc, Value *vp) {
     SipccController::GetInstance()->SetExternalRenderer(renderSource);
     SipccController::GetInstance()->PlaceCall(/*JS_EncodeString(cx, fmt)*/"7772", (char *) "", 0, 0);
 #else
-    SipccController::GetInstance()->PlaceCallWithWindow(&renderSource->GetWindow(), "7772", (char *) "", 0, 0);
+    SipccController::GetInstance()->PlaceCallWithWindow(renderSource->GetWindow(), "7772", (char *) "", 0, 0);
     //SipccController::GetInstance()->PlaceCallWithWindow(NULL, JS_EncodeString(cx, fmt), (char *) "", 0, 0);
     //SipccController::GetInstance()->PlaceCall(/*JS_EncodeString(cx, fmt)*/"7772", (char *) "", 0, 0);
 #endif
