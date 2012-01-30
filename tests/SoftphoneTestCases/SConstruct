@@ -103,7 +103,7 @@ if sys.platform =='win32':
     mozobjpath + '/dist/lib',
     mozobjpath + '/dist/bin',
     webrtcpath + '/Build/Debug/lib',
-	'../../third_party/gtest/lib',
+    '../../third_party/gtest',
   ]
   libs += [
     componentName + suffixName + '.lib',
@@ -222,6 +222,7 @@ elif sys.platform == 'darwin':
     mozobjpath + '/dist/sdk/lib',
     mozobjpath + '/dist/sdk/bin',
     webrtcpath + '/xcodebuild/Debug',
+    '../../third_party/gtest',
   ]
   libs += [
     componentName + suffixName,
@@ -276,7 +277,9 @@ elif sys.platform == 'darwin':
     'libwebrtc_vp8.a',
     'libwebrtc_libyuv.a',
     'libyuv.a',
-    'sipcc_controller.o'
+    'sipcc_controller.o',
+    'libtestd.a',
+    'libtest_maind.a',
   ]
   env["LINKFLAGS"] += [
     '-framework',
@@ -331,6 +334,7 @@ elif sys.platform=='linux2':
     webrtcpath + '/out/Debug/obj.target/third_party/protobuf',
     webrtcpath + '/out/Debug/obj.target/src/system_wrappers/source',
     webrtcpath + '/out/Debug/obj.target/third_party/libyuv',
+    '../../third_party/gtest',
   ]
   libs += [
     componentName + suffixName, 
@@ -386,6 +390,8 @@ elif sys.platform=='linux2':
     'dl',
     'libwebrtc_libyuv.a',
     'libyuv.a',
+    'libtestd.a',
+    'libtest_maind.a',
   ]
   env["LINKFLAGS"] += [
     '-z',
