@@ -1,6 +1,6 @@
 ## Steps to build firefox with ikran files
 
-1.  Update to latest FF and rin a build, make sure build succeeds.
+1.  Update to latest FF and run a build, make sure build succeeds.
 2.  Copy the modules/sip folder to here  <FF root>/modules/
 3.  Copy the obj-ff-dbg/modules/sip folder to <FF root>/obj-ff-dbg/modules/
 4.  Copy these two files  js/src/jssip.*   to   <FF root>/js/src/jssip*
@@ -75,5 +75,4 @@ NSPR_LIBS += -L../obj-ff-dbg/modules/sip/lib \
 -L../../../../../obj-ff-dbg/modules/sip/lib \
 -L../../../../../../obj-ff-dbg/modules/sip/lib \
 -lsessioncontrolbrowser
-
 -----
