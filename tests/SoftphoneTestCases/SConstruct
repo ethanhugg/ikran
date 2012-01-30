@@ -45,6 +45,7 @@ if sys.platform == 'darwin':
 	'WorkderThread.cpp',
 	'InputHandler.cpp',
 	'AutoInputHandler.cpp',
+	'sockporting.cpp',
   ]
   include_dirs += [
     webrtcpath + '/src/modules/video_render/main/source/mac'
@@ -61,6 +62,7 @@ else:
 	'WorkerThread.cpp',
 	'InputHandler.cpp',
 	'AutoInputHandler.cpp',
+	'sockporting.cpp',
 	#'stdafx.cpp'
   ]
 

@@ -1,7 +1,9 @@
 // SoftphoneTestCases.cpp : Defines the entry point for the console application.
 //
 
-#include "stdafx.h"
+//#include "stdafx.h"
+#include "sockporting.h"
+
 #include "gtest/gtest.h"
 #include <sys/timeb.h>
 #include <stdarg.h>
@@ -25,6 +27,7 @@
 #include <iostream>
 #include <map>
 
+/*
 #ifndef WIN32
 #include <sys/socket.h>
 #include <errno.h>
@@ -32,6 +35,7 @@
 #include <fcntl.h>
 #include <netdb.h>
 #endif
+*/
 
 #include "CallControlManager.h"
 #include "CC_Device.h"
@@ -64,13 +68,13 @@ CDebugClient *debugClient = NULL;
 bool bServer = false;
 
 int RegisterUser(bool bContinue);
-
+/*
 #ifndef WIN32
 typedef int SOCKET;
 const int INVALID_SOCKET = -1;
 const int SOCKET_ERROR = -1;
 #endif
-
+*/
 static CC_CallPtr getFirstCallInGivenState (CallControlManagerPtr ccmPtr, cc_call_state_t callState);
 static CC_CallPtr getFirstCallInGivenStates (CallControlManagerPtr ccmPtr, const vector<cc_call_state_t>& callStates);
 
