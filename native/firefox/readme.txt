@@ -56,4 +56,24 @@ file: jsproto.tbl
 +JS_PROTO(Sip,                   37,     js_InitSipClass)
 ------
 
+file: obj-ff-dbg/config/autoconf.mk
 
+-----
+-L/usr/X11/lib -lX11 -lXext
+
+NSPR_CFLAGS += -I../obj-ff-dbg/modules/sip/include \
+-I../../obj-ff-dbg/modules/sip/include \
+-I../../../obj-ff-dbg/modules/sip/include \
+-I../../../../obj-ff-dbg/modules/sip/include \
+-I../../../../../obj-ff-dbg/modules/sip/include \
+-I../../../../../../obj-ff-dbg/modules/sip/include
+
+NSPR_LIBS += -L../obj-ff-dbg/modules/sip/lib \
+-L../../obj-ff-dbg/modules/sip/lib \
+-L../../../obj-ff-dbg/modules/sip/lib \
+-L../../../../obj-ff-dbg/modules/sip/lib \
+-L../../../../../obj-ff-dbg/modules/sip/lib \
+-L../../../../../../obj-ff-dbg/modules/sip/lib \
+-lsessioncontrolbrowser
+
+-----

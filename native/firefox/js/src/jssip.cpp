@@ -62,14 +62,19 @@
 #include "jsstrinlines.h"
 
 #include <X11/Xlib.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <X11/extensions/XShm.h>
 #include <X11/Xutil.h>
 #include <X11/Xos.h>
 #include <nspr.h>
 
+//#include <gtk/gtk.h>
+
 #include "vie_render.h"
+#include "video_render_defines.h"
+//#include "libyuv.h" 
 #include "common_types.h"
-#include <iostream>
-#include <memory>
 #include "sipcc_controller.h"
 
 #ifdef XP_MACOSX
@@ -86,6 +91,7 @@ PRThread *search_tid;
 
 int RGB32toI420(int width, int height, const char *src, char *dst);
 int I420toRGB32(int width, int height, const char *src, char *dst);
+static void EndMyLoop();
 
 class VideoRenderer: public webrtc::ExternalRenderer {
 public:
@@ -96,104 +102,110 @@ public:
 protected:
     int FrameSizeChange(unsigned int width, unsigned int height, unsigned int numberOfStreams);
     int DeliverFrame(unsigned char* buffer, int bufferSize, unsigned timestamp);
-    void createWindow(void *info);
+    void CreateWindow(void *info);
 
 private:
-    int width;
-    int height;	
     Display* _display;
     Window* _window;
     Window* _rootwindow;
-    int _screen;
+    int screen;
     unsigned int image_width, image_height, image_byte_size, i, j;
-    char * image_data;
+    char* image_data;
     Pixmap pixmap;
     int bitmap_pad;
     GC gc;
-    XGCValues gcv;
     Visual *visual;
     int depth;
+    XImage* image;
+    XShmSegmentInfo _shminfo;
+    unsigned char* _buffer;
+    PRLock *render_lock;
 };
 
-VideoRenderer::VideoRenderer(int w, int h) : width(w), height(h)
-{
-    createWindow(NULL);
+VideoRenderer::VideoRenderer(int w, int h) : _display(NULL),
+          _shminfo(), image(NULL), _window(0L), image_width(w), image_height(h), _buffer(NULL) {
+    CreateWindow(NULL);
 }
 
-VideoRenderer::~VideoRenderer()
-{
+VideoRenderer::~VideoRenderer() {
+  XDestroyWindow(_display, *_window);
+  XShmDetach(_display, &_shminfo);
+  XDestroyImage(image);
+  shmdt(_shminfo.shmaddr);
+  EndMyLoop();
 }
 
-void VideoRenderer::createWindow( void *info )
-{
+void VideoRenderer::CreateWindow( void *info ) {
     _display = XOpenDisplay(NULL);
-    _screen = DefaultScreen(_display);
-    _rootwindow = new Window;
-    *_rootwindow = RootWindow(_display,_screen);
-    _window = new Window;
+    screen = DefaultScreen(_display);
+    _rootwindow = new Window();
+    *_rootwindow = RootWindow(_display, screen);
+    _window = new Window();
     *_window = XCreateSimpleWindow(_display, *_rootwindow, 0, 0, 640, 500, 1, 0, 0);
+
+    //gtk_container_set_border_width (GTK_CONTAINER (_window), 10);
+
     XMapWindow(_display, *_window);
     XFlush(_display);
-    image_width = 640;
-    image_height = 482;
-    depth = DefaultDepth (_display, _screen);
+    depth = DefaultDepth (_display, screen);
     pixmap = XCreatePixmap (_display, *_rootwindow, image_width, image_height, depth);
-    gc = XCreateGC (_display, pixmap, 0, &gcv);
+    gc = XCreateGC (_display, pixmap, 0, 0);
     bitmap_pad = BitmapPad(_display);
-    visual = DefaultVisual(_display, _screen);
+    visual = DefaultVisual(_display, screen);
+    image = XShmCreateImage(_display, CopyFromParent, 24, ZPixmap, NULL, &_shminfo, image_width, image_height);
+    if(image == NULL) return;
+    _shminfo.shmid = shmget(IPC_PRIVATE, (image->bytes_per_line * image->height), IPC_CREAT | 0777);
+    if(_shminfo.shmid < 0) return;
+    _shminfo.shmaddr = image->data = (char*) shmat(_shminfo.shmid, 0, 0);
+    _buffer = (unsigned char*) image->data;
+    _shminfo.readOnly = False;
+
+    // attach image to display
+    if (!XShmAttach(_display, &_shminfo)) {
+        return;
+    }
+    //render_lock = PR_NewLock();
 }
 
-int VideoRenderer::FrameSizeChange(unsigned int width, unsigned int height, unsigned int numberOfStreams)
-{
+int VideoRenderer::FrameSizeChange(unsigned int width, unsigned int height, unsigned int numberOfStreams) {
     return -1;
 }
 
-int VideoRenderer::DeliverFrame(unsigned char* buffer, int bufferSize, unsigned int timestamp)
-{
-    //std::cout << "\007";
+int VideoRenderer::DeliverFrame(unsigned char* buffer, int bufferSize, unsigned int timestamp) {
 
-    if (strlen((const char*)buffer) > 0) {
-        XImage *image;
-	image = XCreateImage (_display, visual, depth, ZPixmap, 0, NULL, image_width, image_height, bitmap_pad, 0);
+    //PR_Lock(render_lock);
+	
+    unsigned char *pBuf = buffer;
+    //webrtc::ConvertFromI420(pBuf, image_width, webrtc::kARGB, 0, image_width, image_height, _buffer);
+    I420toRGB32(image_width, image_height, (const char *)pBuf, (char *)_buffer);
 
-	int fsize = width * height * 4;
-	std::auto_ptr</*unsigned*/ char> rgb32(new /*unsigned*/ char[fsize]);
+    // put image in window
+    XShmPutImage(_display, *_window, gc, image, 0, 0, 0, 0 , image_width, image_height, True);
 
-        I420toRGB32(width, height, (const char *)buffer, (char *)rgb32.get());
+    // very important for the image to update properly!
+    XSync(_display, false);
 
-        image->data = (char *) malloc (fsize);
-	//strcpy(image->data ,(const char*)rgb32.get());
-	memcpy(image->data, rgb32.get(), fsize);
+    //PR_DestroyLock(render_lock);
 
-	pixmap = XCreatePixmap (_display, *_rootwindow, image_width, image_height, depth);
-
-        XPutImage (_display, pixmap, gc, image, 0, 0, 0, 0, image_width, image_height);
-        //XCopyArea (_display, pixmap, *_window, gc, 0, 0, image_width, image_height, 50, 50);
-
-	XDestroyImage(image);
-	free(image->data);
-    }	
     return 0;
 }
 
-VideoRenderer *renderSource;
+VideoRenderer *renderSource = NULL;
 
-static void RunWindowThread ( void *info )
-{
+static void RunWindowThread ( void *info ) {
         renderSource = new VideoRenderer(640, 480);
         PR_Sleep(PR_MillisecondsToInterval(500));
 }
 
 #ifdef XP_MACOSX
-static void _input(void *info)
-{
-    //CFRunLoopSourceSignal((__CFRunLoopSource*)info);
-    //CFRunLoopWakeUp(CFRunLoopGetCurrent());
+static void _input(void *info) {
 }
 
-static void RunMyLoop ( void *info )
-{
-        renderSource = new VideoRenderer(640, 480);
+//static CFRunLoopSourceRef source = 0;
+
+static void RunMyLoop ( void *info ) {
+        if (renderSource == NULL)
+            renderSource = new VideoRenderer(640, 480);
         PR_Sleep(PR_MillisecondsToInterval(500));
 
 	CFRunLoopSourceRef source;
@@ -202,9 +214,14 @@ static void RunMyLoop ( void *info )
 	bzero(&source_context, sizeof(source_context));
 	source_context.perform = _input;
 	source = CFRunLoopSourceCreate(NULL, 0, &source_context);
-	CFRunLoopAddSource(CFRunLoopGetCurrent(), source, kCFRunLoopDefaultMode /* kCFRunLoopCommonModes*/);
+	CFRunLoopAddSource(CFRunLoopGetCurrent(), source, kCFRunLoopDefaultMode);
 
 	CFRunLoopRun();
+}
+
+static void EndMyLoop() {
+       //CFRunLoopRemoveSource(CFRunLoopGetCurrent(), source, kCFRunLoopDefaultMode); 
+       CFRunLoopStop(CFRunLoopGetCurrent());
 }
 #endif
 
@@ -254,13 +271,6 @@ static JSBool
 sip_register(JSContext *cx, uintN argc, Value *vp) {
     mycx = cx;
 
-    if ( (search_tid = PR_CreateThread( PR_USER_THREAD, RunWindowThread,
-            NULL, PR_PRIORITY_NORMAL, PR_GLOBAL_THREAD, PR_UNJOINABLE_THREAD,
-            0 )) == NULL ) {
-                perror( "PR_CreateThread search_thread" );
-                exit( 1 );
-    }
-
     CallArgs args = CallArgsFromVp(argc, vp);
     JSString *fmt = ToString(cx, args[0]);
     JSString *fmt1 = ToString(cx, args[1]);
@@ -278,22 +288,24 @@ sip_placeCall(JSContext *cx, uintN argc, Value *vp) {
     //CallArgs args = CallArgsFromVp(argc, vp);
     //JSString *fmt = ToString(cx, args[1]);
 
-/*
-    if ( (search_tid = PR_CreateThread( PR_USER_THREAD, createWindow,
+#ifdef XP_MACOSX
+    if ( (search_tid = PR_CreateThread( PR_USER_THREAD, RunMyLoop,
+#else
+    if ( (search_tid = PR_CreateThread( PR_USER_THREAD, RunWindowThread,
+#endif
             NULL, PR_PRIORITY_NORMAL, PR_GLOBAL_THREAD, PR_UNJOINABLE_THREAD,
             0 )) == NULL ) {
                 perror( "PR_CreateThread search_thread" );
                 exit( 1 );
     }
 
-    PR_Sleep(PR_MillisecondsToInterval(500));
-*/
+    PR_Sleep(PR_MillisecondsToInterval(1000));
 
 #ifdef XP_MACOSX
     SipccController::GetInstance()->SetExternalRenderer(renderSource);
     SipccController::GetInstance()->PlaceCall(/*JS_EncodeString(cx, fmt)*/"7772", (char *) "", 0, 0);
 #else
-    SipccController::GetInstance()->PlaceCallWithWindow(renderSource->GetWindow(), "7772", (char *) "", 0, 0);
+    SipccController::GetInstance()->PlaceCallWithWindow(&renderSource->GetWindow(), "7772", (char *) "", 0, 0);
     //SipccController::GetInstance()->PlaceCallWithWindow(NULL, JS_EncodeString(cx, fmt), (char *) "", 0, 0);
     //SipccController::GetInstance()->PlaceCall(/*JS_EncodeString(cx, fmt)*/"7772", (char *) "", 0, 0);
 #endif
@@ -321,6 +333,11 @@ sip_answerCall(JSContext *cx, uintN argc, Value *vp) {
 static JSBool
 sip_endCall(JSContext *cx, uintN argc, Value *vp) {
     SipccController::GetInstance()->EndCall();
+    PR_Sleep(PR_MillisecondsToInterval(1000));
+    if (renderSource != NULL) {
+        delete renderSource;
+        renderSource = NULL;
+    }
     return true;
 }
 
@@ -328,6 +345,10 @@ static JSBool
 sip_unRegister(JSContext *cx, uintN argc, Value *vp) {
     SipccController::GetInstance()->RemoveSipccControllerObserver();
     SipccController::GetInstance()->UnRegister();
+    if (renderSource != NULL) {
+        delete renderSource;
+        renderSource = NULL;
+    }
     return true;
 }
 
@@ -577,5 +598,4 @@ RGB32toI420(int width, int height, const char *src, char *dst)
 
     return 0;
 }
-
 
