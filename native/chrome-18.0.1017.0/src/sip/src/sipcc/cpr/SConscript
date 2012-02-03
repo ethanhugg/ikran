@@ -1,0 +1,63 @@
+#
+# Sub script used to build CPR
+#
+
+# Retrieve environment
+Import('psipccVars')
+env = psipccVars['PSIPCC_ENV'].Clone()
+
+# Build the include directory list    
+env.Append(CPPPATH = [ 'include', '../include', '../core/includes', '../plat/common' ])
+
+# Create the list of file to include in the build, build them, 
+# and finally include the created objects to the global object list.
+sources = []
+if psipccVars['TARGET_PLATFORM'] == 'linux2':
+    sources += Split("""
+        linux/cpr_linux_assert.c
+        linux/cpr_linux_chunk.c
+        linux/cpr_linux_dlmalloc.c
+        linux/cpr_linux_errno.c
+        linux/cpr_linux_init.c
+        linux/cpr_linux_ipc.c
+        linux/cpr_linux_locks.c
+        linux/cpr_linux_memory.c
+        linux/cpr_linux_socket.c
+        linux/cpr_linux_stdio.c
+        linux/cpr_linux_stdlib.c
+        linux/cpr_linux_string.c
+        linux/cpr_linux_threads.c
+        linux/cpr_linux_timers_using_select.c 
+        """)
+     #cpr_linux_timers_using_ticks.c is not compiling :-(
+elif psipccVars['TARGET_PLATFORM'] == 'darwin':
+    sources += Split("""
+        darwin/cpr_darwin_assert.c
+        darwin/cpr_darwin_chunk.c
+        darwin/cpr_darwin_dlmalloc.c
+        darwin/cpr_darwin_errno.c
+        darwin/cpr_darwin_init.c
+        darwin/cpr_darwin_ipc.c
+        darwin/cpr_darwin_locks.c
+        darwin/cpr_darwin_memory.c
+        darwin/cpr_darwin_socket.c
+        darwin/cpr_darwin_stdio.c
+        darwin/cpr_darwin_stdlib.c
+        darwin/cpr_darwin_string.c
+        darwin/cpr_darwin_threads.c
+        darwin/cpr_darwin_timers_using_select.c 
+        """)
+elif psipccVars['TARGET_PLATFORM'] in [ 'win32' ]:
+	sources += Glob('win32/*.c')
+
+if not 'CPR_STANDALONE_LIBRARY' in psipccVars or \
+        not psipccVars['CPR_STANDALONE_LIBRARY']:
+    # CPR is not built as a stand-alone library
+    cprObjects  = env.Object(sources)
+    psipccVars['OBJECTS'].extend(cprObjects)
+    Default(cprObjects)
+
+# This fails at the moment.
+Alias('cpr-static', env.StaticLibrary('cpr', sources))
+Alias('cpr-shared', env.SharedLibrary('cpr', sources))
+
