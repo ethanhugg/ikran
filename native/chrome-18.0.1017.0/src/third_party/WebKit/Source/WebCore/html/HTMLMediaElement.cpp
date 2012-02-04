@@ -100,10 +100,6 @@
 #include "MediaElementAudioSourceNode.h"
 #endif
 
-#if ENABLE(SIP)
-#include "HTMLSessionElement.h
-#endif
-
 #if PLATFORM(MAC)
 #include "DisplaySleepDisabler.h"
 #endif
@@ -188,10 +184,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document* docum
     , m_networkState(NETWORK_EMPTY)
     , m_readyState(HAVE_NOTHING)
     , m_readyStateMaximum(HAVE_NOTHING)
-#if ENABLE(SIP)
-	, m_sipRegState(NO_REGISTRAR)
-    , m_sipSessionState(NO_SESSION)
-#endif
     , m_volume(1.0f)
     , m_lastSeekTime(0)
     , m_previousProgress(0)
@@ -200,9 +192,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document* docum
     , m_lastTimeUpdateEventMovieTime(numeric_limits<float>::max())
     , m_loadState(WaitingForSource)
     , m_currentSourceNode(0)
-#if ENABLE(SIP)
-    , m_currentSessionNode(0)
-#endif
     , m_nextChildNodeToConsider(0)
 #if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
     , m_proxyWidget(0)
@@ -241,9 +230,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document* docum
     , m_dispatchingCanPlayEvent(false)
     , m_loadInitiatedByUserGesture(false)
     , m_completelyLoaded(false)
-#if ENABLE(SIP)
-    , m_clearSessionHandled(false)
-#endif
     , m_havePreparedToPlay(false)
     , m_parsingInProgress(createdByParser)
 #if ENABLE(VIDEO_TRACK)
@@ -266,12 +252,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document* docum
 #if ENABLE(MEDIA_SOURCE)
     m_mediaSourceURL.setProtocol(mediaSourceURLProtocol);
     m_mediaSourceURL.setPath(createCanonicalUUIDString());
-#endif
-
-#if ENABLE(SIP)
-  	LOG(Media, "HTMLMediaElement::HTMLMediaElement : preload is set to NONE");
-   	m_preload = MediaPlayer::None;
-   	m_autoplaying = false;
 #endif
 
     setHasCustomWillOrDidRecalcStyle();
@@ -425,12 +405,6 @@ void HTMLMediaElement::parseMappedAttribute(Attribute* attr)
         setAttributeEventListener(eventNames().webkitbeginfullscreenEvent, createAttributeEventListener(this, attr));
     else if (attrName == onwebkitendfullscreenAttr)
         setAttributeEventListener(eventNames().webkitendfullscreenEvent, createAttributeEventListener(this, attr));
-#if ENABLE(SIP)
-  else if (attrName == onregistrationstateAttr)
-        setAttributeEventListener(eventNames().regstateEvent, createAttributeEventListener(this, attr));
-    else if (attrName == onsessionstateAttr)
-        setAttributeEventListener(eventNames().sessionstateEvent, createAttributeEventListener(this, attr));
-#endif
     else
         HTMLElement::parseMappedAttribute(attr);
 }
@@ -562,14 +536,6 @@ void HTMLMediaElement::scheduleNextSourceChild()
     m_loadTimer.startOneShot(0);
 }
 
-#if ENABLE(SIP)
-void HTMLMediaElement::scheduleNextSessionChild()
-{
-    m_pendingLoadFlags |= MediaResource;
-    m_loadTimer.startOneShot(0);
-}
-#endif
-
 void HTMLMediaElement::scheduleEvent(const AtomicString& eventName)
 {
 #if LOG_MEDIA_EVENTS
@@ -605,10 +571,6 @@ void HTMLMediaElement::loadTimerFired(Timer<HTMLMediaElement>*)
     if (m_pendingLoadFlags & MediaResource) {
         if (m_loadState == LoadingFromSourceElement)
             loadNextSourceChild();
-#if ENABLE(SIP)
-		else if (m_loadState == LoadingFromSessionElement)
-			LoadNextSessionChild();
-#endif
         else
             loadInternal();
     }
@@ -691,10 +653,6 @@ void HTMLMediaElement::prepareForLoad()
     // 1 - Abort any already-running instance of the resource selection algorithm for this element.
     m_loadState = WaitingForSource;
     m_currentSourceNode = 0;
-#if ENABLE(SIP)
-	m_currentSessionNode = 0;
-    m_loadState = LoadingFromSessionElement;
-#endif
 
     // 2 - If there are any tasks from the media element's media element event task source in 
     // one of the task queues, then remove those tasks.
@@ -720,15 +678,6 @@ void HTMLMediaElement::prepareForLoad()
 #endif
 
     // 4 - If the media element's networkState is not set to NETWORK_EMPTY, then run these substeps
-#if ENABLE(SIP)
-	if (m_sipRegState != NO_REGISTRAR ){
-        LOG(Media,"PrepareforLoad: Session isnnot in right state. Current state %d",m_sipRegState);
-        if(m_currentSessionNode)
-        {
-              //TBD .. Deregister here, may be
-        }
-        m_paused = true;
-#else
     if (m_networkState != NETWORK_EMPTY) {
         m_networkState = NETWORK_EMPTY;
         m_readyState = HAVE_NOTHING;
@@ -740,18 +689,13 @@ void HTMLMediaElement::prepareForLoad()
         scheduleEvent(eventNames().emptiedEvent);
         updateMediaController();
     }
-#endif
 
     // 5 - Set the playbackRate attribute to the value of the defaultPlaybackRate attribute.
     setPlaybackRate(defaultPlaybackRate());
 
     // 6 - Set the error attribute to null and the autoplaying flag to true.
     m_error = 0;
-#if ENABLE(SIP)
-    m_autoplaying = false;
-#else
     m_autoplaying = true;
-#endif
 
     // 7 - Invoke the media element's resource selection algorithm.
 
@@ -821,10 +765,6 @@ void HTMLMediaElement::selectMediaResource()
         for (node = firstChild(); node; node = node->nextSibling()) {
             if (node->hasTagName(sourceTag))
                 break;
-#if ENABLE(SIP)
-			if (node->hasTagName(sessionTag))
-				break;
-#endif
         }
 
         // Otherwise, if the media element does not have a src attribute but has a source 
@@ -838,11 +778,7 @@ void HTMLMediaElement::selectMediaResource()
             // Otherwise the media element has neither a src attribute nor a source element 
             // child: set the networkState to NETWORK_EMPTY, and abort these steps; the 
             // synchronous section ends.
-#if ENABLE(SIP)
-            m_loadState = WaitingForSession;
-#else
             m_loadState = WaitingForSource;
-#endif
             setShouldDelayLoadEvent(false);
             m_networkState = NETWORK_EMPTY;
 
@@ -860,10 +796,6 @@ void HTMLMediaElement::selectMediaResource()
     scheduleEvent(eventNames().loadstartEvent);
 
     // 6 - If mode is attribute, then run these substeps
-#if ENABLE(SIP)
-	// DOING NOTHING HERE. SINCE DINT GET A BETTER WAY TO AVOID
-    // THIS CODE FLOW ..... :-( :-(
-#else
     if (mode == attribute) {
         m_loadState = LoadingFromSrcAttr;
 
@@ -887,17 +819,9 @@ void HTMLMediaElement::selectMediaResource()
         LOG(Media, "HTMLMediaElement::selectMediaResource, using 'src' attribute url");
         return;
     }
-#endif
+
     // Otherwise, the source elements will be used
-#if ENABLE(SIP)
-	 LOG(Media, "HTMLMediaElement::selectMediaResource,  Loading from the session element now");
-     m_currentSessionNode = 0;
-     m_sipRegState = NO_REGISTRAR;
-     m_sipSessionState = NO_SESSION;
-     loadNextSessionChild();
-#else
     loadNextSourceChild();
-#endif
 }
 
 void HTMLMediaElement::loadNextSourceChild()
@@ -917,38 +841,6 @@ void HTMLMediaElement::loadNextSourceChild()
     m_loadState = LoadingFromSourceElement;
     loadResource(mediaURL, contentType);
 }
-
-#if ENABLE(SIP)
-void HTMLMediaElement::loadNextSessionChild()
-{
-    ContentType contentType("");
-    bool retval = selectNextSessionChild(&contentType, Complain);
-    if (retval == false) {
-                LOG(Media, "loadNextSessionChild: selectNextSessionChild() returned FALSE ");
-        waitForSessionChange();
-        return;
-    }
-        //This may not be needed
-    m_loadState = LoadingFromSessionElement;
-    m_sipRegState = REGISTERING;
-
-    //lets update the network state
-    String src, aor, credentials, proxy, dn;
-    m_networkState = NETWORK_LOADING;
-    src = m_currentSessionNode->getNonEmptyURLAttribute(srcAttr);
-    aor = m_currentSessionNode->aor();
-    credentials = m_currentSessionNode->credentials();
-    proxy = m_currentSessionNode->proxy();
-    dn = m_currentSessionNode->dialnumber();
-    LOG(Media, "loadNextSessionChild: Src is %s",src.utf8().data());
-    LOG(Media, "loadNextSessionChild: Aor is %s",aor.utf8().data());
-    LOG(Media, "loadNextSessionChild: proxy is %s ",proxy.utf8().data());
-    LOG(Media, "loadNextSessionChild: number  is %s ",dn.utf8().data());
-    m_autoplaying = false;
-    LOG(Media, "loadNextSessionChild: Peforming the load now for RTC Session ");
-    m_player->load(src, aor,credentials, proxy,dn);
-}
-#endif
 
 #if !PLATFORM(CHROMIUM)
 static KURL createFileURLForApplicationCacheResource(const String& path)
@@ -1229,21 +1121,6 @@ void HTMLMediaElement::waitForSourceChange()
         renderer()->updateFromElement();
 }
 
-$if ENABLE(SIP)
-
-//Suhas: RTCWeb Session Support
-void HTMLMediaElement::waitForSessionChange()
-{
-    LOG(Media, "HTMLMediaElement::waitForSessionChange");
-    stopPeriodicTimers();
-    m_loadState = WaitingForSession;
-    // 6.17 - Waiting: Set the element's networkState attribute to the NETWORK_NO_SOURCE value
-    m_networkState = NETWORK_NO_SOURCE;
-    // 6.18 - Set the element's delaying-the-load-event flag to false. This stops delaying the load event.
-    setShouldDelayLoadEvent(false);
-}
-#endif
-
 void HTMLMediaElement::noneSupported()
 {
     LOG(Media, "HTMLMediaElement::noneSupported");
@@ -1310,10 +1187,6 @@ void HTMLMediaElement::mediaEngineError(PassRefPtr<MediaError> err)
 
     // 6 - Abort the overall resource selection algorithm.
     m_currentSourceNode = 0;
-#if ENABLE(SIP)
-	m_currentSessionNode = 0;
-#endif
-
 }
 
 void HTMLMediaElement::cancelPendingEventsAndCallbacks()
@@ -1325,13 +1198,8 @@ void HTMLMediaElement::cancelPendingEventsAndCallbacks()
     for (Node* node = firstChild(); node; node = node->nextSibling()) {
         if (node->hasTagName(sourceTag))
             static_cast<HTMLSourceElement*>(node)->cancelPendingErrorEvent();
-#if ENABLE(SIP)
-        if (node->hasTagName(sessionTag))
-            static_cast<HTMLSessionElement*>(node)->cancelPendingErrorEvent();
-#endif
     }
 }
-
 
 Document* HTMLMediaElement::mediaPlayerOwningDocument()
 {
