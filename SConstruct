@@ -288,7 +288,7 @@ SCRIPT_FILES += [
 ]
 
 # currently only support win32
-if sys.platform in [ 'win32', 'linuc2' ]:
+if sys.platform in [ 'win32', 'linux2' ]:
   SCRIPT_FILES += [
     'third_party/gtest/SConstruct_gtestd',  
     'third_party/gtest/SConstruct_gtest_maind',
