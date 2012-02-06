@@ -70,10 +70,10 @@
 #include <nspr.h>
 
 //#include <gtk/gtk.h>
+//#include "libyuv.h" 
 
 #include "vie_render.h"
 #include "video_render_defines.h"
-//#include "libyuv.h" 
 #include "common_types.h"
 #include "sipcc_controller.h"
 
@@ -112,10 +112,9 @@ private:
     Window* _window;
     Window* _rootwindow;
     int screen;
-    unsigned int image_width, image_height, image_byte_size, i, j;
+    unsigned int image_width, image_height, image_byte_size;
     char* image_data;
     Pixmap pixmap;
-    int bitmap_pad;
     GC gc;
     Visual *visual;
     int depth;
@@ -155,7 +154,6 @@ void VideoRenderer::CreateWindow( void *info ) {
     depth = DefaultDepth (_display, screen);
     pixmap = XCreatePixmap (_display, *_rootwindow, image_width, image_height, depth);
     gc = XCreateGC (_display, pixmap, 0, 0);
-    bitmap_pad = BitmapPad(_display);
     visual = DefaultVisual(_display, screen);
     image = XShmCreateImage(_display, CopyFromParent, 24, ZPixmap, NULL, &_shminfo, image_width, image_height);
     if(image == NULL) return;
@@ -211,6 +209,7 @@ static void _input(void *info) {
 static void RunMyLoop ( void *info ) {
         if (renderSource == NULL)
             renderSource = new VideoRenderer(640, 480);
+
         PR_Sleep(PR_MillisecondsToInterval(500));
 
 	CFRunLoopSourceRef source;
@@ -220,7 +219,6 @@ static void RunMyLoop ( void *info ) {
 	source_context.perform = _input;
 	source = CFRunLoopSourceCreate(NULL, 0, &source_context);
 	CFRunLoopAddSource(CFRunLoopGetCurrent(), source, kCFRunLoopDefaultMode);
-
 	CFRunLoopRun();
 }
 
@@ -276,6 +274,18 @@ static JSBool
 sip_register(JSContext *cx, uintN argc, Value *vp) {
     mycx = cx;
 
+#ifdef XP_MACOSX
+    if ( (search_tid = PR_CreateThread( PR_USER_THREAD, RunMyLoop,
+#else
+    if ( (search_tid = PR_CreateThread( PR_USER_THREAD, RunWindowThread,
+#endif
+            NULL, PR_PRIORITY_NORMAL, PR_GLOBAL_THREAD, PR_UNJOINABLE_THREAD,
+            0 )) == NULL ) {
+                perror( "PR_CreateThread search_thread" );
+                exit( 1 );
+    }
+
+
     CallArgs args = CallArgsFromVp(argc, vp);
     JSString *fmt = ToString(cx, args[0]);
     JSString *fmt1 = ToString(cx, args[1]);
@@ -290,9 +300,10 @@ static JSBool
 sip_placeCall(JSContext *cx, uintN argc, Value *vp) {
     mycx = cx;
 
-    //CallArgs args = CallArgsFromVp(argc, vp);
-    //JSString *fmt = ToString(cx, args[1]);
+    CallArgs args = CallArgsFromVp(argc, vp);
+    JSString *fmt = ToString(cx, args[0]);
 
+/*
 #ifdef XP_MACOSX
     if ( (search_tid = PR_CreateThread( PR_USER_THREAD, RunMyLoop,
 #else
@@ -305,6 +316,7 @@ sip_placeCall(JSContext *cx, uintN argc, Value *vp) {
     }
 
     PR_Sleep(PR_MillisecondsToInterval(1000));
+*/
 
 #ifdef XP_MACOSX
     SipccController::GetInstance()->SetExternalRenderer(renderSource);
@@ -338,11 +350,6 @@ sip_answerCall(JSContext *cx, uintN argc, Value *vp) {
 static JSBool
 sip_endCall(JSContext *cx, uintN argc, Value *vp) {
     SipccController::GetInstance()->EndCall();
-    PR_Sleep(PR_MillisecondsToInterval(1000));
-    if (renderSource != NULL) {
-        delete renderSource;
-        renderSource = NULL;
-    }
     return true;
 }
 
