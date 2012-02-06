@@ -1,5 +1,5 @@
 
-#include "debugserver.h"
+#include "DebugServer.h"
 #include "csf_common.h"
 #include "CSFLogStream.h"
 #include <iostream>
@@ -68,7 +68,7 @@ void CDebugServer::StartListenClient()
 {
 
 	sockaddr_in from;
-	int fromlen=sizeof(from);
+	socklen_t fromlen=sizeof(from);
 
 	m_SClient=accept(m_SListenClient,
 		(struct sockaddr*)&from,&fromlen);
@@ -136,7 +136,7 @@ void CDebugServer::ServerRecThread::Run()
 {
 	while(1)
 	{
-		if(m_sRecSocket != NULL && m_debugServer != NULL)
+		if(m_sRecSocket != 0 && m_debugServer != NULL)
 			if(m_debugServer->RecClient(m_sRecSocket))
 				break;
 	}

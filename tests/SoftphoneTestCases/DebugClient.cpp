@@ -1,7 +1,7 @@
 #include "DebugClient.h"
 #include "csf_common.h"
 #include "CSFLogStream.h"
-#include "common.h"
+#include "Common.h"
 
 //Global Message object
 //CDebugClient debugClient;
@@ -14,7 +14,8 @@ static base::WaitableEvent _serverResponseEvent(true,false);
 base::Lock _serverResponseMutex;
 
 
-CDebugClient::CDebugClient():clientRecThread(NULL),base::SimpleThread("ClientThread") 
+//CDebugClient::CDebugClient():clientRecThread(NULL),base::SimpleThread("ClientThread") 
+CDebugClient::CDebugClient():base::SimpleThread("ClientThread"),clientRecThread(NULL)
 {
 	m_bIsConnected = false;
 }
@@ -24,11 +25,11 @@ void CDebugClient::Init(string sIpAddress, int iPort)
 
 	m_sServerIPAddress = sIpAddress;
 	m_iServerPort = iPort;
-	struct hostent *hp;
-	unsigned int addr;
+//	struct hostent *hp;
 	struct sockaddr_in server;
+	unsigned int addr;
 	
-#ifdef WIN32
+//#ifdef WIN32
 	WSADATA wsaData;
 
 	int wsaret=WSAStartup(0x101,&wsaData);
@@ -44,16 +45,18 @@ void CDebugClient::Init(string sIpAddress, int iPort)
 		return;
 
 	addr=inet_addr(m_sServerIPAddress.c_str());
+	/*
 	hp=gethostbyaddr((char*)&addr,sizeof(addr),AF_INET);
 	
 	if(hp==NULL)
 	{
 		closesocket(conn);
 		return;
-	}
-#endif
+	}*/
+//#endif
 
-	server.sin_addr.s_addr=*((unsigned long*)hp->h_addr);
+	//server.sin_addr.s_addr=*((unsigned long*)hp->h_addr);
+	server.sin_addr.s_addr=addr;
 	server.sin_family=AF_INET;
 	server.sin_port=htons(m_iServerPort);
 	if(connect(conn,(struct sockaddr*)&server,sizeof(server)))

@@ -734,6 +734,8 @@ static bool handleOriginatePhoneCall (CallControlManagerPtr ccmPtr, const string
 			return false;
 		}
 	}
+        
+        return false;
 }
 
 
@@ -1312,6 +1314,8 @@ static bool handleAllUserRequests (CallControlManagerPtr ccmPtr)
 		case eDestroyAndCreateWindow:
 			handleDestroyAndCreateWindow(ccmPtr);
 			break;
+                default:
+			break;
 		}//end switch
 
 	}//end for
@@ -1465,6 +1469,8 @@ static int handleOneUserRequests (CallControlManagerPtr ccmPtr)
 			break;
 		case eDestroyAndCreateWindow:
 			handleDestroyAndCreateWindow(ccmPtr);
+			break;
+                default:
 			break;
 		}//end switch
 
@@ -1869,9 +1875,9 @@ static int runMainLoop ()
 		return startInP2PMode();
 }
 
-static void initLogging(int argc, char** argv)
-{
-}
+//static void initLogging(int argc, char** argv)
+//{
+//}
 
 MyUserOperationCallback callback;
 AutoInputHandler autoInputHandler;
@@ -2183,7 +2189,7 @@ int main(int argc, char** argv)
 
 
 	int nRetCode = 0;
-	char buf[4096];
+	//char buf[4096];
 
 	//Test Mode Selection
 	if(bServer){
@@ -2274,7 +2280,7 @@ int main(int argc, char** argv)
 		testing::AddGlobalTestEnvironment(new CTestEnvironment());
 
 		testing::InitGoogleTest(&argc, argv);
-		RUN_ALL_TESTS();
+		nRetCode = (int)RUN_ALL_TESTS();
 
 	}
 

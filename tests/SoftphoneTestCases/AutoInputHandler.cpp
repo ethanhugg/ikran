@@ -55,7 +55,7 @@
 #endif
 
 static const char* logTag = "AutoInputHandler";
-
+cc_sdp_direction_t _sVideoPref = CC_SDP_DIRECTION_INACTIVE;
 
 using namespace std;
 
@@ -347,6 +347,8 @@ void AutoInputHandler::UserInputWorkItem::Run()
 			break;
 		case eDestroyAndCreateWindow:
 			context->createUserOperationAndSignal(eDestroyAndCreateWindow);
+			break;
+		default:
 			break;
 
 		}

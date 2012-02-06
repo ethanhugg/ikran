@@ -13,7 +13,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/synchronization/lock.h"
 
-static cc_sdp_direction_t _sVideoPref = CC_SDP_DIRECTION_INACTIVE;
+//static cc_sdp_direction_t _sVideoPref = CC_SDP_DIRECTION_INACTIVE;
 using namespace std;
 
 typedef enum eUserOperationRequest

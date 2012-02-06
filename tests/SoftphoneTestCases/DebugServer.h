@@ -1,9 +1,11 @@
 #ifndef _DEBUG_SERVER
 #define _DEBUG_SERVER
 
+#include "sockporting.h"
+
 #include <stdio.h>
-#include <winsock2.h>
-#include <conio.h> 
+//#include <winsock2.h>
+//#include <conio.h> 
 #include<list>
 #include <iostream>
 
@@ -11,7 +13,7 @@
 #include "cc_constants.h"
 #include "SharedPtr.h"
 #include "base/threading/simple_thread.h"
-#include "common.h"
+#include "Common.h"
 using namespace std;
 
 
@@ -26,7 +28,8 @@ public:
 	class  ServerRecThread : public base::SimpleThread
 	{
 	public:
-	   ServerRecThread(CDebugServer *debugServer,SOCKET sRecSocket): m_debugServer(debugServer),m_sRecSocket(sRecSocket),base::SimpleThread("ServerRecThread") {};
+	   //ServerRecThread(CDebugServer *debugServer,SOCKET sRecSocket): m_debugServer(debugServer),m_sRecSocket(sRecSocket),base::SimpleThread("ServerRecThread") {};
+	   ServerRecThread(CDebugServer *debugServer,SOCKET sRecSocket): base::SimpleThread("ServerRecThread"),m_debugServer(debugServer),m_sRecSocket(sRecSocket) {};
 	   ~ServerRecThread(){};
 		virtual void Run();
 	private:

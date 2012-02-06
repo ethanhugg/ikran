@@ -1,17 +1,18 @@
 #ifndef _DEBUG_CLIENT
 #define _DEBUG_CLIENT
 
+#include "sockporting.h"
 
 #include <stdio.h>
-#include <winsock2.h>
-#include <conio.h> 
+//#include <winsock2.h>
+//#include <conio.h> 
 #include "base/time.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/synchronization/lock.h"
 #include <iostream>
-#include "common.h"
+#include "Common.h"
 
 
 using namespace std;
@@ -30,7 +31,8 @@ public:
 	class  ClientRecThread : public base::SimpleThread
 	{
 	public:
-	   ClientRecThread(CDebugClient *debugClient): m_debugClient(debugClient),base::SimpleThread("ClientRecThread") {};
+	   //ClientRecThread(CDebugClient *debugClient): m_debugClient(debugClient),base::SimpleThread("ClientRecThread") {};
+	   ClientRecThread(CDebugClient *debugClient): base::SimpleThread("ClientRecThread"),m_debugClient(debugClient) {};
 	   ~ClientRecThread(){};
 		virtual void Run();
 	private:

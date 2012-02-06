@@ -44,7 +44,7 @@
 
 #include "SharedPtr.h"
 #include "base/threading/simple_thread.h"
-#include "common.h"
+#include "Common.h"
 
 using namespace std;
 

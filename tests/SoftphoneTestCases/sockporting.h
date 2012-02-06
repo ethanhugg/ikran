@@ -10,6 +10,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include <netdb.h>
 #define SOCKET                      int
 #define WSADATA                     int
 #define INVALID_SOCKET              (-1)

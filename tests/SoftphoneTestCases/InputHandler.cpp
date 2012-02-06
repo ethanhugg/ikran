@@ -56,6 +56,7 @@
 static const char* logTag = "InputHandler";
 
 //static cc_sdp_direction_t _sVideoPref = CC_SDP_DIRECTION_INACTIVE;
+extern cc_sdp_direction_t _sVideoPref;
 
 using namespace std;
 
