@@ -390,11 +390,12 @@ elif sys.platform=='linux2':
     webrtcpath + '/out/Debug/obj.target/src/modules',
     webrtcpath + '/out/Debug/obj.target/src/common_video',
     webrtcpath + '/out/Debug/obj.target/third_party/libvpx',
+    webrtcpath + '/out/Debug/obj.target/third_party/libyuv',
     webrtcpath + '/out/Debug/obj.target/third_party/libjpeg_turbo',
     webrtcpath + '/out/Debug/obj.target/src/common_audio',
     webrtcpath + '/out/Debug/obj.target/third_party/protobuf',
     webrtcpath + '/out/Debug/obj.target/src/system_wrappers/source'
-  ]
+  ] 
   libs += [
     componentName + suffixName, 
     'mozsqlite3',
@@ -454,6 +455,7 @@ elif sys.platform=='linux2':
     'libprotobuf_lite.a',
     'libsystem_wrappers.a',
     'libwebrtc_libyuv.a',
+    'libyuv.a',
     'libaec_sse2.a',
     'libvideo_processing_sse2.a'    
   ]
