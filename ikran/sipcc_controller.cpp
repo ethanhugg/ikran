@@ -44,6 +44,18 @@
 #include <netdb.h>
 #endif
 #include "Logger.h"
+#include "video_renderer.h"
+
+/*   temp will remove X11 references after some testing
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/Xos.h>
+#include <nspr.h>
+#include "base/threading/simple_thread.h"
+Display *_display;
+Window _window, _rootwindow;
+int _screen;
+*/
 
 using namespace CSF;
 
@@ -57,6 +69,25 @@ static int transformArray['D'+1] = { 0,         0,         0,         0,        
                           	  	  	 KEY_2,     KEY_3,     KEY_4,     KEY_5,     KEY_6,     KEY_7,     KEY_8,     KEY_9,     0,         0,     //59
                           	  	  	 0,         0,         0,         0,         0,         KEY_A,     KEY_B,     KEY_C,     KEY_D  };         //68
 
+
+/*
+class VideoWindowWorkItem : public base::SimpleThread
+{
+public:
+	VideoWindowWorkItem () : base::SimpleThread("VideoWindowWorkItem") {};
+    virtual void Run ();
+};
+void VideoWindowWorkItem::Run ()
+{
+    _display = XOpenDisplay(NULL);
+    _screen = DefaultScreen(_display);
+    _rootwindow = RootWindow(_display,_screen);
+    _window = XCreateSimpleWindow(_display, _rootwindow, 0, 0, 500, 500, 1, 0, 0);
+    XMapWindow(_display, _window);
+    XFlush(_display);
+}
+VideoWindowWorkItem videoThread;
+*/
 
 //Singleton instance generator
 SipccController* SipccController::GetInstance() 
@@ -82,8 +113,6 @@ SipccController::SipccController() : device_ptr_(NULL),
 SipccController::~SipccController() {
 }
 
-
-
 //Internal function
 void SipccController::InitInternal() {
 	
@@ -102,7 +131,7 @@ void SipccController::InitInternal() {
 	ccm_ptr_->setProperty(ConfigPropertyKeysEnum::eRemoteVoipPort ,remoteVoipPort);
 	ccm_ptr_->setProperty(ConfigPropertyKeysEnum::eTransport ,transport);
 
-  CSFLogError("ikran", "SipccController:: Authentication user : %s", sip_user_.c_str());
+    CSFLogError("ikran", "SipccController:: Authentication user : %s", sip_user_.c_str());
   
 	initDone = true;	
 }
@@ -226,7 +255,9 @@ void SipccController::PlaceCall(std::string dial_number, std::string ipAddress, 
 		{
 			Logger::Instance()->logIt(" ext_renderer is NULL in PlaceCall");
 		}
-		outgoing_call_->setExternalRenderer(0,ext_renderer);
+		outgoing_call_->setExternalRenderer(0, ext_renderer);
+
+
         if(outgoing_call_->originateCall(videoDirection, dial_number_, (char *)ipAddress.c_str(), audioPort, videoPort )) {
 			Logger::Instance()->logIt("SipccController::PlaceCall: Call Setup Succeeded ");
         	return ;
@@ -236,6 +267,32 @@ void SipccController::PlaceCall(std::string dial_number, std::string ipAddress, 
     }
 
 }
+
+void SipccController::PlaceCallWithWindow(void* window, std::string dial_number, std::string ipAddress, int audioPort, int videoPort) {
+	Logger::Instance()->logIt(" SipccController::PlaceCallWithWindow");
+	dial_number_ = dial_number;
+	if (ccm_ptr_ != NULL)
+	{
+		Logger::Instance()->logIt(" Dial Number is ");
+		Logger::Instance()->logIt(dial_number_);
+        device_ptr_ = ccm_ptr_->getActiveDevice();
+        outgoing_call_ = device_ptr_->createCall();
+		//defaulting to I420 video format retrieval
+		Logger::Instance()->logIt("Setting the remote renderer");
+
+		// do null check or stuff
+		outgoing_call_->setRemoteWindow((VideoWindowHandle)window);
+
+        if(outgoing_call_->originateCall(videoDirection, dial_number_, (char *)ipAddress.c_str(), audioPort, videoPort )) {
+			Logger::Instance()->logIt("SipccController::PlaceCall: Call Setup Succeeded ");
+        	return ;
+        } else {
+        }
+    } else {
+    }
+
+}
+
 
 void SipccController::EndCall() {
 

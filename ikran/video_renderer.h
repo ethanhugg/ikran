@@ -59,4 +59,19 @@ protected:
     nsIDOMCanvasRenderingContext2D *vCanvas;
 };
 
+/* can remove after I rule out rendering using nsIDOMCanvasRenderingContext2D in firefox */
+class VideoCanvasRenderer: public webrtc::ExternalRenderer {
+public:
+	VideoCanvasRenderer(int w, int h, void *ctx);
+    ~VideoCanvasRenderer();
+
+protected:
+    int FrameSizeChange(
+        unsigned int width, unsigned int height, unsigned int numberOfStreams
+    );
+    int DeliverFrame(unsigned char* buffer, int bufferSize, unsigned timestamp);
+	int width;
+	int height;
+    nsIDOMCanvasRenderingContext2D *vCanvas;
+};
 

@@ -159,7 +159,9 @@ if sys.platform =='win32':
     'webrtc_video_coding.lib',
     'webrtc_vp8.lib',
     'webrtc_libyuv.lib',
-    'libyuv.lib'
+    'libyuv.lib',
+    'aec_sse2.lib',
+    'video_processing_sse2.lib'
   ]
   if int(debug):
     libs += [
@@ -260,7 +262,9 @@ elif sys.platform == 'darwin':
     'libwebrtc_vp8.a',
     'libwebrtc_libyuv.a',
     'libyuv.a',
-    'sipcc_controller.o'
+    'sipcc_controller.o',
+    'libaec_sse2.a',
+    'libvideo_processing_sse2.a'
   ]
   env["LINKFLAGS"] += [
     '-framework',
@@ -370,6 +374,8 @@ elif sys.platform=='linux2':
     'dl',
     'libwebrtc_libyuv.a',
     'libyuv.a',
+    'libaec_sse2.a',
+    'libvideo_processing_sse2.a'
   ]
   env["LINKFLAGS"] += [
     '-z',

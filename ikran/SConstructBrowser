@@ -156,6 +156,10 @@ if sys.platform =='win32':
     'webrtc_utility.lib',
     'webrtc_video_coding.lib',
     'webrtc_vp8.lib',
+    'webrtc_libyuv.lib',
+    'libyuv.lib',
+    'aec_sse2.lib',
+    'video_processing_sse2.lib'
   ]
   if int(debug):
     libs += [
@@ -318,7 +322,9 @@ elif sys.platform=='darwin':
     'libwebrtc_video_coding.a',
     'libwebrtc_vp8.a',
     'libwebrtc_libyuv.a',
-    'libyuv.a'
+    'libyuv.a',
+    'libaec_sse2.a',
+    'libvideo_processing_sse2.a'
   ]
 
 elif sys.platform=='linux2':
@@ -446,7 +452,10 @@ elif sys.platform=='linux2':
     'libG722.a',
     'libPCM16B.a',
     'libprotobuf_lite.a',
-    'libsystem_wrappers.a'
+    'libsystem_wrappers.a',
+    'libwebrtc_libyuv.a',
+    'libaec_sse2.a',
+    'libvideo_processing_sse2.a'    
   ]
   env["LINKFLAGS"] += [
     '-shared',

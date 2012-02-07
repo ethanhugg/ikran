@@ -61,6 +61,8 @@
 #include "CC_Device.h"
 #include "CC_DeviceInfo.h"
 #include "CC_DeviceInfo.h"
+#include "SipccControllerObserver.h"
+
 
 #ifndef WIN32
 typedef int SOCKET;
@@ -69,19 +71,6 @@ const int SOCKET_ERROR = -1;
 #endif
 
 using namespace CSF;
-
-
-// Observer for events to be propogated to WebKit
-class SipccControllerObserver {
-public:	
-	virtual void OnIncomingCall(std::string callingPartyName, std::string callingPartyNumber) = 0;
-	virtual void OnRegisterStateChange(std::string registrationState) = 0;
- 	virtual void OnCallTerminated() = 0;   // do we specify if terminated is local or remote
-	virtual void OnCallConnected(char *sdp) = 0;
-	virtual void OnCallHeld() = 0;
-	virtual void OnCallResume() = 0;
-	
-};
 
 
 class SipccController : CC_Observer, ECC_Observer {
@@ -95,6 +84,7 @@ public:
 	int Register(std::string device, std::string sipUser, std::string sipCredentials, std::string sipDomain);
 	void UnRegister();
 	void PlaceCall(std::string dial_number, std::string ipAddress, int audioPort, int videoPort);
+	void PlaceCallWithWindow(void* window, std::string dial_number, std::string ipAddress, int audioPort, int videoPort);
 	void EndCall();
 	void AnswerCall();
 	
@@ -190,7 +180,6 @@ private:
 
 	//sole observer
 	SipccControllerObserver* observer_;
-
 };
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_SIPCC_CONTROLLER_HOST_H_
