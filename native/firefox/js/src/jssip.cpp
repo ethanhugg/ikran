@@ -42,7 +42,6 @@
  */
 
 #include "jstypes.h"
-#include "jsstdint.h"
 #include "jsutil.h"
 #include "jsapi.h"
 #include "jsatom.h"
@@ -88,12 +87,27 @@ char* sessionCallback;
 JSContext *mycx;
 JSObject *myobj;
 PRThread *search_tid;
+Display* display;
+Window* window;
+Window* rootwindow;
+int screen;
 
 int RGB32toI420(int width, int height, const char *src, char *dst);
 int I420toRGB32(int width, int height, const char *src, char *dst);
 
 #ifdef XP_MACOSX
 static void EndMyLoop();
+#else
+void CreateWindow() {
+    display = XOpenDisplay(NULL);
+    screen = DefaultScreen(display);
+    rootwindow = new Window();
+    *rootwindow = RootWindow(display, screen);
+    window = new Window();
+    *window = XCreateSimpleWindow(display, *rootwindow, 0, 0, 640, 500, 1, 0, 0);
+    XMapWindow(display, *window);
+    XFlush(display);
+}
 #endif
 
 class VideoRenderer: public webrtc::ExternalRenderer {
@@ -113,6 +127,7 @@ private:
     Window* _rootwindow;
     int screen;
     unsigned int image_width, image_height, image_byte_size;
+#ifdef XP_MACOSX
     char* image_data;
     Pixmap pixmap;
     GC gc;
@@ -122,19 +137,23 @@ private:
     XShmSegmentInfo _shminfo;
     unsigned char* _buffer;
     PRLock *render_lock;
+#endif
 };
 
-VideoRenderer::VideoRenderer(int w, int h) : _display(NULL),
-          _shminfo(), image(NULL), _window(0L), image_width(w), image_height(h), _buffer(NULL) {
+VideoRenderer::VideoRenderer(int w, int h) : _display(NULL), _window(0L), _rootwindow(0L), image_width(w), image_height(h)
+#ifdef XP_MACOSX
+          ,_shminfo(), image(NULL), _buffer(NULL) 
+#endif
+{
     CreateWindow(NULL);
 }
 
 VideoRenderer::~VideoRenderer() {
   XDestroyWindow(_display, *_window);
+#ifdef XP_MACOSX
   XShmDetach(_display, &_shminfo);
   XDestroyImage(image);
   shmdt(_shminfo.shmaddr);
-#ifdef XP_MACOSX
   EndMyLoop();
 #endif
 }
@@ -151,6 +170,7 @@ void VideoRenderer::CreateWindow( void *info ) {
 
     XMapWindow(_display, *_window);
     XFlush(_display);
+#ifdef XP_MACOSX
     depth = DefaultDepth (_display, screen);
     pixmap = XCreatePixmap (_display, *_rootwindow, image_width, image_height, depth);
     gc = XCreateGC (_display, pixmap, 0, 0);
@@ -163,11 +183,11 @@ void VideoRenderer::CreateWindow( void *info ) {
     _buffer = (unsigned char*) image->data;
     _shminfo.readOnly = False;
 
-    // attach image to display
     if (!XShmAttach(_display, &_shminfo)) {
         return;
     }
     //render_lock = PR_NewLock();
+#endif
 }
 
 int VideoRenderer::FrameSizeChange(unsigned int width, unsigned int height, unsigned int numberOfStreams) {
@@ -175,56 +195,50 @@ int VideoRenderer::FrameSizeChange(unsigned int width, unsigned int height, unsi
 }
 
 int VideoRenderer::DeliverFrame(unsigned char* buffer, int bufferSize, unsigned int timestamp) {
-
+#ifdef XP_MACOSX
     //PR_Lock(render_lock);
 	
     unsigned char *pBuf = buffer;
     //webrtc::ConvertFromI420(pBuf, image_width, webrtc::kARGB, 0, image_width, image_height, _buffer);
     I420toRGB32(image_width, image_height, (const char *)pBuf, (char *)_buffer);
 
-    // put image in window
     XShmPutImage(_display, *_window, gc, image, 0, 0, 0, 0 , image_width, image_height, True);
-
-    // very important for the image to update properly!
     XSync(_display, false);
 
     //PR_DestroyLock(render_lock);
-
+#endif
     return 0;
 }
 
 VideoRenderer *renderSource = NULL;
 
 static void RunWindowThread ( void *info ) {
-        renderSource = new VideoRenderer(640, 480);
-        PR_Sleep(PR_MillisecondsToInterval(500));
+    CreateWindow();
+    PR_Sleep(PR_MillisecondsToInterval(500));
 }
 
 #ifdef XP_MACOSX
 static void _input(void *info) {
 }
 
-//static CFRunLoopSourceRef source = 0;
-
 static void RunMyLoop ( void *info ) {
-        if (renderSource == NULL)
-            renderSource = new VideoRenderer(640, 480);
+    if (renderSource == NULL)
+        renderSource = new VideoRenderer(640, 480);
 
-        PR_Sleep(PR_MillisecondsToInterval(500));
+    PR_Sleep(PR_MillisecondsToInterval(500));
 
-	CFRunLoopSourceRef source;
-	CFRunLoopSourceContext source_context;
+    CFRunLoopSourceRef source;
+    CFRunLoopSourceContext source_context;
 
-	bzero(&source_context, sizeof(source_context));
-	source_context.perform = _input;
-	source = CFRunLoopSourceCreate(NULL, 0, &source_context);
-	CFRunLoopAddSource(CFRunLoopGetCurrent(), source, kCFRunLoopDefaultMode);
-	CFRunLoopRun();
+    bzero(&source_context, sizeof(source_context));
+    source_context.perform = _input;
+    source = CFRunLoopSourceCreate(NULL, 0, &source_context);
+    CFRunLoopAddSource(CFRunLoopGetCurrent(), source, kCFRunLoopDefaultMode);
+    CFRunLoopRun();
 }
 
 static void EndMyLoop() {
-       //CFRunLoopRemoveSource(CFRunLoopGetCurrent(), source, kCFRunLoopDefaultMode); 
-       CFRunLoopStop(CFRunLoopGetCurrent());
+    CFRunLoopStop(CFRunLoopGetCurrent());
 }
 #endif
 
@@ -285,7 +299,6 @@ sip_register(JSContext *cx, uintN argc, Value *vp) {
                 exit( 1 );
     }
 
-
     CallArgs args = CallArgsFromVp(argc, vp);
     JSString *fmt = ToString(cx, args[0]);
     JSString *fmt1 = ToString(cx, args[1]);
@@ -320,11 +333,9 @@ sip_placeCall(JSContext *cx, uintN argc, Value *vp) {
 
 #ifdef XP_MACOSX
     SipccController::GetInstance()->SetExternalRenderer(renderSource);
-    SipccController::GetInstance()->PlaceCall(/*JS_EncodeString(cx, fmt)*/"7772", (char *) "", 0, 0);
+    SipccController::GetInstance()->PlaceCall(JS_EncodeString(cx, fmt), (char *) "", 0, 0);
 #else
-    SipccController::GetInstance()->PlaceCallWithWindow(renderSource->GetWindow(), "7772", (char *) "", 0, 0);
-    //SipccController::GetInstance()->PlaceCallWithWindow(NULL, JS_EncodeString(cx, fmt), (char *) "", 0, 0);
-    //SipccController::GetInstance()->PlaceCall(/*JS_EncodeString(cx, fmt)*/"7772", (char *) "", 0, 0);
+    SipccController::GetInstance()->PlaceCallWithWindow((void*)*window, JS_EncodeString(cx, fmt), (char *) "", 0, 0);
 #endif
 
     return true;
@@ -357,10 +368,13 @@ static JSBool
 sip_unRegister(JSContext *cx, uintN argc, Value *vp) {
     SipccController::GetInstance()->RemoveSipccControllerObserver();
     SipccController::GetInstance()->UnRegister();
+
+#ifdef XP_MACOSX
     if (renderSource != NULL) {
         delete renderSource;
         renderSource = NULL;
     }
+#endif
     return true;
 }
 
