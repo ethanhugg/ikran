@@ -11,6 +11,7 @@
     <p><input type="button" id="regbutton" value="Register"/></p>
     <p><input type="button" id="callbutton" value="Place Call"/></p>
     <p><input type="button" id="endbutton" value="End Call"/></p>
+    <p><input type="button" id="unregbutton" value="Un Register"/></p>
 </body>
 <script type="application/javascript;version=1.8">
 
@@ -18,6 +19,7 @@
     let regbut = document.getElementById("regbutton");
     let callbut = document.getElementById("callbutton");
     let endbut = document.getElementById("endbutton");
+    let unRegbut = document.getElementById("unregbutton");
 
     function foo () {
         alert("test foo");
@@ -28,12 +30,15 @@
     }
 
     callbut.onclick = function() {
-	sipCall.setVideoWindow(ctx);
         sipCall.placeCall("7772");
     }
 
     endbut.onclick = function() {
         sipCall.endCall();
+    }
+
+    unRegbut.onclick = function() {
+        sipCall.unRegister();
     }
 
 

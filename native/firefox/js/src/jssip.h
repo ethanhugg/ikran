@@ -48,7 +48,6 @@
 #include "jsobj.h"
 
 #include "SipccControllerObserver.h"
-
 #include <string>
 
 
@@ -65,10 +64,6 @@ public:
 
 extern JSObject *
 js_InitSipClass(JSContext *cx, JSObject *obj);
-
-//char* sessionCallback;
-//JSContext *mycx;
-//JSObject *myobj;
 
 
 #endif /* jssip_h___ */
