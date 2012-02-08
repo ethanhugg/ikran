@@ -217,4 +217,29 @@ Here is a good reference: http://www.oldskoolphreak.com/tfiles/voip/beginners_op
 2. Start kamailio
 
   /usr/local/sbin$ ./kamailio
+
+---------------------------------
+10. Using Ikran with the ROAP Proxy
+---------------------------------
+
+1. The ROAP proxy should be run on a machine with apache and php
+
+2. In /tests/roap you'll find roap.php which should be put on your apache server
+
+3. roap.php forwards the ROAP requests to localhost by default, so on the same
+machine run ./test/roap/RoapProxy
+
+4. To follow the logs export these two environment variables:
+export NSPR_LOG_FILE=/home/wherever/yourlogfile.log
+export NSPR_LOG_MODULES=ikran:5
+You can then tail -f the log file to watch the RoapProxy.  It should give a couple
+'bind succeeded' messages on startup.
+
+5. Put roap_client.html on your apache server and point your Nightly build with Ikran to it.
+
+6. On page load you should see the RoapProxy register and then it will do the SIP conversation
+on behalf of your browser.  It currently only works for 1 call and needs to be reset between
+each call.
+
+
   
