@@ -53,12 +53,29 @@
 #include "base/threading/simple_thread.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/synchronization/lock.h"
+#include "csf_common.h"
+#include "CSFLogStream.h"
+#include <iostream>
 
-//static cc_sdp_direction_t _sVideoPref = CC_SDP_DIRECTION_INACTIVE;
+#ifndef WIN32
+#include <stdio.h>
+#include <termios.h>
+#include <unistd.h>
+#include <fcntl.h>
+#else
+#include <windows.h>
+#include <conio.h>
+#include <process.h>
+#endif
+
 using namespace std;
+
+extern cc_sdp_direction_t _sVideoPref;
 
 typedef enum eUserOperationRequest
 {
+    eLoop,
+    eExit,
     eQuit,
 	eIncomingCallReceived,
     eOriginatePhoneCall,
@@ -132,5 +149,7 @@ extern base::Lock _userOpRequestMutex;
 extern  base::WaitableEvent _userOperationRequestEvent;
 extern  base::WaitableEvent _userOperationResponseEvent;
 
+int csf_getch(void);
+int csf_kbhit(void);
 
 #endif

@@ -75,7 +75,3 @@ private:
 	void createUserOperationAndSignal (eUserOperationRequest request, void * pData = NULL);
 };
 
-void getPasswordFromConsole(const char * pPromptText, std::string& password);
-cc_sdp_direction_t getActiveVideoPref ();
-void cycleToNextVideoPref();
-const char * getUserFriendlyNameForVideoPref(cc_sdp_direction_t videoPref);

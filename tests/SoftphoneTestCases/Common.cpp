@@ -41,6 +41,153 @@
  
 #include "Common.h"
 
+
+cc_sdp_direction_t _sVideoPref = CC_SDP_DIRECTION_INACTIVE;
+
+
+#ifndef WIN32
+int csf_getch(void)
+{
+    char buf = 0;
+    struct termios old;
+   
+    memset(&old, 0, sizeof(termios));
+
+    if (tcgetattr(0, &old) < 0)
+    {
+        CSFLogDebugS("Common", "tcgetattr() failed.\n");
+        return 0;
+    }
+
+    old.c_lflag &= ~ICANON;
+    old.c_lflag &= ~ECHO;
+    old.c_cc[VMIN] = 1;
+    old.c_cc[VTIME] = 0;
+
+    if (tcsetattr(0, TCSANOW, &old) < 0)
+    {
+        CSFLogDebugS("Common", "tcsetattr ICANON.\n");
+        return 0;
+    }
+
+    if (read(0, &buf, 1) < 0)
+    {
+        CSFLogDebugS("Common", "read()");
+    }
+
+    old.c_lflag |= ICANON;
+    old.c_lflag |= ECHO;
+
+    if (tcsetattr(0, TCSADRAIN, &old) < 0)
+    {
+        perror ("tcsetattr ~ICANON");
+    }
+    return (buf);
+}
+
+int csf_kbhit(void)
+{
+  struct termios oldt, newt;
+  int ch;
+  int oldf;
+
+  tcgetattr(STDIN_FILENO, &oldt);
+  newt = oldt;
+  newt.c_lflag &= ~(ICANON | ECHO);
+  tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+  oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
+  fcntl(STDIN_FILENO, F_SETFL, oldf | O_NONBLOCK);
+
+  ch = getchar();
+
+  tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+  fcntl(STDIN_FILENO, F_SETFL, oldf);
+
+  if(ch != EOF)
+  {
+    ungetc(ch, stdin);
+    return 1;
+  }
+
+  return 0;
+}
+
+#else
+int csf_getch(void)
+{
+    return _getch();
+}
+
+int csf_kbhit(void)
+{
+    return _kbhit();
+}
+#endif
+
+UserOperationRequestData::~UserOperationRequestData()
+{
+    if (m_pData == NULL)
+    {
+        return;
+    }
+
+    switch (request)
+    {
+    case eOriginatePhoneCall:
+        delete m_pPhoneNumberToCall;
+        break;
+    case eOriginateP2PPhoneCall:
+        delete m_pPhoneNumberToCall;
+        break;
+    case eSendDTMFDigitOnFirstCallWithDTMFCaps:
+        delete m_pDTMFDigit;
+        break;
+    default:
+    	break;
+    }
+}
+
+
+void getPasswordFromConsole (const char * pPromptText, string & password)
+{
+    password.clear();
+
+    if (pPromptText == NULL)
+    {
+        return;
+    }
+
+    cout << pPromptText << flush;
+
+    int ch = csf_getch();
+
+#ifdef WIN32
+const int ENTER_KEY = 13;
+const int BS_KEY = 8;
+#else
+const int ENTER_KEY = '\n';
+const int BS_KEY = 127;
+#endif
+
+    while(ch != ENTER_KEY)
+    {
+        if (ch == BS_KEY) // backspace
+        {
+            if (password.length() > 0)
+            {
+                cout <<"\b \b" << flush;  // print a space over the '*' that was there
+                password.erase(password.length() - 1);
+            }
+        }
+        else
+        {
+            password += (char)ch;
+            cout << '*' << flush;
+        }
+        ch = csf_getch();
+    }
+}
+
 cc_sdp_direction_t getActiveVideoPref ()
 {
     return _sVideoPref;
@@ -68,26 +215,5 @@ const char * getUserFriendlyNameForVideoPref (cc_sdp_direction_t videoPref)
     return pMediaTypeStr;
 }
 
-UserOperationRequestData::~UserOperationRequestData()
-{
-    if (m_pData == NULL)
-    {
-        return;
-    }
 
-    switch (request)
-    {
-    case eOriginatePhoneCall:
-        delete m_pPhoneNumberToCall;
-        break;
-    case eOriginateP2PPhoneCall:
-        delete m_pPhoneNumberToCall;
-        break;
-    case eSendDTMFDigitOnFirstCallWithDTMFCaps:
-        delete m_pDTMFDigit;
-        break;
-    default:
-    	break;
-    }
-}
 

@@ -287,8 +287,7 @@ SCRIPT_FILES += [
   'tests/testapp_softphone/SConstruct',
 ]
 
-# currently only support win32
-if sys.platform in [ 'win32', 'linux2' ]:
+if sys.platform in [ 'win32', 'linux2','darwin']:
   SCRIPT_FILES += [
     'third_party/gtest/SConstruct_gtestd',  
     'third_party/gtest/SConstruct_gtest_maind',

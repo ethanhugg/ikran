@@ -37,15 +37,15 @@ if sys.platform == 'darwin':
     'DebugClient.cpp',
     'DebugServer.cpp',
     'EventPrinter.cpp',
-    'InputHandler.cpp',
-	'Logger.cpp',
+    'Logger.cpp',
 	'SoftphoneTestCases.cpp',
 	'TestEnvironment.cpp',
-	'VideoWindow',
-	'WorkderThread.cpp',
+	'VideoWindow.cpp',
+	'WorkerThread.cpp',
 	'InputHandler.cpp',
 	'AutoInputHandler.cpp',
 	'sockporting.cpp',
+	'Common.cpp',
   ]
   include_dirs += [
     webrtcpath + '/src/modules/video_render/main/source/mac'
@@ -63,8 +63,8 @@ else:
 	'InputHandler.cpp',
 	'AutoInputHandler.cpp',
 	'sockporting.cpp',
-	#'stdafx.cpp'
-  ]
+	'Common.cpp',
+ ]
 
 
 
@@ -242,6 +242,7 @@ elif sys.platform == 'darwin':
     'chromium',
     'libaec.a',
     'libaecm.a',
+    'libaec_sse2.a',
     'libagc.a',
     'libapm_util.a',
     'libaudio_coding_module.a',
@@ -271,6 +272,7 @@ elif sys.platform == 'darwin':
     'libvideo_capture_module.a',
     'libvideo_engine_core.a',
     'libvideo_processing.a',
+    'libvideo_processing_sse2.a',
     'libvideo_render_module.a',
     'libvoice_engine_core.a',
     'libvpx.a',
@@ -282,8 +284,8 @@ elif sys.platform == 'darwin':
     'libwebrtc_libyuv.a',
     'libyuv.a',
     'sipcc_controller.o',
-    'libtestd.a',
-    'libtest_maind.a',
+    'libgtestd.a',
+    'libgtest_maind.a',
   ]
   env["LINKFLAGS"] += [
     '-framework',
