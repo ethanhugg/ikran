@@ -242,4 +242,40 @@ on behalf of your browser.  It currently only works for 1 call and needs to be r
 each call.
 
 
+----------------------------------------------------------
+11. Using SoftphoneTestCases Application
+----------------------------------------------------------
+Use the command line test application to verify the SIP stack and softphone APIs.
+The test application can be used against Cisco Call Manager and Kamailio (OpenSER).
+The test application requires the nspr4 library in your dynamic library path. It is easiest 
+just to copy libnspr4.dylib/.so/.dll into the testapp directory from mozilla-central.
+
+Below is the step-by-step for automatic test with the test application.
+
+(1) Prepare server configure file "server.txt" and client configure file "client.txt", "valid.txt" 
+and "invalid.txt". You may find examples in ./tests/SoftphoneTestCases/.
+
+In these configure files:
+IP_ADDRESS is IP address of SIP server.
+
+DEVICENAME, SIPUSER and CREDENTIALS are user settings provided by SIP server. 
+In invalid.txt, please set wrong DEVICENAME, SIPUSER and CREDENTIALS.
+
+LOCALIP is IP address of the test machine on which the test application runs.
+
+TESTSERVER is IP address of the server.
+
+(2) Place server.txt into the same directory with the test application. Run the test 
+application from the command line as below to start it as a server. 
+    ./SoftphoneTestCases -s server.txt
+
+(3) Enter "r" and press "enter" to register to SIP server.
+
+(4) Place client.txt, valid.txt and invalid.txt into the same directory with the test 
+application. Run the test application from the command line as below to start is as a client.
+    ./SoftphoneTestCases -c client.txt
+
+Notes:
+(1) Server and client on the same machine may have some problems.
+
   
