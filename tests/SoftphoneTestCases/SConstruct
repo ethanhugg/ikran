@@ -1,0 +1,420 @@
+Import('build_env')
+import os, sys
+
+Import('debug')
+Import('x64')
+Import('componentName')
+Import('suffixName')
+Import('webrtcpath')
+Import('mozsrcpath')
+Import('chromiumbaseincludepath')
+Import('chromiumbaselibpath')
+
+if(chromiumbaseincludepath == 'third_party'):
+  chromiumbaseincludepath = '../../third_party/chromium_base'
+
+if(chromiumbaselibpath == 'third_party'):
+  chromiumbaselibpath = '../../third_party/chromium_base'
+
+
+## Add Tests folders here
+include_dirs = [
+  '.',
+  '../../include',
+  '../../src/sipcc/include',
+  '../../src/common',
+  '../../out/include/system',
+  chromiumbaseincludepath,
+  '../../src/common/browser_logging',
+  '../../ikran',
+  '../../third_party/gtest/include',
+ ]
+
+## Add test src files here
+#
+if sys.platform == 'darwin':
+  src_files = [
+    'DebugClient.cpp',
+    'DebugServer.cpp',
+    'EventPrinter.cpp',
+    'Logger.cpp',
+	'SoftphoneTestCases.cpp',
+	'TestEnvironment.cpp',
+	'VideoWindow.cpp',
+	'WorkerThread.cpp',
+	'InputHandler.cpp',
+	'AutoInputHandler.cpp',
+	'sockporting.cpp',
+	'Common.cpp',
+  ]
+  include_dirs += [
+    webrtcpath + '/src/modules/video_render/main/source/mac'
+  ] 
+else:
+  src_files = [
+    'DebugClient.cpp',
+    'DebugServer.cpp',
+    'EventPrinter.cpp',
+	'Logger.cpp',
+	'SoftphoneTestCases.cpp',
+	'TestEnvironment.cpp',
+	'VideoWindow.cpp',
+	'WorkerThread.cpp',
+	'InputHandler.cpp',
+	'AutoInputHandler.cpp',
+	'sockporting.cpp',
+	'Common.cpp',
+ ]
+
+
+
+libpath = ['../../out/lib']
+libs = []
+
+env = build_env.Clone(CPPPATH=include_dirs)
+
+if sys.platform =='win32':
+  mozobjpath = mozsrcpath + '\\obj-i686-pc-mingw32'
+  env["CPPDEFINES"] += [
+    'WIN32',
+    '_CONSOLE',
+    'MBCS'
+  ]
+  env["CPPFLAGS"] += [
+    '/c',
+    '/TP',
+    '/W4',
+    '/wd4100',
+    '/wd4275',
+    '/wd4512'
+  ]
+  windows_sdk_incl_dir=os.environ['MS_WINDOWS_SDK_PATH'] + '/Include'
+  windows_sdk_lib_dir=os.environ['MS_WINDOWS_SDK_PATH'] + '\Lib'
+  print windows_sdk_lib_dir
+  ms_vc_lib_dir=os.environ['MS_VC_PATH'] + '/VC/lib'
+  ms_vc_atlmfc_lib_dir=os.environ['MS_VC_PATH'] + '/VC/ATLMFC/lib'
+  ms_dx_sdk_dir = os.environ['DXSDK_DIR'] + 'Lib/x86'
+  libpath += [ 
+    ms_vc_lib_dir,
+    windows_sdk_lib_dir,
+    ms_vc_atlmfc_lib_dir,
+    ms_dx_sdk_dir,
+    '../../third_party/lib',
+    chromiumbaselibpath,
+    '../../src/common/browser_logging',
+    mozobjpath + '/dist/lib',
+    mozobjpath + '/dist/bin',
+    webrtcpath + '/Build/Debug/lib',
+    '../../third_party/gtest',
+  ]
+  libs += [
+    componentName + suffixName + '.lib',
+    'nspr4.lib',
+    'winmm.lib',
+    'kernel32.lib',
+    'user32.lib',
+    'gdi32.lib',
+    'winspool.lib',
+    'comdlg32.lib',
+    'advapi32.lib',
+    'shell32.lib',
+    'ole32.lib',
+    'oleaut32.lib',
+    'uuid.lib',
+    'odbc32.lib',
+    'odbccp32.lib', 
+    'atls.lib',  
+    'avrt.lib', 
+    'DelayImp.lib', 
+    'dmoguids.lib',
+    'msdmo.lib', 
+    'WinMM.lib',
+    'wmcodecdspuuid.lib',
+    'ws2_32.lib', 
+    'mswsock.lib', 
+    'dbghelp.lib', 
+    'Psapi.lib',
+    'chromium.lib',
+    'browser_logging.lib',
+    'aec.lib',
+    'aec_sse2.lib',
+    'aecm.lib',
+    'agc.lib',
+    'apm_util.lib',
+    'audio_coding_module.lib',
+    'audio_conference_mixer.lib',
+    'audio_device.lib',
+    'audio_processing.lib',
+    'audioproc_debug_proto.lib',	
+    'CNG.lib',
+    'G711.lib',
+    'G722.lib',
+    'iLBC.lib',
+    'iSAC.lib',
+    'iSACFix.lib',
+    'libjpeg.lib',
+    'media_file.lib',
+    'NetEq.lib',
+    'ns.lib',
+    'PCM16B.lib',
+    'resampler.lib',
+    'rtp_rtcp.lib',
+    'signal_processing.lib',
+    'protobuf_lite.lib',
+    'system_wrappers.lib',
+    'udp_transport.lib',
+    'vad.lib',
+    'video_capture_module.lib',
+    'video_engine_core.lib',
+    'video_processing.lib',
+    'video_processing_sse2',
+    'video_render_module.lib',
+    'voice_engine_core.lib',
+    'libvpx.lib',
+    'webrtc_i420.lib',
+    'webrtc_jpeg.lib',
+    'webrtc_utility.lib',
+    'webrtc_video_coding.lib',
+    'webrtc_vp8.lib',
+    'webrtc_libyuv.lib',
+    'libyuv.lib',
+    'gtestd.lib',
+    'gtest_maind.lib',
+  ]
+  if int(debug):
+    libs += [
+      'libcmtd.lib',
+      'libxml2_mtd.lib'
+    ]
+  else:
+    libs += [
+      'libcmt.lib',
+      'libxml2_mt.lib'
+    ]
+  env["LINKFLAGS"] = [
+    '/DELAYLOAD:"avrt.dll"',
+    '/SUBSYSTEM:CONSOLE',
+    '/DYNAMICBASE',
+    '/NXCOMPAT',
+    '/MACHINE:X86',
+    '/FORCE:MULTIPLE',
+    '/NODEFAULTLIB:"libcmtd.lib"',
+    '/NODEFAULTLIB:"libcmt.lib"',
+    '/NODEFAULTLIB:"libmmt.lib"',
+    '/NODEFAULTLIB:"libcpmt.lib"',
+    '/NODEFAULTLIB:"avrt.lib"',
+    '/NODEFAULTLIB:"libirc.lib"',
+    '/NODEFAULTLIB:"advapi32.lib"'
+  ]
+  if int(debug):
+    env["LINKFLAGS"] += [
+      '/DEBUG '
+     ]
+elif sys.platform == 'darwin':
+  mozobjpath = mozsrcpath + '/obj-ff-dbg'
+  env["CPPFLAGS"] += [
+    '-W',
+    '-Wno-error',
+    '-x',
+    'objective-c++'
+  ]
+  libpath += [
+    '../..',
+    chromiumbaselibpath,
+    '../../third_party/lib',
+    '../../ikran',
+    mozobjpath + '/dist/sdk/lib',
+    mozobjpath + '/dist/sdk/bin',
+    webrtcpath + '/xcodebuild/Debug',
+    '../../third_party/gtest',
+  ]
+  libs += [
+    componentName + suffixName,
+    'nspr4',
+    'ssl',
+    'crypto',
+    'apr-1',
+    'aprutil-1',
+    'z',
+    'libxml2', 
+    'iconv',
+    'X11',
+    'chromium',
+    'libaec.a',
+    'libaecm.a',
+    'libaec_sse2.a',
+    'libagc.a',
+    'libapm_util.a',
+    'libaudio_coding_module.a',
+    'libaudio_conference_mixer.a',
+    'libaudio_device.a',
+    'libaudio_processing.a',
+    'libaudioproc_debug_proto.a',
+    'libCNG.a',
+    'libG711.a',
+    'libG722.a',
+    'libgenperf_libs.a',
+    'libiLBC.a',
+    'libiSAC.a',
+    'libiSACFix.a',
+    'libjpeg_turbo.a',
+    'libmedia_file.a',
+    'libNetEq.a',
+    'libns.a',
+    'libPCM16B.a',
+    'libresampler.a',
+    'librtp_rtcp.a',
+    'libsignal_processing.a',
+    'libprotobuf_lite.a',
+    'libsystem_wrappers.a',
+    'libudp_transport.a',
+    'libvad.a',
+    'libvideo_capture_module.a',
+    'libvideo_engine_core.a',
+    'libvideo_processing.a',
+    'libvideo_processing_sse2.a',
+    'libvideo_render_module.a',
+    'libvoice_engine_core.a',
+    'libvpx.a',
+    'libwebrtc_i420.a',
+    'libwebrtc_jpeg.a',
+    'libwebrtc_utility.a',
+    'libwebrtc_video_coding.a',
+    'libwebrtc_vp8.a',
+    'libwebrtc_libyuv.a',
+    'libyuv.a',
+    'sipcc_controller.o',
+    'libgtestd.a',
+    'libgtest_maind.a',
+  ]
+  env["LINKFLAGS"] += [
+    '-framework',
+    'CoreAudio',
+    '-framework',
+    'AudioToolbox',
+    '-framework',
+    'CoreServices',
+    '-framework',
+    'IOKit',
+    '-framework',
+    'CoreVideo',
+    '-framework',
+    'Foundation',
+    '-framework',
+    'OpenGL',
+    '-framework',
+    'QuartzCore',
+    '-framework',
+    'QTKit',
+    '-framework',
+    'Cocoa'
+  ]
+elif sys.platform=='linux2':
+  if x64 == 'yes':
+    mozobjpath = mozsrcpath + '/obj-x86_64-unknown-linux-gnu'
+  else:
+    mozobjpath = mozsrcpath + '/obj-i686-pc-linux-gnu'
+
+  libpath += [
+    chromiumbaselibpath,
+    '../../third_party/lib',
+  ]
+  if x64 == 'yes':
+    libpath += [
+      '/usr/lib64'
+    ]
+  else:
+    libpath += [
+      '/usr/lib'
+    ]
+  libpath += [
+    mozobjpath + '/dist/lib',
+    mozobjpath + '/dist/bin',
+    webrtcpath + '/out/Debug/obj.target/src/video_engine',
+    webrtcpath + '/out/Debug/obj.target/src/voice_engine',
+    webrtcpath + '/out/Debug/obj.target/src/modules',
+    webrtcpath + '/out/Debug/obj.target/src/common_video',
+    webrtcpath + '/out/Debug/obj.target/third_party/libvpx',
+    webrtcpath + '/out/Debug/obj.target/third_party/libjpeg_turbo',
+    webrtcpath + '/out/Debug/obj.target/src/common_audio',
+    webrtcpath + '/out/Debug/obj.target/third_party/protobuf',
+    webrtcpath + '/out/Debug/obj.target/src/system_wrappers/source',
+    webrtcpath + '/out/Debug/obj.target/third_party/libyuv',
+    '../../third_party/gtest',
+  ]
+  libs += [
+    componentName + suffixName, 
+    'nspr4',
+    'pthread',
+    'z', 
+    'idn', 
+    'xml2', 
+    'asound',
+    'chromium',
+    'libvideo_engine_core.a',
+    'libvoice_engine_core.a',
+    'libvideo_render_module.a',
+    'libmedia_file.a',
+    'libvideo_processing.a',
+    'libvideo_capture_module.a',
+    'libwebrtc_utility.a',
+    'libwebrtc_video_coding.a',
+    'libwebrtc_vp8.a',
+    'libwebrtc_jpeg.a',
+    'libvpx.a',
+    'libjpeg_turbo.a',
+    'libaudio_coding_module.a',
+    'libaudio_processing.a',
+    'libvideo_processing_sse2.a',
+    'libaudioproc_debug_proto.a',
+    'libaudio_device.a',
+    'libNetEq.a',
+    'libns.a',
+    'libaecm.a',
+    'libaec.a',
+    'libaec_sse2.a',
+    'libresampler.a',
+    'libiLBC.a',
+    'libagc.a',
+    'libCNG.a',
+    'libiSACFix.a',
+    'libiSAC.a',
+    'libvad.a',
+    'libudp_transport.a',
+    'libaudio_conference_mixer.a',
+    'librtp_rtcp.a',
+    'libwebrtc_i420.a',
+    'libG711.a',
+    'libapm_util.a',
+    'libsignal_processing.a',
+    'libG722.a',
+    'libPCM16B.a',
+    'libprotobuf_lite.a',
+    'libsystem_wrappers.a',
+    'glib-2.0',
+    'X11',
+    'Xext',
+    'rt',
+    'dl',
+    'libwebrtc_libyuv.a',
+    'libyuv.a',
+    'libgtestd.a',
+    'libgtest_maind.a',
+  ]
+  env["LINKFLAGS"] += [
+    '-z',
+    'muldefs'
+  ]
+  
+  
+buildResult = env.Program('SoftphoneTestCases', src_files,
+  LIBS=libs,
+  LIBPATH=libpath)
+
+
+if sys.platform =='win32':
+  Depends(buildResult, '../../' + componentName + suffixName + '.lib')
+else:
+  Depends(buildResult, '../../lib' + componentName + suffixName + '.a')
+
+
