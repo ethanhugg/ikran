@@ -2322,6 +2322,7 @@ int main(int argc, char** argv)
 
 		testing::InitGoogleTest(&argc, argv);
 		nRetCode = (int)RUN_ALL_TESTS();
+                CSFLogDebugS(logTag, "RUN_ALL_TESTS returned " << nRetCode);
 
 	}
 
