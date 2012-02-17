@@ -1,0 +1,37 @@
+import os
+import sys
+
+Import('build_env')
+Import('debug')
+Import('x64')
+
+
+include_dirs = Split("""
+            .
+            ..
+            include
+            """)
+
+src_files = Split("""
+		src/gtest_main.cc
+ 		""");
+
+env = build_env.Clone(CPPPATH=include_dirs)
+
+if sys.platform =='win32':
+	env["CPPDEFINES"] += [
+		'WIN32',
+		'_DEBUG',
+		'_LIB',
+		'_MBCS'
+	]
+#elif sys.platform =='darwin':
+	
+#elif sys.platform =='linux2':
+	
+
+if sys.platform =='linux2':
+        env.ParseConfig('pkg-config --cflags --libs glib-2.0')
+
+env.Library('gtest_maind', src_files, LIBS=[], LIBPATH=[])
+            

@@ -287,6 +287,13 @@ SCRIPT_FILES += [
   'tests/testapp_softphone/SConstruct',
 ]
 
+if sys.platform in [ 'win32', 'linux2','darwin']:
+  SCRIPT_FILES += [
+    'third_party/gtest/SConstruct_gtestd',  
+    'third_party/gtest/SConstruct_gtest_maind',
+    'tests/SoftphoneTestCases/SConstruct',
+  ]
+
 if sys.platform != 'win32':
   SCRIPT_FILES += [
     'tests/roap/SConstruct'

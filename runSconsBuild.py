@@ -107,6 +107,7 @@ elif sys.platform == "darwin":
   if sconsLoc is None:
     sconsLoc = "/usr/local/bin"
   sconsProg = sconsLoc + "/scons"
+  #sconsProg="/opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin/scons"
 elif sys.platform == "linux2":
   if sconsLoc is None:
     sconsLoc = "/usr/bin"
