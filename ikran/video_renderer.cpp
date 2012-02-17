@@ -60,7 +60,7 @@ VideoRenderer::FrameSizeChange(
 }
 
 int
-VideoRenderer::DeliverFrame(unsigned char* buffer, int bufferSize, unsigned int timestamp)
+VideoRenderer::DeliverFrame(unsigned char* buffer, int buffer_size, uint32_t time_stamp, int64_t render_time)
 {
     PRTime epoch_c = PR_Now();
     PRFloat64 epoch = (PRFloat64)(epoch_c / MICROSECONDS);
@@ -109,7 +109,7 @@ VideoCanvasRenderer::FrameSizeChange(
 }
 
 int
-VideoCanvasRenderer::DeliverFrame(unsigned char* buffer, int bufferSize, unsigned int timestamp)
+VideoCanvasRenderer::DeliverFrame(unsigned char* buffer, int buffer_size, uint32_t time_stamp, int64_t render_time)
 {
     PRTime epoch_c = PR_Now();
     PRFloat64 epoch = (PRFloat64)(epoch_c / MICROSECONDS);

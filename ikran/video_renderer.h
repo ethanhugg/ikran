@@ -53,7 +53,7 @@ protected:
     int FrameSizeChange(
         unsigned int width, unsigned int height, unsigned int numberOfStreams
     );
-    int DeliverFrame(unsigned char* buffer, int bufferSize, unsigned timestamp);
+    int DeliverFrame(unsigned char* buffer, int buffer_size, uint32_t time_stamp, int64_t render_time);
 	int width;
 	int height;	
     nsIDOMCanvasRenderingContext2D *vCanvas;
@@ -69,7 +69,7 @@ protected:
     int FrameSizeChange(
         unsigned int width, unsigned int height, unsigned int numberOfStreams
     );
-    int DeliverFrame(unsigned char* buffer, int bufferSize, unsigned timestamp);
+    int DeliverFrame(unsigned char* buffer, int buffer_size, uint32_t time_stamp, int64_t render_time);
 	int width;
 	int height;
     nsIDOMCanvasRenderingContext2D *vCanvas;
