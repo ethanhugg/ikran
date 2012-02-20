@@ -66,6 +66,7 @@ Windows:
       +  Follow the instructions @ http://www.webrtc.org/reference/getting-started
       +  Set WEBRTCPATH to point to it : export WEBRTCPATH=/Users/XTM/HTML5/webrtc/trunk
   - On Windows copy libxml2_MTd.lib from https://public.me.com/ethanhugg to /third_party/lib
+      OR if you would rather build your own, read section 12
   - Instead of using scons directly, use runSconsBuild.py like this
     'python runSconsBuild.py debug' or
     'python runSconsBuild.py clean'
@@ -278,4 +279,15 @@ application. Run the test application from the command line as below to start is
 Notes:
 (1) Server and client on the same machine may have some problems.
 
-  
+--------------------------------------------
+12. Building your own libxml2 (Windows only)
+--------------------------------------------
+Copying the one prebuilt libxml2_Mtd binary is much easier than following these steps but if you want to build yourself:
+
+To build libxml2 use this repo: git clone git://git.gnome.org/libxml2
+You will also have to build zlib (http://zlib.net/) and libiconv (http://www.gnu.org/software/libiconv/)
+Make sure you build each to use the CRT as MTd
+Then update build files that referenced libxml2_MTd.lib to also reference zlib and libiconv static libraries
+When built copy the three libs to /third_party/lib
+
+ 

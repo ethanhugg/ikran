@@ -234,6 +234,8 @@ void TestMain::RegisterSIPProxy(){
 	cout << "Registering to SIP Proxy with " << _config->GetSIPProxyAddress() << endl;
 
 	SipccController::GetInstance()->SetProperty("transport", "tcp");
+
+        SipccController::GetInstance()->AddSipccControllerObserver(this);
 		
 	int regResult = SipccController::GetInstance()->Register(_config->GetDeviceName(), _config->GetUserNumber(), _config->GetPassword(), _config->GetSIPProxyAddress());
 	//zero means happy here
