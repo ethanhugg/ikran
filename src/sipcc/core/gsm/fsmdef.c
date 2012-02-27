@@ -3191,12 +3191,9 @@ fsmdef_ev_collectinginfo_release (sm_event_t *event)
 {
     fsm_fcb_t          *fcb       = (fsm_fcb_t *) event->data;
     fsmdef_dcb_t       *dcb       = fcb->dcb;
-    cc_state_data_t data;
     
     FSM_DEBUG_SM(DEB_F_PREFIX"Entered.\n", DEB_F_PREFIX_ARGS(FSM, "fsmdef_ev_collectinginfo_release"));
 
-   data.call_failed.caller_id = dcb->caller_id;
-   data.call_failed.cause = CC_CAUSE_INVALID_NUMBER;
    fsmdef_set_call_info_cc_call_state(dcb, CC_STATE_CALL_FAILED, CC_CAUSE_INVALID_NUMBER);
 
     // Start onhook timer
@@ -3469,7 +3466,6 @@ fsmdef_ev_callsent_release (sm_event_t *event)
     cc_causes_t     cause  = msg->cause;
     cc_srcs_t       src_id = msg->src_id;
     sm_rcs_t        sm_rc  = SM_RC_END;
-    cc_state_data_t data;
     char            tmp_str[STATUS_LINE_MAX_LEN];
 
     FSM_DEBUG_SM(DEB_F_PREFIX"Entered.\n", DEB_F_PREFIX_ARGS(FSM, "fsmdef_ev_callsent_release"));
@@ -3522,8 +3518,6 @@ fsmdef_ev_callsent_release (sm_event_t *event)
         case CC_TEMP_NOT_AVAILABLE:
         case CC_CAUSE_UI_STATE_BUSY:
         case CC_CAUSE_NO_USER_ANS:
-            data.call_failed.caller_id = dcb->caller_id;
-            data.call_failed.cause = cause;
 
             fsmdef_set_call_info_cc_call_state(dcb, CC_STATE_CALL_FAILED, cause);
 
@@ -5402,7 +5396,6 @@ fsmdef_ev_hold_pending_feature_ack (sm_event_t *event)
     cc_causes_t        cause;
     cc_msgbody_info_t *msg_body;
     cc_feature_data_t  feature_data;
-    sm_rcs_t           sm_rc;
 
     FSM_DEBUG_SM(DEB_F_PREFIX"Entered.\n", DEB_F_PREFIX_ARGS(FSM, "fsmdef_ev_hold_pending_feature_ack"));
 
@@ -5464,7 +5457,7 @@ fsmdef_ev_hold_pending_feature_ack (sm_event_t *event)
             feature_data.hold.msg_body.num_parts = 0;
             feature_data.hold.call_info.data.call_info_feat_data.swap = FALSE;
             feature_data.hold.call_info.data.call_info_feat_data.protect = FALSE;
-            sm_rc = fsm_hold_local(fcb, &feature_data, FALSE);
+            fsm_hold_local(fcb, &feature_data, FALSE);
             break;            
 
         default:

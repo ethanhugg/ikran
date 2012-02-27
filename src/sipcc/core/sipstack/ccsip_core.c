@@ -12356,18 +12356,11 @@ ccsip_handle_cc_hook_event (sipSMEvent_t *sip_sm_event)
 {
     static const char *fname = "ccsip_handle_cc_hook_event";
     line_t         line_number = 0;
-    callid_t       call_id;
     char          *sip_call_id = NULL;
-    char          *global_call_id = NULL;
     char          *sip_local_tag;
-    char          *prim_call_id = NULL;
-    char          *prim_local_tag = NULL;
-    char          *prim_remote_tag = NULL;
     cc_msg_t      *pCCMsg;
-    ccsipCCB_t    *ccb, *prim_ccb = NULL;
+    ccsipCCB_t    *ccb;
     cc_msgs_t      event;
-    cc_hold_resume_reason_e consult_reason = CC_REASON_NONE;
-    cfwdall_mode_t cfwdall_mode = CFWDALL_NONE;
 
     CCSIP_DEBUG_TASK(DEB_F_PREFIX"Entering with event %d", DEB_F_PREFIX_ARGS(SIP_EVT, fname),
                      sip_sm_event->u.cc_msg->msg.setup.msg_id);
@@ -12383,12 +12376,8 @@ ccsip_handle_cc_hook_event (sipSMEvent_t *sip_sm_event)
 
     if (event == CC_MSG_OFFHOOK) {
         line_number = pCCMsg->msg.offhook.line;
-        prim_ccb = sip_sm_get_ccb_by_gsm_id(pCCMsg->msg.offhook.prim_call_id);
-        consult_reason = pCCMsg->msg.offhook.hold_resume_reason;
     } else {
         line_number = pCCMsg->msg.onhook.line;
-        prim_ccb = sip_sm_get_ccb_by_gsm_id(pCCMsg->msg.onhook.prim_call_id);
-        consult_reason = pCCMsg->msg.onhook.hold_resume_reason;
     }
     if (sip_regmgr_get_cc_mode(line_number) != REG_MODE_CCM) {
         /* this is not CCM environment */
@@ -12397,32 +12386,15 @@ ccsip_handle_cc_hook_event (sipSMEvent_t *sip_sm_event)
         return TRUE;
     }
 
-    /* Get primary call_id information */
-    if (prim_ccb) {
-
-        prim_call_id = prim_ccb->sipCallID;
-
-        if (prim_ccb->flags & INCOMING) {
-            prim_local_tag = (char *) prim_ccb->sip_to_tag;
-            prim_remote_tag = (char *) prim_ccb->sip_from_tag;
-        } else {
-            prim_local_tag = (char *) prim_ccb->sip_from_tag;
-            prim_remote_tag = (char *) prim_ccb->sip_to_tag;
-        }
-    }
-
     /*
      * Allocate SIP Call-ID and local tag, if they are not already allocated.
      */
     if (event == CC_MSG_OFFHOOK) {
         ccb = sip_sm_get_ccb_by_gsm_id(pCCMsg->msg.offhook.call_id);
         line_number = pCCMsg->msg.offhook.line;
-        call_id = pCCMsg->msg.offhook.call_id;
-        global_call_id = pCCMsg->msg.offhook.global_call_id;
     } else {
         ccb = sip_sm_get_ccb_by_gsm_id(pCCMsg->msg.onhook.call_id);
         line_number = pCCMsg->msg.onhook.line;
-        call_id = pCCMsg->msg.onhook.call_id;
     }
     if (ccb == NULL) {
         /*
@@ -12440,10 +12412,6 @@ ccsip_handle_cc_hook_event (sipSMEvent_t *sip_sm_event)
         sip_local_tag = (char *) (ccb->sip_from_tag);
         CCSIP_DEBUG_TASK(DEB_F_PREFIX"callid: %s & local-tag: %s\n",
                          DEB_F_PREFIX_ARGS(SIP_CALL_STATUS, fname), sip_call_id, sip_local_tag);
-    }
-
-    if (event == CC_MSG_OFFHOOK) {
-       cfwdall_mode = pCCMsg->msg.offhook.cfwdall_mode;
     }
 
     /*

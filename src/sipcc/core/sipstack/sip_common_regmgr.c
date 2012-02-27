@@ -1216,11 +1216,9 @@ sip_regmgr_ev_fallback_retry (ccsipCCB_t *ccb, sipSMEvent_t *event)
 {
     const char *fname = "sip_regmgr_ev_fallback_retry";
     fallback_ccb_t *fallback_ccb = NULL;
-    ti_config_table_t *ccm_table_ptr = NULL;
 
     CCSIP_DEBUG_REG_STATE(DEB_F_PREFIX"Recd retry event for LINE %d/%d in state %d\n",
                           DEB_F_PREFIX_ARGS(SIP_FALLBACK, fname), ccb->index, ccb->dn_line, ccb->state);
-    ccm_table_ptr = (ti_config_table_t *) ccb->cc_cfg_table_entry;
 
     sip_stop_ack_timer(ccb);
     fallback_ccb = sip_regmgr_get_fallback_ccb_by_index(ccb->index);
@@ -2176,10 +2174,6 @@ sip_regmgr_ev_failure_response (ccsipCCB_t *ccb, sipSMEvent_t *event)
     CCSIP_DEBUG_REG_STATE(DEB_L_C_F_PREFIX"Received event\n", 
                           DEB_L_C_F_PREFIX_ARGS(SIP_EVT, ccb->index, ccb->dn_line, fname));
     if (ccb->index == REG_BACKUP_CCB) {
-        ti_config_table_t *ccm_table_ptr = NULL;
-
-        ccm_table_ptr = (ti_config_table_t *) ccb->cc_cfg_table_entry;
-
         /*
          * Keep monitoring.
          * Stay in unregistering state and wait for the

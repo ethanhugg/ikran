@@ -277,8 +277,6 @@ lsm_debug_entry (callid_t call_id, line_t line, const char *fname)
 static void
 lsm_ui_call_state (call_events event, line_t line, lsm_lcb_t *lcb, cc_causes_t cause)
 {
-    fsmcnf_ccb_t   *ccb;
-
     if (lcb->previous_call_event != event) {
         lcb->previous_call_event = event;
 
@@ -287,7 +285,6 @@ lsm_ui_call_state (call_events event, line_t line, lsm_lcb_t *lcb, cc_causes_t c
          * or moved to other state. This should be done only
          * when local bridge is active
          */
-        ccb = fsmcnf_get_ccb_by_call_id(lcb->call_id);
         ui_call_state(event, line, lcb->ui_id, cause);
     } 
     else if(event == evConnected) {

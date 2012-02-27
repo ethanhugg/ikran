@@ -547,11 +547,9 @@ dcsm_process_event (void *event, int event_id)
     int        state_id;
     sm_rcs_t   rc       = SM_RC_CONT;
     fsm_fcb_t *fcb      = (fsm_fcb_t *) event;
-    fsm_types_t   fsm_type;
     cc_feature_t  *feat_msg = NULL;
     pdcsm_sm_evt_handler hdlr; /* cached handler in order to compute its addr once */
 
-    fsm_type = fcb->fsm_type;
     call_id  = fcb->call_id;
 
     if (event_id == CC_MSG_FEATURE) {
@@ -622,7 +620,6 @@ cc_int32_t
 dcsm_show_cmd (cc_int32_t argc, const char *argv[])
 {
     void *msg_ptr;
-    void *prev_msg_ptr;
     int i;
     cc_setup_t     *msg;
     cc_msgs_t       msg_id;
@@ -659,7 +656,6 @@ dcsm_show_cmd (cc_int32_t argc, const char *argv[])
     i = 0;
     msg_ptr = sll_next(dcsm_cb.s_msg_list, NULL);
     while (msg_ptr) {
-        prev_msg_ptr = msg_ptr;
         msg_ptr = sll_next(dcsm_cb.s_msg_list, msg_ptr);
         
         if (msg_ptr) {
@@ -739,7 +735,6 @@ void
 dcsm_shutdown (void)
 {
     void *msg_ptr;
-    void *prev_msg_ptr;
     
     if (dcsm_cb.s_msg_list == NULL) {
         return;
@@ -747,7 +742,6 @@ dcsm_shutdown (void)
     
     msg_ptr = sll_next(dcsm_cb.s_msg_list, NULL);
     while (msg_ptr) {
-        prev_msg_ptr = msg_ptr;
         msg_ptr = sll_next(dcsm_cb.s_msg_list, msg_ptr);
         
         if (msg_ptr) {

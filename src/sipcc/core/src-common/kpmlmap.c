@@ -596,7 +596,6 @@ kpml_flush_quarantine_buffer (line_t line, callid_t call_id)
 static void
 kpml_update_quarantined_digits (kpml_data_t *kpml_data)
 {
-    kpml_state_e state = NO_SUB_DATA;
     static const char fname[] = "kpml_update_quarantined_digits";
 
     KPML_DEBUG(DEB_L_C_F_PREFIX"Update quarantined digits\n",
@@ -604,7 +603,7 @@ kpml_update_quarantined_digits (kpml_data_t *kpml_data)
 
     while (kpml_data->dig_head != kpml_data->dig_tail) {
 
-        state = kpml_update_dialed_digits(kpml_data->line,
+        kpml_update_dialed_digits(kpml_data->line,
                                           kpml_data->call_id,
                                           kpml_data->q_digits[kpml_data->dig_head]);
 

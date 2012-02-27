@@ -363,8 +363,6 @@ fsmxfr_feature_cancel (fsmxfr_xcb_t *xcb, line_t line, callid_t call_id,
     cc_feature_data_t data;
     fsm_fcb_t         *fcb_def;
 
-    reg_mode_t mode;
-    
     DEF_DEBUG(DEB_F_PREFIX"Sending cancel call_id = %d, t_id=%d, cause = %d\n", 
             DEB_F_PREFIX_ARGS(GSM, fname), call_id, target_call_id, cause);
 
@@ -393,8 +391,6 @@ fsmxfr_feature_cancel (fsmxfr_xcb_t *xcb, line_t line, callid_t call_id,
         cc_int_feature(CC_SRC_GSM, CC_SRC_GSM, target_call_id,
                            line, CC_FEATURE_END_CALL, NULL);
     }
-
-    mode = sip_regmgr_get_cc_mode(1);
 
     data.cancel.target_call_id = target_call_id;
     data.cancel.call_id = call_id;

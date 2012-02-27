@@ -368,13 +368,11 @@ fsmb2bcnf_remove_fcb (fsm_fcb_t *fcb, callid_t call_id)
 static void
 fsmb2bcnf_cleanup (fsm_fcb_t *fcb, int fname, boolean both)
 {
-    fsmcnf_ccb_t   *ccb;
     fsm_fcb_t      *other_fcb = NULL;
     callid_t        call_id       = fcb->call_id;
     callid_t        other_call_id = CC_NO_CALL_ID;
     line_t          other_line;
 
-    ccb = fsmb2bcnf_get_ccb_by_call_id(call_id);
     other_call_id = fsmb2bcnf_get_other_call_id(fcb->b2bccb, call_id);
     other_line    = fsmb2bcnf_get_other_line(fcb->b2bccb, call_id);
 
@@ -545,7 +543,6 @@ fsmb2bcnf_feature_cancel (fsmcnf_ccb_t *ccb, line_t line, callid_t call_id,
                           callid_t target_call_id,
                           cc_rcc_skey_evt_type_e cause)
 {
-    reg_mode_t mode;
     cc_feature_data_t data;
     fsm_fcb_t         *fcb_def;
 
@@ -574,8 +571,6 @@ fsmb2bcnf_feature_cancel (fsmcnf_ccb_t *ccb, line_t line, callid_t call_id,
         cc_int_feature(CC_SRC_GSM, CC_SRC_GSM, target_call_id,
                            line, CC_FEATURE_END_CALL, NULL);
     }
-
-    mode = sip_regmgr_get_cc_mode(1);
 
     data.cancel.target_call_id = target_call_id;
     data.cancel.call_id = call_id;
