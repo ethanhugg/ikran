@@ -293,21 +293,21 @@ void perform_deferred_action() {
 
 void ccpro_handleserviceControlNotify() {
     cc_action_t  temp_action  = NO_ACTION;
-    if (reset_type == CC_DEVICE_RESET) {
+    if (reset_type == (int) CC_DEVICE_RESET) {
         temp_action = RESET_ACTION;
-    } else if (reset_type == CC_DEVICE_RESTART) {
+    } else if (reset_type == (int) CC_DEVICE_RESTART) {
         temp_action = RESTART_ACTION;
     }
      
-    if ((reset_type != CC_DEVICE_ICMP_UNREACHABLE) &&
+    if ((reset_type != (int) CC_DEVICE_ICMP_UNREACHABLE) &&
         is_action_to_be_deferred(temp_action) == TRUE) {
         return;
     }
 
 
-    if (reset_type == CC_DEVICE_RESET) {
+    if (reset_type == (int) CC_DEVICE_RESET) {
         resetRequest();
-    } else if (reset_type == CC_DEVICE_RESTART) {
+    } else if (reset_type == (int) CC_DEVICE_RESTART) {
         registration_processEvent(EV_CC_DO_SOFT_RESET);
     }
 }
@@ -1839,12 +1839,12 @@ void ccp_handler(void* msg, int type) {
         if(featUpd->update.ccFeatUpd.data.line_info.info == CC_REGISTERED)
         	CCAPP_DEBUG(DEB_F_PREFIX"CC_REGISTERED\n", DEB_F_PREFIX_ARGS(SIP_CC_PROV, fname));
 
-        if(gCCApp.state == CC_INSERVICE)
+        if(gCCApp.state == (int) CC_INSERVICE)
         	CCAPP_DEBUG(DEB_F_PREFIX"CC_INSERVICE\n", DEB_F_PREFIX_ARGS(SIP_CC_PROV, fname));
 
         if ( featUpd->featureID == DEVICE_REG_STATE &&
             featUpd->update.ccFeatUpd.data.line_info.info == CC_REGISTERED &&
-            gCCApp.state != CC_INSERVICE )
+            gCCApp.state != (int) CC_INSERVICE )
         {
             cc_uint32_t major_ver=0, minor_ver=0,addtnl_ver=0;
             char name[CC_MAX_LEN_REQ_SUPP_PARAM_CISCO_SISTAG]={0};

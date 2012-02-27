@@ -8724,68 +8724,6 @@ sip_sm_is_previous_call_id (const char *pCallID, line_t *pPreviousCallIndex)
     return FALSE;
 }
 
-#ifdef DEBUG
-void
-print_ccb_memoryusage (ccsipCCB_t *ccb)
-{
-    int i;
-    struct _httpMsg *next;
-
-    debugif_printf("CCB address      : 0x%lx\n", ccb);
-    if (ccb) {
-        debugif_printf("contact info     : 0x%lx\n", ccb->contact_info);
-        if (ccb->contact_info) {
-            for (i = 0; i < SIP_MAX_LOCATIONS; i++) {
-                if (ccb->contact_info->locations[i]) {
-                    debugif_printf("    [%d] exists\n    loc_start    : 0x%lx\n", i,
-                                   ccb->contact_info->locations[i]->loc_start);
-                    debugif_printf("    name         : 0x%lx\n",
-                                   ccb->contact_info->locations[i]->name);
-                    debugif_printf("    sip_url      : 0x%lx\n",
-                                   ccb->contact_info->locations[i]->sipUrl);
-                    debugif_printf("    tag          : 0x%lx\n",
-                                   ccb->contact_info->locations[i]->tag);
-
-                }
-            }
-        }
-        debugif_printf("record route info: 0x%lx\n", ccb->record_route_info);
-        if (ccb->record_route_info) {
-            for (i = 0; i < SIP_MAX_LOCATIONS; i++) {
-                if (ccb->contact_info->locations[i]) {
-                    debugif_printf("    [%d] exists\n    loc_start    : 0x%lx\n", i,
-                                   ccb->contact_info->locations[i]->loc_start);
-                    debugif_printf("    name         : 0x%lx\n",
-                                   ccb->contact_info->locations[i]->name);
-                    debugif_printf("    sip_url      : 0x%lx\n",
-                                   ccb->contact_info->locations[i]->sipUrl);
-                    debugif_printf("    tag          : 0x%lx\n",
-                                   ccb->contact_info->locations[i]->tag);
-
-                }
-            }
-        }
-        debugif_printf("last request     : 0x%lx\n", ccb->last_request);
-        if (ccb->last_request) {
-            debugif_printf("    Next        : 0x%lx\n", ccb->last_request->next);
-            debugif_printf("    Body        : 0x%lx\n", ccb->last_request->mesg_body[0].msgBody);
-            debugif_printf("    Line        : 0x%lx\n", ccb->last_request->mesg_line);
-            next = ccb->last_request->next;
-            while (next) {
-                debugif_printf("    Next        : 0x%lx\n", ccb->last_request->next);
-                debugif_printf("    Body        : 0x%lx\n",
-                               ccb->last_request->mesg_body[0].msgBody);
-                debugif_printf("    Line        : 0x%lx\n", ccb->last_request->mesg_line);
-                next = ccb->last_request->next;
-            }
-        }
-        debugif_printf("source sdp       : 0x%lx\n", ccb->src_sdp);
-        debugif_printf("destination sdp  : 0x%lx\n", ccb->dest_sdp);
-    }
-    debugif_printf("\n");
-}
-#endif
-
 void
 sip_sm_200and300_update (ccsipCCB_t *ccb, sipMessage_t *response, int response_code)
 {
