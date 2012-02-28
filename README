@@ -10,26 +10,13 @@
   Ikran can operate in two modes. (1) Registration mode, where it is a SIP UA and registers with 
   a SIP server. (2) Peer to Peer Mode, where is can communicate directly with other ikran clients
   in the same mode using SIP. 
-  
-Source tree strcture:
-<SOURCE> 
-tests                       [Standalone test application and add-on]
-	testapp_softphone
-ikran                       [addon code and sample html]
-third_party                 [Third party dependencies ]
-	chromium_base
-src/sipcc                   [SIP stack]
-src                         [ECC - call control wrapper for SIP stack]
 
 -------------------
 1. Platform Support 
 -------------------
 Required for all platforms:
   Python (www.python.org) -  known to work with 2.6 & 2.7 
-  SCons (www.scons.org) - 'sudo apt-get install scons' or 'sudo yum install scons'
-  NOTE: You will need working builds of recent firefox and webrtc code source trees.
-  MOZSRCPATH environment variable pointing to the a built source tree of Firefox (mozilla-central)    
-  WEBRTCPATH environment variable pointing to a built webrtc source trunk
+  SCons (www.scons.org) - see section 13
   
 Linux:
   Should build on Ubuntu 11.04, 11.10 or Fedora15
@@ -46,20 +33,20 @@ Mac OSX:
   Requires libidl installed.  You can use MacPorts ("sudo port install libidl")
 
 Windows:
-  Built regularly on Windows XP & Windows 7 32bit.
+  Built regularly on Windows XP & Windows 7.
   Python path is in runSconsBuild.py and set to c:\python27
   Requires setting following environment variables
   SCONS_LOCATION pointing to scons installation
   ZIP_LOCATION pointing to 7z zip installation (windows only)
   MS_WINDOWS_SDK_PATH pointing to Windows SDK path ( v7.1)
   MS_VC_PATH pointing to Visual Studio installation ( VS9.0)
-  DXSDK_DIR pointing to Micrisoft DirectX SDK installation
+  DXSDK_DIR pointing to Micrsoft DirectX SDK installation
 	e.g SCONS_LOCATION=c:\Python26\Scripts
   
 -----------
 2. Building 
 -----------
-  - Get and build Mozilla
+  - Get and build Mozilla Firefox, we link to some Firefox libraries
       https://developer.mozilla.org/en/Build_Documentation
       Set the MOZSRCPATH env variable to point to it - to the mozilla-central directory.
   - Build WEBRTC for video and audio engine libraries 
@@ -67,24 +54,29 @@ Windows:
       +  Set WEBRTCPATH to point to it : export WEBRTCPATH=/Users/XTM/HTML5/webrtc/trunk
   - On Windows copy libxml2_MTd.lib from https://public.me.com/ethanhugg to /third_party/lib
       OR if you would rather build your own, read section 12
-  - Instead of using scons directly, use runSconsBuild.py like this
+
+  Set up these two Environment variables
+    MOZSRCPATH environment variable pointing to the a built source tree of Firefox (mozilla-central)
+    WEBRTCPATH environment variable pointing to a built webrtc source trunk
+
+  To Run the build
     'python runSconsBuild.py debug' or
     'python runSconsBuild.py clean'
     Current command line options are 'debug', 'release', 'clean', 'noaddon' and 'x64'.
-    
----------
-4. Output
----------
-  Build will create a standalone test app and an addon for Firefox nightly build.
-  Test App Exe: TestApp_Softphone
+
+-------------------
+4. Output from build
+-------------------
+  The build will create a test application and a Firefox addon for the nightly build.
+  Test App binary: TestApp_Softphone
   Addon: ikran-0.2-dev.xpi
 
---------------------
-5. Testing the addon
---------------------
-  To build  & test addon , follow below steps
+----------------------------
+5. Testing the Firefox addon
+----------------------------
+  To test the addon follow these steps
 
-  - Addon executable shall be generated under the <SOURCE>/ikran
+  - The addon executable will be generated under <SOURCE>/ikran
  	 called ikran-0.2-dev.xpi
   - OSX 
 	Start Firefox in 32 bit as 
@@ -95,19 +87,21 @@ Windows:
   - Install the addon
   - Test add-on with sample page at
 		<SOURCE>/ikran/content/ikran.html		
-NOTES:
-1. ikran.html should be served from a server due to permission issues
-   with file loaded locally (file://) 
+
+  NOTES:
+  1. ikran.html should be served from a server due to permission issues.
+  2. If your cameras are working you should see a 2 way video call, ikran to ikran.
+  3. You should be able to call any softphone or hardphone connected to CUCM, Asterisk or Kamailio.
 
 -----------------------------
 6. Using the Test Application
 -----------------------------
-Use the command line test application to exercise the SIP stack.
-The test application can be used against Cisco Call Manager, Asterisk and Kamailio (OpenSER).
-The test application requires the nspr4 library in your dynamic library path.  It is 
+  Use the command line test application to exercise the SIP stack.
+  The test application can be used against Cisco Call Manager, Asterisk and Kamailio (OpenSER).
+  The test application requires the nspr4 library in your dynamic library path.  It is 
   easiest just to copy libnspr4.dylib/.so/.dll into the testapp directory from mozilla-central.
 
- Run the Test Application from the command line with no parameters
+  Run the Test Application from the command line with no parameters
    ./tests/testapp_softphone/TestApp_SoftPhone
 
    ********************************
@@ -134,7 +128,6 @@ The test application requires the nspr4 library in your dynamic library path.  I
 
    To make a P2P call select option 6, this will require remote SIP username and remote IP Address.
 
-
  When running the Test Application in Linux it operates slightly differently. To see the available
  list of commangs use the '?' key.
  
@@ -143,12 +136,11 @@ The test application requires the nspr4 library in your dynamic library path.  I
 ------------
 The JS API offers support for 
     SIP Registration, Place Call, HangUp Call, Answer Call, Send DTMF
-    HoldCall, ResumeCall
+    HoldCall, ResumeCall, Mute, UnMute,
     P2P Mode, Place P2P Call
     SetProperty, GetProperty
 
-window.navigator.service.call obtains handle to session-control 
-object. 
+window.navigator.service.call obtains handle to session-control object.
 
 <session-control>.registerUser(user_device, user, credential, sip-proxy, sessObserver);
 registers user to the sip-proxy. 
@@ -205,7 +197,7 @@ Please see content/ikran.html for sample usage of the API.
 3. From the Asterisk CLI> sip reload  
 
 ---------------------------------
-9. Configuring kamailo SIP Server
+9. Configuring Kamailo SIP Server
 ---------------------------------
 Here is a good reference: http://www.oldskoolphreak.com/tfiles/voip/beginners_openser.txt
 
@@ -219,9 +211,9 @@ Here is a good reference: http://www.oldskoolphreak.com/tfiles/voip/beginners_op
 
   /usr/local/sbin$ ./kamailio
 
----------------------------------
+-----------------------------------
 10. Using Ikran with the ROAP Proxy
----------------------------------
+-----------------------------------
 
 1. The ROAP proxy should be run on a machine with apache and php
 
@@ -242,10 +234,9 @@ You can then tail -f the log file to watch the RoapProxy.  It should give a coup
 on behalf of your browser.  It currently only works for 1 call and needs to be reset between
 each call.
 
-
-----------------------------------------------------------
+----------------------------------------
 11. Using SoftphoneTestCases Application
-----------------------------------------------------------
+----------------------------------------
 Use the command line test application to verify the SIP stack and softphone APIs.
 The test application can be used against Cisco Call Manager and Kamailio (OpenSER).
 The test application requires the nspr4 library in your dynamic library path. It is easiest 
@@ -290,4 +281,19 @@ Make sure you build each to use the CRT as MTd
 Then update build files that referenced libxml2_MTd.lib to also reference zlib and libiconv static libraries
 When built copy the three libs to /third_party/lib
 
+--------------------
+13. Installing Scons
+--------------------
+
+Make sure pyhton is installed
+
+Linux
+'sudo apt-get install scons' or 'sudo yum install scons'
+
+Mac
+From http://www.scons.org/  download the tarball, untar and do this
+python setup.py install
+
+Windows
+From http://www.scons.org/ download and install the scons windows installer 
  
