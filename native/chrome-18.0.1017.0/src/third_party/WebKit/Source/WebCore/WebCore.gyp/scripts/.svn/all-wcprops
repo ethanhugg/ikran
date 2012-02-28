@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repository/webkit/!svn/ver/102663/trunk/Source/WebCore/WebCore.gyp/scripts
+END
+action_cssvaluekeywords.py
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/repository/webkit/!svn/ver/89362/trunk/Source/WebCore/WebCore.gyp/scripts/action_cssvaluekeywords.py
+END
+action_csspropertynames.py
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/repository/webkit/!svn/ver/89362/trunk/Source/WebCore/WebCore.gyp/scripts/action_csspropertynames.py
+END
+action_makenames.py
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/repository/webkit/!svn/ver/98793/trunk/Source/WebCore/WebCore.gyp/scripts/action_makenames.py
+END
+rule_bison.py
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/repository/webkit/!svn/ver/75314/trunk/Source/WebCore/WebCore.gyp/scripts/rule_bison.py
+END
+action_derivedsourcesallinone.py
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/repository/webkit/!svn/ver/102663/trunk/Source/WebCore/WebCore.gyp/scripts/action_derivedsourcesallinone.py
+END
+action_maketokenizer.py
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/repository/webkit/!svn/ver/75314/trunk/Source/WebCore/WebCore.gyp/scripts/action_maketokenizer.py
+END
+action_useragentstylesheets.py
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/repository/webkit/!svn/ver/86936/trunk/Source/WebCore/WebCore.gyp/scripts/action_useragentstylesheets.py
+END

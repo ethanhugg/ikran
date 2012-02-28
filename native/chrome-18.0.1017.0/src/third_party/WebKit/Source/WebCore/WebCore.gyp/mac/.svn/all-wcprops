@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/repository/webkit/!svn/ver/95901/trunk/Source/WebCore/WebCore.gyp/mac
+END
+Empty.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repository/webkit/!svn/ver/95901/trunk/Source/WebCore/WebCore.gyp/mac/Empty.cpp
+END
+adjust_visibility.sh
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repository/webkit/!svn/ver/92203/trunk/Source/WebCore/WebCore.gyp/mac/adjust_visibility.sh
+END
+check_objc_rename.sh
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/repository/webkit/!svn/ver/77663/trunk/Source/WebCore/WebCore.gyp/mac/check_objc_rename.sh
+END
