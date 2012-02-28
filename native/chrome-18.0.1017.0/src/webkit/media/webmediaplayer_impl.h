@@ -61,6 +61,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAudioSourceProvider.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
 
 #include "content/renderer/sip/sipcc_message_filter.h"
 #include "content/renderer/sip/sipcc_renderer_impl.h"
@@ -81,6 +82,8 @@ namespace webkit_media {
 class MediaStreamClient;
 class WebMediaPlayerDelegate;
 class WebMediaPlayerProxy;
+
+using WebKit::WebCString;
 
 class WebMediaPlayerImpl
     : public WebKit::WebMediaPlayer,
@@ -113,11 +116,17 @@ class WebMediaPlayerImpl
   virtual ~WebMediaPlayerImpl();
 
   virtual void load(const WebKit::WebURL& url);
+  virtual void load(const WebKit::WebURL& url,const WebKit::WebCString src, const WebKit::WebCString aor, const WebKit::WebCString creds, const WebKit::WebCString proxy, const WebKit::WebCString dn); 
   virtual void cancelLoad();
 
   // Playback controls.
   virtual void play();
   virtual void pause();
+  //Suhas RTCWeb Support
+  virtual void openSession(const WebKit::WebCString dial_number);
+  virtual void closeSession();
+  virtual void clearSession();
+
   virtual bool supportsFullscreen() const;
   virtual bool supportsSave() const;
   virtual void seek(float seconds);
@@ -156,6 +165,13 @@ class WebMediaPlayerImpl
   // them from members which would cause race conditions.
   virtual WebKit::WebMediaPlayer::NetworkState networkState() const;
   virtual WebKit::WebMediaPlayer::ReadyState readyState() const;
+
+  //Suhas: RTCWeb Support
+  virtual WebKit::WebMediaPlayer::SipRegistrationState sipRegistrationState() const ;
+  virtual WebKit::WebMediaPlayer::SipSessionState sipSessionState() const ;
+  virtual WebKit::WebCString callingPartyName() const;
+  virtual WebKit::WebCString callingPartyNumber() const;
+
 
   virtual unsigned long long bytesLoaded() const;
   virtual unsigned long long totalBytes() const;
@@ -221,6 +237,14 @@ class WebMediaPlayerImpl
   WebKit::WebMediaPlayer::NetworkState network_state_;
   WebKit::WebMediaPlayer::ReadyState ready_state_;
 
+  //Suhas RTCWeb Session support
+  WebKit::WebMediaPlayer::SipRegistrationState sip_reg_state_;
+  WebKit::WebMediaPlayer::SipSessionState sip_session_state_;
+  std::string caller_;
+  std::string caller_number_;
+  std::string dial_number_;
+  int session_id_;
+
   // Keep a list of buffered time ranges.
   WebKit::WebTimeRanges buffered_;
 
@@ -283,8 +307,15 @@ class WebMediaPlayerImpl
 
   WebKit::WebAudioSourceProvider* audio_source_provider_;
   scoped_refptr<SipccRendererImpl> sipcc_renderer_;
+  bool isSipSession;
+  bool isInSession;
+  static int MAX_SESSION_RETRIES;
+  int session_retry_counter;
   void SipRegistrationCallback();
   void SipSessionCallback();
+
+  base::Closure SipRegistrationCallbackObj;
+  base::Closure SipSessionCallbackObj;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };

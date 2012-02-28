@@ -16,12 +16,12 @@
 using content::BrowserThread;
 
 
-// The number of DIBs VideoCaptureController allocate.
+// The number of DIBs .
 static const size_t kNoOfDIBS = 3;
 
 struct SipccVideoRenderer::SharedDIB {
   SharedDIB(base::SharedMemory* ptr): shared_memory(ptr),
-			              references(0) {
+			              			references(0) {
   }
 
   ~SharedDIB() {}
@@ -38,20 +38,31 @@ struct SipccVideoRenderer::SharedDIB {
 
 
 SipccVideoRenderer::SipccVideoRenderer(
-   int w, int h)
+   int w, int h, std::string type)
     : width(w),
       height(h),
-      init_done_(false){
-	
-	 Init();
+      init_done_(false),
+      isLocal(false) 
+{
+	if(type.compare("remote") == 0)
+	{
+		LOG(INFO) << " Creating Video Renderer for Remote Capture ";
+		isLocal = false;
+	} else
+    {
+		LOG(INFO) << " Creating Video Renderer for Local Capture ";
+		isLocal = true;
+	}	  	
 
-  }
+ 	Init();
+
+}
 
 void  SipccVideoRenderer::Init() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(owned_dibs_.empty())
       << "Device is restarted without releasing shared memory.";
-  LOG(INFO)<<" SipccVideoRenderer:: Init() Invoked ";
+  LOG(INFO)<<" SipccVideoRenderer:: Init() Invoked : (isLocal ?? )" << isLocal;
   bool frames_created = true;
   const size_t needed_size = (width * height * 3) / 2;
   LOG(INFO) <<"SipccVideoRenderer::Init : needed_size " << needed_size;
@@ -130,7 +141,7 @@ void SipccVideoRenderer::DeliverFrameOnIOThread(unsigned char* data,
                                      unsigned int timestamp) {
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  
+
   int buffer_id = 0;
   base::SharedMemory* dib = NULL;
   {
@@ -161,7 +172,14 @@ void SipccVideoRenderer::DeliverFrameOnIOThread(unsigned char* data,
                                                     2);
 
   memcpy(target, static_cast<uint8*>(data), (width * height * 3) / 2);
-  SipccController::GetInstance()->OnBufferReady(buffer_id,timestamp);
+  if(isLocal == true)
+  {
+  	SipccController::GetInstance()->OnCaptureBufferReady(buffer_id,timestamp);
+
+  } else
+  {
+  	SipccController::GetInstance()->OnReceiveBufferReady(buffer_id,timestamp);
+  }
 
   LOG(INFO) << "Deliver Frame Posted Task to IO Thread ";
   DCHECK_EQ(owned_dibs_[buffer_id]->references, -1);
@@ -182,10 +200,13 @@ int SipccVideoRenderer::FrameSizeChange(unsigned int width,
 
 ///////////////////////////////////////////////////////////////////////
 
-void SipccVideoRenderer::SendFrameInfoAndBuffers(int buffer_size) {
+void SipccVideoRenderer::SendFrameInfoAndBuffers(int buffer_size) 
+{
+
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   LOG(INFO) << " SipccVideoRenderer: SendFrameInfoAndBuffers: Buffer Size" << buffer_size;
 
+  // the loop
   for (DIBMap::iterator dib_it = owned_dibs_.begin();
        dib_it != owned_dibs_.end(); dib_it++) {
     base::SharedMemory* shared_memory = dib_it->second->shared_memory.get();
@@ -193,9 +214,19 @@ void SipccVideoRenderer::SendFrameInfoAndBuffers(int buffer_size) {
     base::SharedMemoryHandle remote_handle;
     shared_memory->ShareToProcess(SipccController::GetInstance()->RenderProcessHandle(),
                                   &remote_handle);
-    SipccController::GetInstance()->OnBufferCreated(remote_handle,
-			   										buffer_size,
-			   										index);
-  }
+	if (isLocal == true)
+    {
+    	SipccController::GetInstance()->OnCaptureBufferCreated(remote_handle,
+				   											buffer_size,
+				   											index);
+
+	} else 
+	{
+    	SipccController::GetInstance()->OnReceiveBufferCreated(remote_handle,
+				   											buffer_size,
+				   											index);
+
+	}
+  } //end for
 
 }

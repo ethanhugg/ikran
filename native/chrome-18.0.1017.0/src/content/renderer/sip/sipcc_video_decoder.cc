@@ -31,6 +31,7 @@ SIPCCVideoDecoder::SIPCCVideoDecoder(MessageLoop* message_loop,
     : message_loop_(message_loop),
       visible_size_(640, 480),
       url_(url) {
+	LOG(INFO)<<" **** SUHAS : SIPCCVIDEODECODER: message-loop " << message_loop_ << " url " << url_;
 }
 
 SIPCCVideoDecoder::~SIPCCVideoDecoder() {}
@@ -140,6 +141,7 @@ void SIPCCVideoDecoder::Seek(base::TimeDelta time, const FilterStatusCB& cb) {
 }
 
 void SIPCCVideoDecoder::Read(const ReadCB& callback) {
+  LOG(INFO) << " CHAAAAAAAAAAAAAAAYA - HIIIII ";
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(
         FROM_HERE,
@@ -151,6 +153,7 @@ void SIPCCVideoDecoder::Read(const ReadCB& callback) {
   base::AutoLock auto_lock(lock_);
   CHECK(read_cb_.is_null());
   read_cb_ = callback;
+  LOG(INFO) << " CHAAAAAAAAAAAAAAAYA - BYEEEE ";
 }
 
 const gfx::Size& SIPCCVideoDecoder::natural_size() {

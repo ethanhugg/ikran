@@ -27,12 +27,19 @@ class SipccMessageFilter
  public:
   class Delegate {
    public:
-    virtual void OnVideoBufferCreated(base::SharedMemoryHandle handle,
-				      int length, int buffer_id) = 0;
+    virtual void OnCaptureVideoBufferCreated(base::SharedMemoryHandle handle,
+				      							int length, int buffer_id) = 0;
+
+    virtual void OnReceiveVideoBufferCreated(base::SharedMemoryHandle handle,
+				      							int length, int buffer_id) = 0;
 
     // Called when a video frame buffer is received from the browser process.
-    virtual void OnVideoBufferReceived(int buffer_id, unsigned timestamp) = 0;
+    virtual void OnCaptureVideoBufferReceived(int buffer_id, unsigned timestamp) = 0;
+    virtual void OnReceiveVideoBufferReceived(int buffer_id, unsigned timestamp) = 0;
 
+	virtual void OnSipRegStateChanged(const std::string reg_state) = 0;	
+	virtual void OnSipSessionStateChanged(const std::string reg_state) = 0;	
+    virtual void OnSipIncomingCall(std::string callingPartyName, std::string callingPartyNum,std::string state) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -62,13 +69,26 @@ class SipccMessageFilter
   virtual void OnChannelClosing() OVERRIDE;
 
   // Receive a newly created buffer from browser process.
-  void OnBufferCreated(base::SharedMemoryHandle handle,
-		       int length, int buffer_id);
+  void OnCaptureBufferCreated(base::SharedMemoryHandle handle,
+		       					int length, int buffer_id);
 
+  void OnReceiveBufferCreated(base::SharedMemoryHandle handle,
+		       					int length, int buffer_id);
 
   // Receive a buffer from browser process.
-  void OnBufferReceived(int buffer_id, unsigned int timestamp);
+  void OnCaptureBufferReceived(int buffer_id, unsigned int timestamp);
+  void OnReceiveBufferReceived(int buffer_id, unsigned int timestamp);
 
+
+  // Sip stack notified on registration state change
+  void OnRegistrationStateChanged(std::string reg_state);
+  
+  //Sip stack notified on session state change
+  void OnSessionStateChanged(std::string session_state);
+  
+  //Sip stack notified on incoming call
+  void OnIncomingCall(std::string callingPartyName, std::string callingPartyNum,
+						 std::string state);
 
   // A map of stream ids to delegates.
   Delegate* delegate_;

@@ -95,8 +95,13 @@ public:
 	virtual void OnCallHeld() = 0;
 	virtual void OnCallResume() = 0;
 	
-    virtual void DoSendBufferCreated(base::SharedMemoryHandle handle, int length, int buffer_id) = 0;
-    virtual void DoSendBufferFilled(int buffer_id, unsigned int timestamp) = 0;
+	// capture stream buffers
+    virtual void DoSendCaptureBufferCreated(base::SharedMemoryHandle handle, int length, int buffer_id) = 0;
+    virtual void DoSendCaptureBufferFilled(int buffer_id, unsigned int timestamp) = 0;
+
+	// receive stream buffers
+    virtual void DoSendReceiveBufferCreated(base::SharedMemoryHandle handle, int length, int buffer_id) = 0;
+    virtual void DoSendReceiveBufferFilled(int buffer_id, unsigned int timestamp) = 0;
 };
 
 
@@ -109,7 +114,7 @@ public:
 	static SipccController* GetInstance();
 
    	//Registration and Session Operations 
-	void Register(std::string device, std::string sipUser, std::string sipCredentials, std::string sipDomain);
+	void Register(std::string device, std::string sipUser, std::string sipCredentials, std::string sipDomain, bool isLocal);
 	void UnRegister();
 	void PlaceCall(std::string dial_number, std::string ipAddress, int audioPort, int videoPort);
 	void EndCall();
@@ -126,10 +131,9 @@ public:
 	void HoldCall();
 	void ResumeCall();
 
-	void SetExternalRenderer(void* renderer) {
-		ext_renderer = renderer;
-  		LOG(INFO) << "SipccController.h SetExternal Renderer " << ext_renderer;
-	}
+	// Create the renderers as needed
+	void InitExternalRenderer();
+	void InitCaptureRenderer();
 
 	void SetVideoWindow(void* videoWin) {
 		video_window =  videoWin;
@@ -157,8 +161,11 @@ public:
 
 
    //video frame events
-   void OnBufferCreated(base::SharedMemoryHandle handle, int length, int buffer_id);
-   void OnBufferReady(int buffer_id, unsigned int timestamp);
+   void OnCaptureBufferCreated(base::SharedMemoryHandle handle, int length, int buffer_id);
+   void OnCaptureBufferReady(int buffer_id, unsigned int timestamp);
+   //remote video frame events
+   void OnReceiveBufferCreated(base::SharedMemoryHandle handle, int length, int buffer_id);
+   void OnReceiveBufferReady(int buffer_id, unsigned int timestamp);
 
    void SetRenderProcessHandle(base::ProcessHandle handle) {
 		render_process_handle_ = handle;
@@ -168,7 +175,8 @@ public:
 		return render_process_handle_;
    }
 
-   void ReturnBuffer(int buffer_id);
+   void ReturnCaptureBuffer(int buffer_id);
+   void ReturnReceiveBuffer(int buffer_id);
 private:
     struct VideoRenderer;	
 	SipccController();
@@ -217,8 +225,10 @@ private:
 	//video window handle
 	void* video_window;
 	
-	//external webrtc renderer
+	//external webrtc renderer for local and remote
+    // video streams 
 	void* ext_renderer;
+    void* capture_renderer;
 
     //CallControlManager
 	CallControlManagerPtr ccm_ptr_; 
@@ -229,11 +239,17 @@ private:
 	//sole observer
 	SipccControllerObserver* observer_;
 
-   // our video decoder thread
+   	// our video decoder thread
     base::Thread sipcc_thread_;
     //peer handle for shared memory
     base::ProcessHandle render_process_handle_;  
-   VideoRenderer* vRenderer;
+    // our proxy classes to talk between Sip Controller and External renderers
+	VideoRenderer* vRenderer;
+    VideoRenderer* capRenderer;
+	bool hasCaptureRenderer;
+    bool hasRemoteRenderer;
+	bool isRegistered;
+	bool inSession;
 };
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_SIPCC_CONTROLLER_HOST_H_
