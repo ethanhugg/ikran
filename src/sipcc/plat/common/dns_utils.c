@@ -195,5 +195,6 @@ dnsGetHostBySRV (cc_int8_t *service,
 void
 dnsFreeSrvHandle (srv_handle_t srv_handle)
 {
-    srv_handle = NULL;
+  // this function does nothing
+  //  srv_handle = NULL;
 }

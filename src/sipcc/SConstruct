@@ -248,6 +248,7 @@ elif targetPlatform == 'linux2':
     '-Wunused-value',     
     '-Wvolatile-register-var',
     '-Wunused-but-set-variable',
+    '-Wunused-but-set-parameter',
     '-Wenum-compare', 
     '-fPIC'
   ] 
