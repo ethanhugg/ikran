@@ -32,11 +32,13 @@
 #include "third_party/webrtc/video_engine/include/vie_render.h"
 
 
-class SipccVideoRenderer: public webrtc::ExternalRenderer {
+class SipccVideoRenderer: public webrtc::ExternalRenderer 
+{
+
 public:
-    SipccVideoRenderer(int w, int h);
+    SipccVideoRenderer(int w, int h,std::string type);
     ~SipccVideoRenderer();
-  void ReturnBuffer(int buffer_id);
+  	void ReturnBuffer(int buffer_id);
 
 
 protected:
@@ -50,9 +52,10 @@ protected:
     virtual int DeliverFrame(unsigned char* buffer, 
                              int bufferSize, 
                              unsigned int timestamp) OVERRIDE;
-  // should always be on IO thread
-  void Init();
-  void  DeliverFrameOnIOThread(unsigned char* buffer,
+
+  	// should always be on IO thread
+  	void Init();
+ 	void  DeliverFrameOnIOThread(unsigned char* buffer,
                              int bufferSize,
                              unsigned int timestamp);
 
@@ -61,7 +64,7 @@ private:
   int width;
   int height;
   bool init_done_;
-
+  bool isLocal;
   // Lock to protect free_dibs_ and owned_dibs_.
   base::Lock lock_;
 

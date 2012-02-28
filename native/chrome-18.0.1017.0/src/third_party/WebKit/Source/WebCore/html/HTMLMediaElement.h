@@ -67,7 +67,9 @@ class Widget;
 #if PLATFORM(MAC)
 class DisplaySleepDisabler;
 #endif
-
+#if ENABLE(SIP)
+class HTMLSessionElement;
+#endif
 #if ENABLE(VIDEO_TRACK)
 typedef PODIntervalTree<double, TextTrackCue*> CueIntervalTree;
 typedef Vector<CueIntervalTree::IntervalType> CueList;
@@ -124,12 +126,23 @@ public:
     enum NetworkState { NETWORK_EMPTY, NETWORK_IDLE, NETWORK_LOADING, NETWORK_NO_SOURCE };
     NetworkState networkState() const;
 
+#if ENABLE(SIP)
+   //session reg state
+   enum SipRegState { NO_REGISTRAR, REGISTERING, REGISTERED, REGISTRATION_FAILED, REGISTRATION_INVALID };
+   SipRegState sipRegState() const;
+
+   enum SipSessionState { NO_SESSION, OPENING_SESSION, ACCEPTING_SESSION, IN_SESSION, CLOSING_SESSION, INVALID_SESSION };
+   SipSessionState sipSessionState() const;
+   int session_id;
+#endif
+
     String preload() const;    
     void setPreload(const String&);
 
     PassRefPtr<TimeRanges> buffered() const;
     void load(ExceptionCode&);
     String canPlayType(const String& mimeType) const;
+
 
 // ready state
     ReadyState readyState() const;
@@ -194,7 +207,9 @@ public:
     void endScrubbing();
     
     bool canPlay() const;
-
+#if ENABLE(SIP)
+	bool canOpenSession() const;
+#endif	
     float percentLoaded() const;
 
 #if ENABLE(VIDEO_TRACK)
@@ -247,7 +262,10 @@ public:
 
     void sourceWillBeRemoved(HTMLSourceElement*);
     void sourceWasAdded(HTMLSourceElement*);
-
+#if ENABLE(SIP)
+	void sessionWillBeRemoved(HTMLSessionElement*);
+    void sessionWasAdded(HTMLSessionElement*);
+#endif
     void privateBrowsingStateDidChange();
 
     // Media cache management.
@@ -275,6 +293,10 @@ public:
     MediaController* controller() const;
     void setController(PassRefPtr<MediaController>);
 
+#if ENABLE(SIP)
+	void openSessionInternal();
+	void closeSessionInternal();
+#endif
 
 protected:
     HTMLMediaElement(const QualifiedName&, Document*, bool);
@@ -362,6 +384,12 @@ private:
     
     virtual void mediaPlayerFirstVideoFrameAvailable(MediaPlayer*);
     virtual void mediaPlayerCharacteristicChanged(MediaPlayer*);
+#if ENABLE(SIP)
+	void setRegState(MediaPlayer::SipRegistrationState);
+    void setSessionState(MediaPlayer::SipSessionState);
+    virtual void mediaPlayerSipRegStateChanged(MediaPlayer*);
+    virtual void mediaPlayerSipSessionStateChanged(MediaPlayer*);
+#endif
 
 #if ENABLE(MEDIA_SOURCE)
     virtual void mediaPlayerSourceOpened();
@@ -389,6 +417,14 @@ private:
     void loadResource(const KURL&, ContentType&);
     void scheduleNextSourceChild();
     void loadNextSourceChild();
+#if ENABLE(SIP)
+	void scheduleNextSessionChild();
+	void loadNextSessionChild();
+    bool havePotentialSessionChild();
+    void waitForSessionChange();
+    KURL selectNextSessionChild(ContentType*, InvalidURLAction);
+    void loadSessionInternal();
+#endif
     void userCancelledLoad();
     bool havePotentialSourceChild();
     void noneSupported();
@@ -487,7 +523,16 @@ private:
     ReadyState m_readyState;
     ReadyState m_readyStateMaximum;
     KURL m_currentSrc;
+#if ENABLE(SIP)
+	SipRegState m_sipRegState;
+    SipSessionState m_sipSessionState;
+	String m_session_src;
+	String m_session_aor;
+    String m_session_credentials;
+    String m_session_proxy;
+    String m_session_dn;
 
+#endif
 
 
     RefPtr<MediaError> m_error;
@@ -505,13 +550,20 @@ private:
     float m_lastTimeUpdateEventMovieTime;
     
     // Loading state.
-    enum LoadState { WaitingForSource, LoadingFromSrcAttr, LoadingFromSourceElement };
+#if ENABLE(SIP)
+    enum LoadState { WaitingForSource,WaitingForSession, LoadingFromSrcAttr, LoadingFromSourceElement, LoadingFromSessionElement };
+#else
+    enum LoadState { WaitingForSource, LoadingFromSrcAttr, LoadingFromSourceElement};
+#endif
     LoadState m_loadState;
     HTMLSourceElement* m_currentSourceNode;
 
     Node* m_nextChildNodeToConsider;
     Node* sourceChildEndOfListValue() { return static_cast<Node*>(this); }
-
+#if ENABLE(SIP)
+    HTMLSessionElement* m_currentSessionNode;
+    Node* sessionChildEndOfListValue() { return static_cast<Node*>(this); }
+#endif
     OwnPtr<MediaPlayer> m_player;
 #if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
     RefPtr<Widget> m_proxyWidget;
@@ -574,6 +626,10 @@ private:
     bool m_dispatchingCanPlayEvent : 1;
     bool m_loadInitiatedByUserGesture : 1;
     bool m_completelyLoaded : 1;
+#if ENABLE(SIP)
+	bool m_sessionElementFound:1;
+	bool m_clearSessionHandled:1;
+#endif
     bool m_havePreparedToPlay : 1;
     bool m_parsingInProgress : 1;
 

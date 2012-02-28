@@ -35,7 +35,7 @@ class ResourceContext;
 // May be one should refactor it , if needed
 class CONTENT_EXPORT SipccRendererHost 
                : public content::BrowserMessageFilter,
-		 public SipccControllerObserver {
+		 		 public SipccControllerObserver {
                           
  public:
 
@@ -58,11 +58,17 @@ class CONTENT_EXPORT SipccRendererHost
   virtual void OnCallHeld() OVERRIDE;
   virtual void OnCallResume() OVERRIDE; 
 
-  void DoSendBufferCreated(base::SharedMemoryHandle handle,
-						 int length,
-						 int buffer_id) OVERRIDE;
-  void DoSendBufferFilled(int buffer_id,
-					   unsigned int timestamp) OVERRIDE;
+  void DoSendCaptureBufferCreated(base::SharedMemoryHandle handle,
+						 			int length,
+						 			int buffer_id) OVERRIDE;
+  void DoSendCaptureBufferFilled(int buffer_id,
+					   				unsigned int timestamp) OVERRIDE;
+
+  void DoSendReceiveBufferCreated(base::SharedMemoryHandle handle,
+						 			int length,
+						 			int buffer_id) OVERRIDE;
+  void DoSendReceiveBufferFilled(int buffer_id,
+					   				unsigned int timestamp) OVERRIDE;
 
   virtual ~SipccRendererHost();
  private:
@@ -73,18 +79,14 @@ class CONTENT_EXPORT SipccRendererHost
   // IPC Functionality performed on IO thread
   void OnInit();
   void OnSipPlaceCall(std::string dial_number);
-  void OnSipRegister();
-  void OnReceiveEmptyBuffer(int buffer_id);
-  void DoSendFilledBuffer(int device_id, int buffer_id, unsigned timestamp);
-
-   // Gets the better know IP address as reported by ifconfig
-   // needs IO operation
-   bool GetLocalInterfaceAddress();
-   bool GetActiveInterfaceAddress();
+  void OnSipAnswerCall();
+  void OnSipHangUp();
+  void OnSipRegister(std::string aor, std::string creds, std::string proxy, bool isLocal);
+  void OnSipDeRegister();
+  void OnReceiveEmptyCaptureBuffer(int buffer_id);
+  void OnReceiveEmptyReceiveBuffer(int buffer_id);
 
    const content::ResourceContext* resource_context_;  
-  //inet4 address
-  std::string interface_address_v4_;	
   DISALLOW_COPY_AND_ASSIGN(SipccRendererHost);
 };
 
