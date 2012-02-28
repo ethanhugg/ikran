@@ -27,7 +27,8 @@ include_dirs = [
   'common/browser_logging',                  
   '..',
   '../third_party',
-  chromiumbaseincludepath
+  chromiumbaseincludepath,
+  chromiumbaseincludepath + '/base/synchronization'
 ]
 
 if sys.platform =='win32':

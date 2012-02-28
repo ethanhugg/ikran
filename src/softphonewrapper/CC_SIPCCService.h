@@ -61,8 +61,8 @@ extern "C" {
 #include "CSFVideoControlWrapper.h"
 #include "CSFMediaProvider.h"
 
-#include "base/synchronization/lock.h"
-#include "base/synchronization/waitable_event.h"
+#include "lock.h"
+#include "waitable_event.h"
 
 #include <vector>
 #include <set>

@@ -43,7 +43,7 @@
 #include "PhoneDetailsImpl.h"
 #include "CC_SIPCCService.h"
 
-#include "base/synchronization/lock.h"
+#include "lock.h"
 
 
 #include <set>

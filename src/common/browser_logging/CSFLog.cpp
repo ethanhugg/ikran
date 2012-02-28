@@ -42,6 +42,7 @@
 #include <stdarg.h>
 
 #include "CSFLog.h"
+#include "base/basictypes.h"
 #include "prlog.h"
 
 static PRLogModuleInfo *gLogModuleInfo = NULL;

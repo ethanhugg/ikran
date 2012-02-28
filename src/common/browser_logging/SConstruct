@@ -5,12 +5,17 @@ import sys
 Import('build_env')
 Import('debug')
 Import('mozsrcpath')
+Import('chromiumbaseincludepath')
 Import('x64')
+
+if (chromiumbaseincludepath == 'third_party'):
+  chromiumbaseincludepath = '../../../third_party/chromium_base'
 
 include_dirs = [
   '.',
   'include',
   mozsrcpath + '/nsprpub/pr/include',
+  chromiumbaseincludepath
 ]
 
 if sys.platform == 'win32':
