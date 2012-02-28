@@ -331,7 +331,7 @@ sip_regmgr_get_fallback_line_num ()
     int ndx;
     line_t line = 0;
 
-    for (ndx = 0; ndx < 3; ndx++) {
+    for (ndx = 0; ndx < (MAX_CCM - 1); ndx++) {
         if (fallback_lines_available[ndx].available) {
             fallback_lines_available[ndx].available = FALSE;
             line = fallback_lines_available[ndx].line;
