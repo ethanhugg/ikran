@@ -309,11 +309,9 @@ static void
 fsmcnf_cnf_xfer (fsmcnf_ccb_t *ccb)
 {
     fsmdef_dcb_t     *dcb;
-    fsmdef_dcb_t     *other_dcb;
     cc_feature_data_t ftr_data;
 
     dcb = fsm_get_dcb(ccb->cnf_call_id);
-    other_dcb = fsm_get_dcb(ccb->cns_call_id);
 
     /*
      * Pretending attended transfer
@@ -465,7 +463,6 @@ void
 fsmcnf_feature_cancel (fsmcnf_ccb_t *ccb, line_t line, callid_t call_id, 
                           callid_t target_call_id)
 {
-    reg_mode_t mode;
     cc_feature_data_t data;
     fsm_fcb_t         *fcb_def;
 
@@ -497,8 +494,6 @@ fsmcnf_feature_cancel (fsmcnf_ccb_t *ccb, line_t line, callid_t call_id,
         cc_int_feature(CC_SRC_GSM, CC_SRC_GSM, target_call_id,
                            line, CC_FEATURE_END_CALL, NULL);
     }
-
-    mode = sip_regmgr_get_cc_mode(1);
 
     data.cancel.target_call_id = target_call_id;
     data.cancel.call_id = call_id;

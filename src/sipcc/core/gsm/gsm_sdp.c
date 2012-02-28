@@ -2029,13 +2029,8 @@ gsmsdp_update_local_sdp (fsmdef_dcb_t *dcb_p, boolean offer,
 {
     static const char fname[] = "gsmsdp_update_local_sdp";
     cc_action_data_t data;
-    void           *local_sdp_p;
-    void           *remote_sdp_p;
     sdp_direction_e direction;
     boolean         local_hold = (boolean)FSM_CHK_FLAGS(media->hold, FSM_HOLD_LCL);
-
-    local_sdp_p = dcb_p->sdp->src_sdp;
-    remote_sdp_p = dcb_p->sdp->dest_sdp;
 
     if (media->src_port == 0) {
         GSM_DEBUG(DEB_L_C_F_PREFIX"allocate receive port for media line\n", 
@@ -2125,16 +2120,12 @@ gsmsdp_update_local_sdp_for_multicast (fsmdef_dcb_t *dcb_p,
                                       boolean initial_offer)
 {
    static const char fname[] = "gsmsdp_update_local_sdp_for_multicast";
-    void           *local_sdp_p;
-    void           *remote_sdp_p;
     sdp_direction_e direction;
     char            addr_str[MAX_IPADDR_STR_LEN];
     uint16_t        level;
     char            *p_addr_str;
 
     level = media->level;
-    local_sdp_p = dcb_p->sdp->src_sdp;
-    remote_sdp_p = dcb_p->sdp->dest_sdp;
 
     GSM_DEBUG(DEB_L_C_F_PREFIX"%d %d %d\n",
 			  DEB_L_C_F_PREFIX_ARGS(GSM, dcb_p->line, dcb_p->call_id, fname),
@@ -4635,7 +4626,6 @@ gsmsdp_update_local_sdp_media_capability (fsmdef_dcb_t *dcb_p, boolean reset,
                                           boolean hold)
 {
     static const char     fname[] = "gsmsdp_update_local_sdp_media_capability";
-    const cc_media_cap_table_t *media_cap_tbl;
     fsmdef_media_t             *media;
     boolean                    change_found = FALSE;
     boolean                    check_for_change = FALSE;
@@ -4653,7 +4643,6 @@ gsmsdp_update_local_sdp_media_capability (fsmdef_dcb_t *dcb_p, boolean reset,
              * the full offer again, need to check for various changes.
          * Update capabilities to match platform caps
          */
-        media_cap_tbl = gsmsdp_get_media_capability(dcb_p);
             check_for_change = TRUE;
         }
 

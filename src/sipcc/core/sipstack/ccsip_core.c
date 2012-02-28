@@ -8724,68 +8724,6 @@ sip_sm_is_previous_call_id (const char *pCallID, line_t *pPreviousCallIndex)
     return FALSE;
 }
 
-#ifdef DEBUG
-void
-print_ccb_memoryusage (ccsipCCB_t *ccb)
-{
-    int i;
-    struct _httpMsg *next;
-
-    debugif_printf("CCB address      : 0x%lx\n", ccb);
-    if (ccb) {
-        debugif_printf("contact info     : 0x%lx\n", ccb->contact_info);
-        if (ccb->contact_info) {
-            for (i = 0; i < SIP_MAX_LOCATIONS; i++) {
-                if (ccb->contact_info->locations[i]) {
-                    debugif_printf("    [%d] exists\n    loc_start    : 0x%lx\n", i,
-                                   ccb->contact_info->locations[i]->loc_start);
-                    debugif_printf("    name         : 0x%lx\n",
-                                   ccb->contact_info->locations[i]->name);
-                    debugif_printf("    sip_url      : 0x%lx\n",
-                                   ccb->contact_info->locations[i]->sipUrl);
-                    debugif_printf("    tag          : 0x%lx\n",
-                                   ccb->contact_info->locations[i]->tag);
-
-                }
-            }
-        }
-        debugif_printf("record route info: 0x%lx\n", ccb->record_route_info);
-        if (ccb->record_route_info) {
-            for (i = 0; i < SIP_MAX_LOCATIONS; i++) {
-                if (ccb->contact_info->locations[i]) {
-                    debugif_printf("    [%d] exists\n    loc_start    : 0x%lx\n", i,
-                                   ccb->contact_info->locations[i]->loc_start);
-                    debugif_printf("    name         : 0x%lx\n",
-                                   ccb->contact_info->locations[i]->name);
-                    debugif_printf("    sip_url      : 0x%lx\n",
-                                   ccb->contact_info->locations[i]->sipUrl);
-                    debugif_printf("    tag          : 0x%lx\n",
-                                   ccb->contact_info->locations[i]->tag);
-
-                }
-            }
-        }
-        debugif_printf("last request     : 0x%lx\n", ccb->last_request);
-        if (ccb->last_request) {
-            debugif_printf("    Next        : 0x%lx\n", ccb->last_request->next);
-            debugif_printf("    Body        : 0x%lx\n", ccb->last_request->mesg_body[0].msgBody);
-            debugif_printf("    Line        : 0x%lx\n", ccb->last_request->mesg_line);
-            next = ccb->last_request->next;
-            while (next) {
-                debugif_printf("    Next        : 0x%lx\n", ccb->last_request->next);
-                debugif_printf("    Body        : 0x%lx\n",
-                               ccb->last_request->mesg_body[0].msgBody);
-                debugif_printf("    Line        : 0x%lx\n", ccb->last_request->mesg_line);
-                next = ccb->last_request->next;
-            }
-        }
-        debugif_printf("source sdp       : 0x%lx\n", ccb->src_sdp);
-        debugif_printf("destination sdp  : 0x%lx\n", ccb->dest_sdp);
-    }
-    debugif_printf("\n");
-}
-#endif
-
 void
 sip_sm_200and300_update (ccsipCCB_t *ccb, sipMessage_t *response, int response_code)
 {
@@ -12356,18 +12294,11 @@ ccsip_handle_cc_hook_event (sipSMEvent_t *sip_sm_event)
 {
     static const char *fname = "ccsip_handle_cc_hook_event";
     line_t         line_number = 0;
-    callid_t       call_id;
     char          *sip_call_id = NULL;
-    char          *global_call_id = NULL;
     char          *sip_local_tag;
-    char          *prim_call_id = NULL;
-    char          *prim_local_tag = NULL;
-    char          *prim_remote_tag = NULL;
     cc_msg_t      *pCCMsg;
-    ccsipCCB_t    *ccb, *prim_ccb = NULL;
+    ccsipCCB_t    *ccb;
     cc_msgs_t      event;
-    cc_hold_resume_reason_e consult_reason = CC_REASON_NONE;
-    cfwdall_mode_t cfwdall_mode = CFWDALL_NONE;
 
     CCSIP_DEBUG_TASK(DEB_F_PREFIX"Entering with event %d", DEB_F_PREFIX_ARGS(SIP_EVT, fname),
                      sip_sm_event->u.cc_msg->msg.setup.msg_id);
@@ -12383,12 +12314,8 @@ ccsip_handle_cc_hook_event (sipSMEvent_t *sip_sm_event)
 
     if (event == CC_MSG_OFFHOOK) {
         line_number = pCCMsg->msg.offhook.line;
-        prim_ccb = sip_sm_get_ccb_by_gsm_id(pCCMsg->msg.offhook.prim_call_id);
-        consult_reason = pCCMsg->msg.offhook.hold_resume_reason;
     } else {
         line_number = pCCMsg->msg.onhook.line;
-        prim_ccb = sip_sm_get_ccb_by_gsm_id(pCCMsg->msg.onhook.prim_call_id);
-        consult_reason = pCCMsg->msg.onhook.hold_resume_reason;
     }
     if (sip_regmgr_get_cc_mode(line_number) != REG_MODE_CCM) {
         /* this is not CCM environment */
@@ -12397,32 +12324,15 @@ ccsip_handle_cc_hook_event (sipSMEvent_t *sip_sm_event)
         return TRUE;
     }
 
-    /* Get primary call_id information */
-    if (prim_ccb) {
-
-        prim_call_id = prim_ccb->sipCallID;
-
-        if (prim_ccb->flags & INCOMING) {
-            prim_local_tag = (char *) prim_ccb->sip_to_tag;
-            prim_remote_tag = (char *) prim_ccb->sip_from_tag;
-        } else {
-            prim_local_tag = (char *) prim_ccb->sip_from_tag;
-            prim_remote_tag = (char *) prim_ccb->sip_to_tag;
-        }
-    }
-
     /*
      * Allocate SIP Call-ID and local tag, if they are not already allocated.
      */
     if (event == CC_MSG_OFFHOOK) {
         ccb = sip_sm_get_ccb_by_gsm_id(pCCMsg->msg.offhook.call_id);
         line_number = pCCMsg->msg.offhook.line;
-        call_id = pCCMsg->msg.offhook.call_id;
-        global_call_id = pCCMsg->msg.offhook.global_call_id;
     } else {
         ccb = sip_sm_get_ccb_by_gsm_id(pCCMsg->msg.onhook.call_id);
         line_number = pCCMsg->msg.onhook.line;
-        call_id = pCCMsg->msg.onhook.call_id;
     }
     if (ccb == NULL) {
         /*
@@ -12440,10 +12350,6 @@ ccsip_handle_cc_hook_event (sipSMEvent_t *sip_sm_event)
         sip_local_tag = (char *) (ccb->sip_from_tag);
         CCSIP_DEBUG_TASK(DEB_F_PREFIX"callid: %s & local-tag: %s\n",
                          DEB_F_PREFIX_ARGS(SIP_CALL_STATUS, fname), sip_call_id, sip_local_tag);
-    }
-
-    if (event == CC_MSG_OFFHOOK) {
-       cfwdall_mode = pCCMsg->msg.offhook.cfwdall_mode;
     }
 
     /*

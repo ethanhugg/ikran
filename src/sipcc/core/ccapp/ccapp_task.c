@@ -191,12 +191,8 @@ void CCApp_task(void * arg)
     while (1) {
         msg = cprGetMessage(ccapp_msgq, TRUE, (void **) &syshdr);
         if ( msg) {
-#if DEBUG
-            dump_msg("CCAPPTASKDUMPMSG", (unsigned int *)msg, syshdr->Len, syshdr->Cmd);
-#else
             CCAPP_DEBUG(DEB_F_PREFIX"Received Cmd[%d] for app[%d]\n", DEB_F_PREFIX_ARGS(SIP_CC_PROV, fname),
                     syshdr->Cmd, syshdr->Usr.UsrInfo);
-#endif
 
             listener = getCcappListener(syshdr->Usr.UsrInfo);
             if (listener != NULL) {

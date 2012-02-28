@@ -140,23 +140,23 @@ sipTransportCSPSGetProxyPortByDN (line_t dn)
     return ((short) ti_common->port);
 }
 
-
+// This function is broken
 uint16_t
 sipTransportCSPSGetProxyAddressByDN(cpr_ip_addr_t *ip_addr, line_t dn)
 {
-    static const char *fname = "sipTransportCSPSGetProxyAddressByDN";
-    ti_common_t *ti_common;
-
-    if ((((int)dn) < 1) || (((int)dn) > MAX_REG_LINES)) {
-        CCSIP_DEBUG_ERROR(SIP_F_PREFIX"Args check: DN out of "
-                          "bounds.\n", fname, dn);
-        return (0);
-    }
-
-    ti_common = &CSPS_Config_Table[dn - 1].ti_common;
-
-    ip_addr = &(ti_common->addr);
-
+//    static const char *fname = "sipTransportCSPSGetProxyAddressByDN";
+//    ti_common_t *ti_common;
+//
+//    if ((((int)dn) < 1) || (((int)dn) > MAX_REG_LINES)) {
+//        CCSIP_DEBUG_ERROR(SIP_F_PREFIX"Args check: DN out of "
+//                          "bounds.\n", fname, dn);
+//        return (0);
+//    }
+//
+//    ti_common = &CSPS_Config_Table[dn - 1].ti_common;
+//
+//    ip_addr = &(ti_common->addr);
+//
     return(1);
 }
 

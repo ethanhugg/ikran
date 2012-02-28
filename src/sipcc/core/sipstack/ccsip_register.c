@@ -450,7 +450,7 @@ ccsip_handle_ev_reg_req (ccsipCCB_t *ccb, sipSMEvent_t *event)
 void
 ccsip_handle_ev_default (ccsipCCB_t *ccb, sipSMEvent_t *event)
 {
-    if ((event->type == E_SIP_REG_CANCEL) && (ccb->state == SIP_REG_STATE_IDLE)) {
+    if ((event->type == (int) E_SIP_REG_CANCEL) && (ccb->state == (int) SIP_REG_STATE_IDLE)) {
         (void) sip_platform_register_expires_timer_stop(ccb->index);
         ccb->authen.cred_type = 0;
         ccb->retx_counter     = 0;
@@ -460,7 +460,7 @@ ccsip_handle_ev_default (ccsipCCB_t *ccb, sipSMEvent_t *event)
     }
 
     /* only free SIP messages, timeouts are internal */
-    if (event->type < E_SIP_REG_TMR_ACK) {
+    if (event->type < (int) E_SIP_REG_TMR_ACK) {
         free_sip_message(event->u.pSipMessage);
     }
 }
@@ -1325,7 +1325,7 @@ ccsip_handle_ev_4xx (ccsipCCB_t *ccb, sipSMEvent_t *event)
     case SIP_CLI_ERR_NOT_AVAIL:
     case SIP_CLI_ERR_BUSY_HERE:
         if (ccb->cc_type == CC_CCM) {
-            if (ccb->state == SIP_REG_STATE_TOKEN_WAIT) {
+            if (ccb->state == (int) SIP_REG_STATE_TOKEN_WAIT) {
                 clean_method_request_trx(ccb, sipMethodRefer, TRUE);
                 sip_regmgr_ev_token_wait_4xx_n_5xx(ccb, event);
             } else {
@@ -1362,7 +1362,7 @@ ccsip_handle_ev_4xx (ccsipCCB_t *ccb, sipSMEvent_t *event)
 
     default:
         if (ccb->cc_type == CC_CCM) {
-            if (ccb->state == SIP_REG_STATE_TOKEN_WAIT) {
+            if (ccb->state == (int) SIP_REG_STATE_TOKEN_WAIT) {
                 clean_method_request_trx(ccb, sipMethodRefer, TRUE);
                 sip_regmgr_ev_token_wait_4xx_n_5xx(ccb, event);
             } else {
@@ -1459,7 +1459,7 @@ ccsip_handle_ev_failure_response (ccsipCCB_t *ccb, sipSMEvent_t *event)
     }
 
     if (ccb->cc_type == CC_CCM) {
-        if (ccb->state == SIP_REG_STATE_TOKEN_WAIT) {
+        if (ccb->state == (int) SIP_REG_STATE_TOKEN_WAIT) {
 
             /* Handle only 503 error condition for other errors
              * use default state 
@@ -1643,7 +1643,7 @@ ccsip_handle_ev_tmr_retry (ccsipCCB_t *ccb, sipSMEvent_t *event)
         }
     }
 
-    if (ccb->state != SIP_REG_STATE_REGISTERED) {
+    if (ccb->state != (int) SIP_REG_STATE_REGISTERED) {
         /*
          * Handling Retry timer in REGISTERED state is not needed
          * the event has come due to race condition
@@ -1844,8 +1844,8 @@ sip_reg_sm_process_event (sipSMEvent_t *pEvent)
     }
 
     /* Unbind UDP ICMP response handler */
-    if ((REG_CHECK_EVENT_SANITY(ccb->state, pEvent->type)) &&
-        (REG_EVENT_ACTION(ccb->state, pEvent->type))) {
+    if ((REG_CHECK_EVENT_SANITY((int) ccb->state, (int) pEvent->type)) &&
+        (REG_EVENT_ACTION(ccb->state, (int) pEvent->type))) {
         if (dump_reg_msg == TRUE) {
             DEF_DEBUG(DEB_L_C_F_PREFIX"%s <- %s\n",
                     DEB_L_C_F_PREFIX_ARGS(SIP_REG_STATE, ccb->dn_line, ccb->index, fname),
@@ -2119,7 +2119,7 @@ ccsip_register_cleanup (ccsipCCB_t *ccb, boolean start)
 
     sip_stop_ack_timer(ccb);
 
-    if ((start) && (ccb->state != SIP_REG_STATE_UNREGISTERING)) {
+    if ((start) && (ccb->state != (int) SIP_REG_STATE_UNREGISTERING)) {
         if (ccb->index == REG_BACKUP_CCB) {
             ccb->reg.tmr_expire = (exp_time > 5) ? exp_time - 5 : exp_time;
         } else {
@@ -3048,7 +3048,7 @@ ccsip_is_line_registered (line_t dn_line)
         ccb = sip_sm_get_ccb_by_index(ndx);
         if ((ccb != NULL) && (ccb->dn_line == dn_line)) {
             /* found the requested REG ccb */
-            if (ccb->state == SIP_REG_STATE_REGISTERED) {
+            if (ccb->state == (int) SIP_REG_STATE_REGISTERED) {
                 return (TRUE);
             } else {
                 /* the line is not in registered state */

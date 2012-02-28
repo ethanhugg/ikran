@@ -2150,7 +2150,6 @@ sipSPIsendNonActiveOptionResponse (sipMessage_t *msg,
     sipLocation_t *uri_loc        = NULL;
     const char    *accept_hdr     = NULL;
     const char    *supported      = NULL;
-    unsigned long  supported_caps = 0;
     int            kpml_config;
 
     if (!msg) {
@@ -2168,7 +2167,7 @@ sipSPIsendNonActiveOptionResponse (sipMessage_t *msg,
     // Parse through the Supported header to get the supported capabilities
     supported = sippmh_get_cached_header_val(msg, SUPPORTED);
     if (supported) {
-        supported_caps = sippmh_parse_supported_require(supported, NULL);
+        sippmh_parse_supported_require(supported, NULL);
     }
 
     response = GET_SIP_MESSAGE();
@@ -6262,11 +6261,9 @@ sipSPIAddContactHeader (ccsipCCB_t *ccb, sipMessage_t *request)
         }
         // add tag cisco-keep-alive for keep alive messages in ccm mode
         if ((ccb->cc_type == CC_CCM) && (ccb->index >= REG_BACKUP_CCB)) {
-            CCM_ID ccm_id;
             sipMethod_t method = sipMethodInvalid;
 
             sipGetRequestMethod(request, &method);
-            ccm_id = sip_regmgr_get_ccm_id(ccb);
             if ((method == sipMethodRegister)) {
                 strncat(pContactStr, ";expires=0;cisco-keep-alive",
                         MAX_SIP_HEADER_LENGTH - strlen(pContactStr) - 1);

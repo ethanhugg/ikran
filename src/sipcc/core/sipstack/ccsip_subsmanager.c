@@ -1519,7 +1519,7 @@ parse_body (cc_subscriptions_t event_type, char *msgBody, int msgLength,
                 /* follow through to default case */
             }
         default:
-            CCSIP_DEBUG_ERROR(SIP_F_PREFIX"%s: unknown event type\n", fname1, fname);
+            CCSIP_DEBUG_ERROR(SIP_F_PREFIX"%s: unknown event type %d\n", fname1, fname, type);
         return SIP_ERROR;
     }
 
