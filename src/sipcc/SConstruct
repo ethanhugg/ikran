@@ -247,7 +247,8 @@ elif targetPlatform == 'linux2':
     '-Wunused-label',     
     '-Wunused-value',     
     '-Wvolatile-register-var',
-    '-Wunused-but-set-variable', 
+    '-Wunused-but-set-variable',
+    '-Wenum-compare', 
     '-fPIC'
   ] 
   if x64 == 'yes':

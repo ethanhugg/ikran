@@ -620,7 +620,7 @@ sip_regmgr_trigger_fallback_monitor (void)
         if (fallback_ccb) {
             ti_config_table_t *ccm_table_entry;
             ccb = fallback_ccb->ccb;
-            if (ccb->state == SIP_REG_PRE_FALLBACK) {
+            if (ccb->state == (int) SIP_REG_PRE_FALLBACK) {
                 char user[MAX_LINE_NAME_SIZE];
                 
                 /*
@@ -1239,7 +1239,7 @@ sip_regmgr_ev_default (ccsipCCB_t *ccb, sipSMEvent_t *event)
     sip_reg_sm_change_state(ccb, SIP_REG_STATE_IN_FALLBACK);
     sip_regmgr_ev_tmr_ack_retry(ccb, event);
     /* only free SIP messages, timeouts are internal */
-    if (event->type < E_SIP_REG_TMR_ACK) {
+    if (event->type < (int) E_SIP_REG_TMR_ACK) {
         free_sip_message(event->u.pSipMessage);
     }
 }
@@ -3089,7 +3089,7 @@ sip_regmgr_ccm_restarted (ccsipCCB_t *new_reg_ccb)
         ccb = sip_sm_get_ccb_by_index(ndx);
         if (!sip_config_check_line((line_t)(ndx - TEL_CCB_END)) ||
             !ccb || (ccb == new_reg_ccb) ||
-            (ccb->state != SIP_REG_STATE_REGISTERED) ||
+            (ccb->state != (int) SIP_REG_STATE_REGISTERED) ||
             (util_compare_ip(&(ccb->reg.addr), &(new_reg_ccb->reg.addr)) == FALSE)) {
             /*
              * Skip the CCB for the line that

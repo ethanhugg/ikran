@@ -2273,7 +2273,7 @@ SIPTaskProcessSIPMessage (sipMessage_t *pSipMessage)
         DEB_F_PREFIX_ARGS(SIP_MSG_RECV, fname),
         (pSipMessage->mesg_body[0].msgBody == NULL) ? -1: pSipMessage->mesg_body[0].msgContentTypeValue);
 
-        if (sip_sm_event.type != E_SIP_REG_NONE) {
+        if (sip_sm_event.type != (int) E_SIP_REG_NONE) {
             if (sip_reg_sm_process_event(&sip_sm_event) < 0) {
                 CCSIP_DEBUG_ERROR(get_debug_string(REG_SM_PROCESS_EVENT_ERROR), fname, sip_sm_event.type);
                 if (is_request && (method != sipMethodAck)) {
