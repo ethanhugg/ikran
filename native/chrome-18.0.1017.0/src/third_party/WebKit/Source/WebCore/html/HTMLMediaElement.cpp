@@ -100,6 +100,10 @@
 #include "MediaElementAudioSourceNode.h"
 #endif
 
+#if ENABLE(SIP)
+#include "HTMLSessionElement.h"
+#endif
+
 #if PLATFORM(MAC)
 #include "DisplaySleepDisabler.h"
 #endif
@@ -184,6 +188,10 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document* docum
     , m_networkState(NETWORK_EMPTY)
     , m_readyState(HAVE_NOTHING)
     , m_readyStateMaximum(HAVE_NOTHING)
+#if ENABLE(SIP)
+	, m_sipRegState(NO_REGISTRAR)
+    , m_sipSessionState(NO_SESSION)
+#endif
     , m_volume(1.0f)
     , m_lastSeekTime(0)
     , m_previousProgress(0)
@@ -193,6 +201,9 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document* docum
     , m_loadState(WaitingForSource)
     , m_currentSourceNode(0)
     , m_nextChildNodeToConsider(0)
+#if ENABLE(SIP)
+    , m_currentSessionNode(0)
+#endif
 #if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
     , m_proxyWidget(0)
 #endif
@@ -230,6 +241,10 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document* docum
     , m_dispatchingCanPlayEvent(false)
     , m_loadInitiatedByUserGesture(false)
     , m_completelyLoaded(false)
+#if ENABLE(SIP)
+	, m_sessionElementFound(false)
+    , m_clearSessionHandled(false)
+#endif
     , m_havePreparedToPlay(false)
     , m_parsingInProgress(createdByParser)
 #if ENABLE(VIDEO_TRACK)
@@ -252,6 +267,10 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document* docum
 #if ENABLE(MEDIA_SOURCE)
     m_mediaSourceURL.setProtocol(mediaSourceURLProtocol);
     m_mediaSourceURL.setPath(createCanonicalUUIDString());
+#endif
+
+#if ENABLE(SIP)
+  	LOG(Media, "HTMLMediaElement::HTMLMediaElement : preload is set to NONE");
 #endif
 
     setHasCustomWillOrDidRecalcStyle();
@@ -325,6 +344,7 @@ void HTMLMediaElement::attributeChanged(Attribute* attr, bool preserveDecls)
         if (!getAttribute(srcAttr).isEmpty())
             scheduleLoad(MediaResource);
     } else if (attrName == controlsAttr)
+		LOG(Media, "HTMLMediaElement:: attributeChanged: controls");
         configureMediaControls();
 #if PLATFORM(MAC)
     else if (attrName == loopAttr)
@@ -405,6 +425,12 @@ void HTMLMediaElement::parseMappedAttribute(Attribute* attr)
         setAttributeEventListener(eventNames().webkitbeginfullscreenEvent, createAttributeEventListener(this, attr));
     else if (attrName == onwebkitendfullscreenAttr)
         setAttributeEventListener(eventNames().webkitendfullscreenEvent, createAttributeEventListener(this, attr));
+#if ENABLE(SIP)
+  else if (attrName == onregistrationstateAttr)
+        setAttributeEventListener(eventNames().regstateEvent, createAttributeEventListener(this, attr));
+    else if (attrName == onsessionstateAttr)
+        setAttributeEventListener(eventNames().sessionstateEvent, createAttributeEventListener(this, attr));
+#endif
     else
         HTMLElement::parseMappedAttribute(attr);
 }
@@ -434,6 +460,8 @@ void HTMLMediaElement::finishParsingChildren()
 
 bool HTMLMediaElement::rendererIsNeeded(const NodeRenderingContext& context)
 {
+    LOG(Media, "HTMLMediaElement::HTMLMediaElement : rendererIsNeeded");
+
 #if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
     UNUSED_PARAM(context);
     Frame* frame = document()->frame();
@@ -448,6 +476,7 @@ bool HTMLMediaElement::rendererIsNeeded(const NodeRenderingContext& context)
 
 RenderObject* HTMLMediaElement::createRenderer(RenderArena* arena, RenderStyle*)
 {
+    LOG(Media, "HTMLMediaElement::HTMLMediaElement : createRenderer");
 #if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
     // Setup the renderer if we already have a proxy widget.
     RenderEmbeddedObject* mediaRenderer = new (arena) RenderEmbeddedObject(this);
@@ -535,6 +564,15 @@ void HTMLMediaElement::scheduleNextSourceChild()
     m_pendingLoadFlags |= MediaResource;
     m_loadTimer.startOneShot(0);
 }
+
+#if ENABLE(SIP)
+void HTMLMediaElement::scheduleNextSessionChild()
+{
+    LOG(Media, "HTMLMediaElement::scheduleNextSessionChild ");
+    m_pendingLoadFlags |= MediaResource;
+    m_loadTimer.startOneShot(0);
+}
+#endif
 
 void HTMLMediaElement::scheduleEvent(const AtomicString& eventName)
 {
@@ -714,7 +752,7 @@ void HTMLMediaElement::prepareForLoad()
     // The spec doesn't say to block the load event until we actually run the asynchronous section
     // algorithm, but do it now because we won't start that until after the timer fires and the 
     // event may have already fired by then.
-    setShouldDelayLoadEvent(true);
+    //setShouldDelayLoadEvent(true);
 
 #if ENABLE(VIDEO_TRACK)
     // HTMLMediaElement::textTracksAreReady will need "... the text tracks whose mode was not in the
@@ -819,7 +857,6 @@ void HTMLMediaElement::selectMediaResource()
         LOG(Media, "HTMLMediaElement::selectMediaResource, using 'src' attribute url");
         return;
     }
-
     // Otherwise, the source elements will be used
     loadNextSourceChild();
 }
@@ -841,6 +878,40 @@ void HTMLMediaElement::loadNextSourceChild()
     m_loadState = LoadingFromSourceElement;
     loadResource(mediaURL, contentType);
 }
+
+#if ENABLE(SIP)
+void HTMLMediaElement::loadNextSessionChild()
+{
+    LOG(Media, "loadNextSessionChild: Entered "); 
+    ContentType contentType("");
+    KURL sessionUrl = selectNextSessionChild(&contentType, Complain);
+    if ( !sessionUrl.isValid()) {
+                LOG(Media, "loadNextSessionChild: selectNextSessionChild() returned FALSE ");
+        waitForSessionChange();
+        return;
+    }
+
+	//we got a valid session element
+    m_sessionElementFound = true;
+    //m_loadState = LoadingFromSessionElement;
+    //m_sipRegState = REGISTERING;
+
+    //lets update the network state
+    String src, aor, credentials, proxy, dn;
+    m_networkState = NETWORK_LOADING;
+    m_session_src = m_currentSessionNode->getNonEmptyURLAttribute(srcAttr);
+    m_session_aor = m_currentSessionNode->aor();
+    m_session_credentials = m_currentSessionNode->credentials();
+    m_session_proxy = m_currentSessionNode->proxy();
+    m_session_dn = m_currentSessionNode->dialnumber();
+    LOG(Media, "loadNextSessionChild: Src is %s",m_session_src.utf8().data());
+    LOG(Media, "loadNextSessionChild: Aor is %s",m_session_aor.utf8().data());
+    LOG(Media, "loadNextSessionChild: proxy is %s ",m_session_proxy.utf8().data());
+    LOG(Media, "loadNextSessionChild: number  is %s ",m_session_dn.utf8().data());
+    LOG(Media, "loadNextSessionChild: Peforming the load now for RTC Session ");
+}
+
+#endif
 
 #if !PLATFORM(CHROMIUM)
 static KURL createFileURLForApplicationCacheResource(const String& path)
@@ -939,8 +1010,16 @@ void HTMLMediaElement::loadResource(const KURL& initialURL, ContentType& content
         m_muted = true;
     updateVolume();
 
-    if (!m_player->load(url, contentType))
-        mediaLoadingFailed(MediaPlayer::FormatError);
+	if(m_sessionElementFound == true)
+	{
+    	LOG(Media, "HTMLMediaElement::loadResource - let's attempt SIP Enabled Media Player Load "); 
+		m_player->load(url,m_session_src,m_session_aor,m_session_credentials,m_session_proxy,m_session_dn);
+	} else {
+    	LOG(Media, "HTMLMediaElement::loadResource - normal Media Player Load "); 
+    	if (!m_player->load(url, contentType))
+        	mediaLoadingFailed(MediaPlayer::FormatError);
+
+	}
 
     // If there is no poster to display, allow the media engine to render video frames as soon as
     // they are available.
@@ -1066,7 +1145,7 @@ void HTMLMediaElement::textTrackRemoveCue(TextTrack*, PassRefPtr<TextTrackCue> c
     updateActiveTextTrackCues(currentTime());
 }
 
-#endif
+#endif  // ENABLE_VIDEO_TRACK
 
 bool HTMLMediaElement::isSafeToLoadURL(const KURL& url, InvalidURLAction actionIfInvalid)
 {
@@ -1120,6 +1199,21 @@ void HTMLMediaElement::waitForSourceChange()
     if (renderer())
         renderer()->updateFromElement();
 }
+
+#if ENABLE(SIP)
+
+//Suhas: RTCWeb Session Support
+void HTMLMediaElement::waitForSessionChange()
+{
+    LOG(Media, "HTMLMediaElement::waitForSessionChange");
+    stopPeriodicTimers();
+    m_loadState = WaitingForSession;
+    // 6.17 - Waiting: Set the element's networkState attribute to the NETWORK_NO_SOURCE value
+    m_networkState = NETWORK_NO_SOURCE;
+    // 6.18 - Set the element's delaying-the-load-event flag to false. This stops delaying the load event.
+    setShouldDelayLoadEvent(false);
+}
+#endif
 
 void HTMLMediaElement::noneSupported()
 {
@@ -1187,6 +1281,10 @@ void HTMLMediaElement::mediaEngineError(PassRefPtr<MediaError> err)
 
     // 6 - Abort the overall resource selection algorithm.
     m_currentSourceNode = 0;
+#if ENABLE(SIP)
+	m_currentSessionNode = 0;
+#endif
+
 }
 
 void HTMLMediaElement::cancelPendingEventsAndCallbacks()
@@ -1198,8 +1296,13 @@ void HTMLMediaElement::cancelPendingEventsAndCallbacks()
     for (Node* node = firstChild(); node; node = node->nextSibling()) {
         if (node->hasTagName(sourceTag))
             static_cast<HTMLSourceElement*>(node)->cancelPendingErrorEvent();
+#if ENABLE(SIP)
+        if (node->hasTagName(sessionTag))
+            static_cast<HTMLSessionElement*>(node)->cancelPendingErrorEvent();
+#endif
     }
 }
+
 
 Document* HTMLMediaElement::mediaPlayerOwningDocument()
 {
@@ -1241,6 +1344,19 @@ void HTMLMediaElement::mediaLoadingFailed(MediaPlayer::NetworkState error)
         
         return;
     }
+#if ENABLE(SIP)
+  	else if (m_loadState == LoadingFromSessionElement) {
+            if(m_currentSessionNode)
+                  m_currentSessionNode->scheduleErrorEvent();
+            else
+            LOG(Media, "HTMLMediaElement::setNetworkState - error event not sent, <session> was removed");
+            if(havePotentialSessionChild()) {
+                  scheduleNextSessionChild();
+            } else {
+                 waitForSessionChange();
+            }
+        }
+#endif
     
     if (error == MediaPlayer::NetworkError && m_readyState >= HAVE_METADATA)
         mediaEngineError(MediaError::create(MediaError::MEDIA_ERR_NETWORK));
@@ -1419,6 +1535,89 @@ void HTMLMediaElement::setReadyState(MediaPlayer::ReadyState state)
     updatePlayState();
     updateMediaController();
 }
+
+#if ENABLE(SIP)
+void HTMLMediaElement::mediaPlayerSipRegStateChanged(MediaPlayer*)
+{
+    beginProcessingMediaPlayerCallback();
+    setRegState(m_player->sipRegistrationState());
+    endProcessingMediaPlayerCallback();
+}
+
+void HTMLMediaElement::mediaPlayerSipSessionStateChanged(MediaPlayer*)
+{
+    beginProcessingMediaPlayerCallback();
+    setSessionState(m_player->sipSessionState());
+    endProcessingMediaPlayerCallback();
+}
+
+void HTMLMediaElement::setRegState(MediaPlayer::SipRegistrationState state )
+{
+        //copy the state
+        m_sipRegState = static_cast<SipRegState>(state);
+    LOG(Media, "HTMLMediaElement:: REG_STATE CHANGED OCCURED  %d", m_sipRegState);
+    if(m_currentSessionNode)
+        {
+                m_currentSessionNode->setRegState(state);
+        LOG(Media, "HTMLMediaElement:: REG_STATE CHANGED OCCURED  USER %s", m_currentSessionNode->aor().utf8().data());
+                //let's update the player state as well
+                if(m_sipRegState  == NO_REGISTRAR)
+                {
+                        m_paused = true;
+                        if(renderer())
+                                renderer()->updateFromElement();
+                }
+
+        }else
+        {
+                //error
+             scheduleEvent(eventNames().errorEvent);
+        }
+    //events are handled in session element
+    //scheduleEvent(eventNames().regstateEvent);
+}
+
+
+void HTMLMediaElement::setSessionState(MediaPlayer::SipSessionState state)
+{
+        m_sipSessionState = static_cast<SipSessionState>(state);
+    LOG(Media, "HTMLMediaElement:: SESSION_STATE CHANGED OCCURED  %d", m_sipSessionState);
+    if(m_currentSessionNode)
+        {
+        LOG(Media, "HTMLMediaElement:: SESSION_STATE CHANGED OCCURED  USER %s", m_currentSessionNode->aor().utf8().data());
+                m_currentSessionNode->setSessionState(state);
+        }else
+        {
+                scheduleEvent(eventNames().errorEvent);
+        }
+
+        //Temporary Fix
+        if(m_sipSessionState == ACCEPTING_SESSION)
+        {
+                m_currentSessionNode->setIncomingCallInfo(m_player->callingPartyName(), m_player->callingPartyNumber());
+        }
+
+
+        if(m_sipSessionState == IN_SESSION)
+        {
+                m_paused = false;
+        m_playing = true;
+        if (renderer()) {
+                renderer()->updateFromElement();
+        }
+
+        }
+
+        if(m_sipSessionState == CLOSING_SESSION)
+        {
+                closeSessionInternal(); //events are sent in here
+        }
+
+        // vents are handles in session element
+   //   scheduleEvent(eventNames().sessionstateEvent);
+}
+
+#endif
 
 #if ENABLE(MEDIA_SOURCE)
 void HTMLMediaElement::mediaPlayerSourceOpened()
@@ -1625,6 +1824,21 @@ HTMLMediaElement::ReadyState HTMLMediaElement::readyState() const
 {
     return m_readyState;
 }
+
+#if ENABLE(SIP)
+//Suhas: RTCWeb Session support
+HTMLMediaElement::SipRegState HTMLMediaElement::sipRegState() const
+{
+    return m_sipRegState;
+}
+
+//Suhas: RTCWeb Session support
+HTMLMediaElement::SipSessionState HTMLMediaElement::sipSessionState() const
+{
+    return m_sipSessionState;
+}
+
+#endif
 
 MediaPlayer::MovieLoadType HTMLMediaElement::movieLoadType() const
 {
@@ -1858,27 +2072,30 @@ void HTMLMediaElement::setPreload(const String& preload)
 
 void HTMLMediaElement::play()
 {
-    LOG(Media, "HTMLMediaElement::play()");
-     m_player->setRate(m_playbackRate);
-     m_player->setMuted(m_muted);
-     m_player->play();
 
-     return;
+	LOG(Media, "HTMLMediaElement::play()");
+	if(m_sessionElementFound == true)
+	{
+		LOG(Media, "HTMLMediaElement::play(): Let's place a SIP call now ");
+     	m_player->setRate(m_playbackRate);
+     	m_player->setMuted(m_muted);
+		openSessionInternal();
+	} else {
 
-    if (userGestureRequiredForRateChange() && !ScriptController::processingUserGesture())
-        return;
+    	if (userGestureRequiredForRateChange() && !ScriptController::processingUserGesture())
+       	 return;
 
-    Settings* settings = document()->settings();
-    if (settings && settings->needsSiteSpecificQuirks() && m_dispatchingCanPlayEvent && !m_loadInitiatedByUserGesture) {
+    	Settings* settings = document()->settings();
+    	if (settings && settings->needsSiteSpecificQuirks() && m_dispatchingCanPlayEvent && !m_loadInitiatedByUserGesture) {
         // It should be impossible to be processing the canplay event while handling a user gesture
         // since it is dispatched asynchronously.
         ASSERT(!ScriptController::processingUserGesture());
         String host = document()->baseURL().host();
         if (host.endsWith(".npr.org", false) || equalIgnoringCase(host, "npr.org"))
             return;
-    }
-
+    	}
     playInternal();
+	} //end session-if
 }
 
 void HTMLMediaElement::playInternal()
@@ -1913,14 +2130,67 @@ void HTMLMediaElement::playInternal()
     updateMediaController();
 }
 
+#if ENABLE(SIP)
+void HTMLMediaElement::openSessionInternal()
+{
+        LOG(Media," startSession");
+    //Check for the proper registration
+        if ( m_sipRegState == NO_REGISTRAR ) 
+		{
+        	LOG(Media, "startSession: Session (NO_REG) State - Trigger a Load" );
+    	}
+
+        if(m_sipRegState == REGISTRATION_FAILED) 
+		{
+                scheduleEvent(eventNames().errorEvent);
+                return;
+        }
+
+        LOG(Media,"startSession: Current RegState = (%d)", m_sipRegState);
+        LOG(Media,"startSession: Current SessionState  = (%d)", m_sipSessionState);
+
+        // attempt to start the session
+        String dn;
+        if(m_currentSessionNode)
+        {
+        		dn = m_currentSessionNode->dialnumber();
+                LOG(Media, "startSession: number  is %s ",dn.utf8().data());
+				m_player->setRate(m_playbackRate);
+     			m_player->setMuted(m_muted);
+                m_player->openSession(dn);
+				return;
+        }else
+        {
+                LOG(Media,"NNNNNNSUHASAAAAAAA ");
+
+        }
+
+    	m_paused = false;
+        m_playing = true;
+        if (renderer()) {
+        LOG(Media, " OPenSession : Renderer ");
+        renderer()->updateFromElement();
+
+        }
+}
+
+#endif
+
+
 void HTMLMediaElement::pause()
 {
     LOG(Media, "HTMLMediaElement::pause()");
 
     if (userGestureRequiredForRateChange() && !ScriptController::processingUserGesture())
         return;
-
-    pauseInternal();
+	if(m_sessionElementFound == true)
+    {
+    	LOG(Media, "HTMLMediaElement::pause(): Let's close SIP session");
+		closeSessionInternal();
+	} else
+	{
+    	pauseInternal();
+	}
 }
 
 
@@ -1942,6 +2212,45 @@ void HTMLMediaElement::pauseInternal()
 
     updatePlayState();
 }
+
+
+#if ENABLE(SIP)
+void HTMLMediaElement::closeSessionInternal()
+{
+    LOG(Media," closeSessionInternal");
+
+    if (m_sipRegState < REGISTERED ) {
+        LOG(Media, "closeSessionInternal: Session (NO_REG) State - NOTHING TO DO" );
+                return ;
+    }   
+
+    LOG(Media,"startSession: Current RegState = (%d)", m_sipRegState);
+    LOG(Media,"startSession: Current SessionState  = (%d)", m_sipSessionState);
+
+     if(m_sipSessionState == NO_SESSION)
+        {
+                //scheduleEvent(eventNames().sessionstateEvent);
+        } else if(m_sipSessionState == IN_SESSION)
+        {
+        //update session state now
+        m_sipSessionState = CLOSING_SESSION;
+        scheduleEvent(eventNames().sessionstateEvent);
+        LOG(Media,"closeSessionInternal: Attempting to CLOSE The Session Now ");
+                m_player->closeSession();
+                m_sipSessionState = NO_SESSION;
+        scheduleEvent(eventNames().sessionstateEvent);
+        } else if(m_sipSessionState == CLOSING_SESSION) {
+                m_sipSessionState = NO_SESSION;
+        scheduleEvent(eventNames().sessionstateEvent);
+        }
+
+        //update the renderer states now
+        m_paused = true;
+        if(renderer())
+                renderer()->updateFromElement();
+
+}
+#endif
 
 #if ENABLE(MEDIA_SOURCE)
 void HTMLMediaElement::webkitSourceAppend(PassRefPtr<Uint8Array> data, ExceptionCode& ec)
@@ -2031,6 +2340,7 @@ void HTMLMediaElement::setLoop(bool b)
 
 bool HTMLMediaElement::controls() const
 {
+	LOG(Media, "HTMLMediaElement::HTMLMediaElement : controls() "); 
     Frame* frame = document()->frame();
 
     // always show controls when scripting is disabled
@@ -2045,6 +2355,7 @@ bool HTMLMediaElement::controls() const
     if (isFullscreen())
         return true;
 
+	LOG(Media, "HTMLMediaElement::HTMLMediaElement : controls(): returning fastHasAttribute()");
     return fastHasAttribute(controlsAttr);
 }
 
@@ -2056,7 +2367,11 @@ void HTMLMediaElement::setControls(bool b)
 
 float HTMLMediaElement::volume() const
 {
+#if ENABLE(SIP)
+	return m_currentSessionNode->volume();
+#else
     return m_volume;
+#endif
 }
 
 void HTMLMediaElement::setVolume(float vol, ExceptionCode& ec)
@@ -2069,14 +2384,22 @@ void HTMLMediaElement::setVolume(float vol, ExceptionCode& ec)
     }
     
     if (m_volume != vol) {
+#if ENABLE(SIP)
+		m_currentSessionNode->setVolume(vol);
+#else
         m_volume = vol;
         updateVolume();
         scheduleEvent(eventNames().volumechangeEvent);
+
+#endif
     }
 }
 
 bool HTMLMediaElement::muted() const
 {
+#if ENABLE(SIP)
+	m_currentSessionNode->muted();
+#endif
     return m_muted;
 }
 
@@ -2084,6 +2407,10 @@ void HTMLMediaElement::setMuted(bool muted)
 {
     LOG(Media, "HTMLMediaElement::setMuted(%s)", boolString(muted));
 
+#if ENABLE(SIP)
+	if(m_currentSessionNode)
+		m_currentSessionNode->setMuted(muted);
+#else
     if (m_muted != muted) {
         m_muted = muted;
         // Avoid recursion when the player reports volume changes.
@@ -2096,12 +2423,20 @@ void HTMLMediaElement::setMuted(bool muted)
         }
         scheduleEvent(eventNames().volumechangeEvent);
     }
+#endif
 }
 
 void HTMLMediaElement::togglePlayState()
 {
     LOG(Media, "HTMLMediaElement::togglePlayState - canPlay() is %s", boolString(canPlay()));
-
+#if ENABLE(SIP)
+	if(canOpenSession()){
+		m_sipSessionState = OPENING_SESSION;
+		openSessionInternal();
+	} else {	
+		closeSessionInternal();
+	}
+#else
     // We can safely call the internal play/pause methods, which don't check restrictions, because
     // this method is only called from the built-in media controller
     if (canPlay()) {
@@ -2109,6 +2444,7 @@ void HTMLMediaElement::togglePlayState()
         playInternal();
     } else 
         pauseInternal();
+#endif
 }
 
 void HTMLMediaElement::beginScrubbing()
@@ -2202,6 +2538,16 @@ bool HTMLMediaElement::canPlay() const
 {
     return paused() || ended() || m_readyState < HAVE_METADATA;
 }
+
+#if ENABLE(SIP)
+bool HTMLMediaElement::canOpenSession() const
+{
+        LOG(Media, " canOpenSession: m_sipRegState %d ", m_sipRegState);
+        LOG(Media, " canOpenSession: m_sipSessionState %d ", m_sipSessionState);
+        return ((m_sipRegState >= NO_REGISTRAR && m_sipRegState <= REGISTERED) && m_sipSessionState < OPENING_SESSION );
+}
+
+#endif
 
 float HTMLMediaElement::percentLoaded() const
 {
@@ -2483,6 +2829,23 @@ bool HTMLMediaElement::havePotentialSourceChild()
     return nextURL.isValid();
 }
 
+#if ENABLE(SIP)
+
+bool HTMLMediaElement::havePotentialSessionChild()
+{
+    // Stash the current <session> node and next nodes so we can restore them after checking
+    // to see there is another potential.
+    Node* nextNode = m_nextChildNodeToConsider;
+
+    KURL nextURL = selectNextSessionChild(0, DoNothing);
+
+    m_nextChildNodeToConsider = nextNode;
+
+    return nextURL.isValid();
+}
+
+#endif
+
 KURL HTMLMediaElement::selectNextSourceChild(ContentType *contentType, InvalidURLAction actionIfInvalid)
 {
 #if !LOG_DISABLED
@@ -2576,6 +2939,68 @@ check_again:
     return canUse ? mediaURL : KURL();
 }
 
+#if ENABLE(SIP)
+KURL HTMLMediaElement::selectNextSessionChild(ContentType *contentType, InvalidURLAction actionIfInvalid)
+{
+        LOG(Media,"SelectNextSessionChild: Entered ");
+        bool hasProperSession = true;
+        if (m_nextChildNodeToConsider == sourceChildEndOfListValue()) {
+            LOG(Media, "HTMLMediaElement::selectNextSourceChild -> 0x0000, \"\"");
+        	hasProperSession = false;
+    }
+        Node* node;
+        KURL sessionURL;
+        HTMLSessionElement* session = 0;
+        bool lookingForStartNode = m_nextChildNodeToConsider;
+        bool canUse = false;
+
+        for(node = firstChild(); !canUse && node; node = node->nextSibling()) {
+           if (lookingForStartNode && m_nextChildNodeToConsider != node)
+            continue;
+ 
+        	lookingForStartNode = false;
+
+           if (!node->hasTagName(sessionTag))
+            continue;
+
+            //we got the session tag
+            session = static_cast<HTMLSessionElement*>(node);
+                //populate the session attributes
+                sessionURL = session->getNonEmptyURLAttribute(srcAttr);
+                //We treat a session element to be valid iff all the attributes are present
+                //Todo: @Suhas: Do we need to be so STRICT ???
+
+        if(!session->hasAttribute(aorAttr) || !session->hasAttribute(credentialsAttr) || !session->hasAttribute(proxyAttr) || !session->hasAttribute(dialnumberAttr)) {
+                                if( !session->hasAttribute(dialnumberAttr) )
+                                        LOG(Media, " DIAL NUMBER NOT FOUND ");
+                                hasProperSession = false;
+                                canUse = false;
+                                if(actionIfInvalid == Complain)
+                                        session->scheduleErrorEvent();
+                        }
+                canUse = true;
+
+        }
+
+
+		if(canUse) {
+                LOG(Media,"SelectNextSessionChild:  SUCCESSFUL ");
+                m_currentSessionNode = session;
+                //m_currentSessionNode->setMediaPlayer(m_player.get());
+                m_currentSessionNode->setMediaControlElement(this);
+                m_nextChildNodeToConsider = session->nextSibling();
+        }else
+        {
+                LOG(Media,"SelectNextSessionChild:  UN-SUCCESSFUL ");
+                m_currentSessionNode = 0;
+                m_nextChildNodeToConsider = sourceChildEndOfListValue();
+        }
+        LOG(Media,"SelectNextSessionChild: Exited");
+        return canUse ? sessionURL : KURL();
+
+}
+#endif
+
 void HTMLMediaElement::sourceWasAdded(HTMLSourceElement* source)
 {
     LOG(Media, "HTMLMediaElement::sourceWasAdded(%p)", source);
@@ -2623,6 +3048,46 @@ void HTMLMediaElement::sourceWasAdded(HTMLSourceElement* source)
     scheduleNextSourceChild();
 }
 
+#if ENABLE(SIP)
+//Suhas: RTCWeb Session Support
+void HTMLMediaElement::sessionWasAdded(HTMLSessionElement* session)
+{
+    LOG(Media, "HTMLMediaElement::sessionWasAdded(%p)", session);
+
+
+#if !LOG_DISABLED
+    if (session->hasTagName(sessionTag)) {
+        KURL url = session->getNonEmptyURLAttribute(srcAttr);
+        LOG(Media, "HTMLMediaElement::sessionWasAdded - 'src' is %s", urlForLogging(url).utf8().data());
+    }
+#endif
+
+    // We should only consider a <source> element when there is not src attribute at all.
+    if (hasAttribute(srcAttr))
+        {
+                LOG(Media,"HTMLMediaElement::sessionWasAdded: WE HAVE SRC ATTRIBUTE SORRY ! ");
+                scheduleEvent(eventNames().errorEvent);
+        return;
+        }
+
+    //check for any session node already
+        // Only one session node is supported
+        if(m_currentSessionNode) {
+                LOG(Media,"HTMLMediaElement::sessionWasAdded: SESSION NODE ALREADY EXISTS ! ");
+                scheduleEvent(eventNames().errorEvent);
+        return;
+        }      
+
+        
+   //lets go ahead with the loading
+   //scheduleLoad(MediaResource);
+
+	//let me try loading the session child
+    loadNextSessionChild();
+}
+
+#endif
+
 void HTMLMediaElement::sourceWillBeRemoved(HTMLSourceElement* source)
 {
     LOG(Media, "HTMLMediaElement::sourceWillBeRemoved(%p)", source);
@@ -2650,6 +3115,36 @@ void HTMLMediaElement::sourceWillBeRemoved(HTMLSourceElement* source)
         LOG(Media, "HTMLMediaElement::sourceRemoved - m_currentSourceNode set to 0");
     }
 }
+
+#if ENABLE(SIP)
+void HTMLMediaElement::sessionWillBeRemoved(HTMLSessionElement* session)
+{
+    LOG(Media, "HTMLMediaElement::sessionWillBeRemoved(%p)", session);
+
+#if !LOG_DISABLED
+    if (session->hasTagName(sessionTag)) {
+        KURL url = session->getNonEmptyURLAttribute(srcAttr);
+        LOG(Media, "HTMLMediaElement::sourceWillBeRemoved - 'src' is %s", urlForLogging(url).utf8().data());
+    }
+#endif
+
+    if (session != m_currentSessionNode && session != m_nextChildNodeToConsider)
+        return;
+
+    if (session == m_nextChildNodeToConsider) {
+        m_nextChildNodeToConsider = m_nextChildNodeToConsider->nextSibling();
+        if (!m_nextChildNodeToConsider)
+            m_nextChildNodeToConsider = sessionChildEndOfListValue();
+        LOG(Media, "HTMLMediaElement::sessionRemoved - m_nextChildNodeToConsider set to %p", m_nextChildNodeToConsider);
+    } else if (session == m_currentSessionNode) {
+        // Clear the current source node pointer, but don't change the movie as the spec says:
+        // 4.8.8 - Dynamically modifying a source element and its attribute when the element is already
+        // inserted in a video or audio element will have no effect.
+        m_currentSessionNode = 0;
+        LOG(Media, "HTMLMediaElement::sessionRemoved - m_currentSessionNode set to 0");
+    }
+}
+#endif
 
 void HTMLMediaElement::mediaPlayerTimeChanged(MediaPlayer*)
 {
@@ -2901,6 +3396,9 @@ PassRefPtr<TimeRanges> HTMLMediaElement::seekable() const
 
 bool HTMLMediaElement::potentiallyPlaying() const
 {
+#if ENABLE(SIP)
+	return false;
+#endif
     // "pausedToBuffer" means the media engine's rate is 0, but only because it had to stop playing
     // when it ran out of buffered data. A movie is this state is "potentially playing", modulo the
     // checks in couldPlayIfEnoughData().
@@ -3087,7 +3585,11 @@ void HTMLMediaElement::userCancelledLoad()
 #endif
     stopPeriodicTimers();
     m_loadTimer.stop();
+#if ENABLE(SIP)
+	m_loadState = WaitingForSession;
+#else
     m_loadState = WaitingForSource;
+#endif
 
     // 2 - Set the error attribute to a new MediaError object whose code attribute is set to MEDIA_ERR_ABORTED.
     m_error = MediaError::create(MediaError::MEDIA_ERR_ABORTED);
@@ -3134,6 +3636,21 @@ void HTMLMediaElement::stop()
         exitFullscreen();
     
     m_inActiveDocument = false;
+#if ENABLE(SIP)
+	if(m_currentSessionNode )
+    {
+        if (m_sipRegState == REGISTERED && m_clearSessionHandled == false)
+        {
+                        LOG(Media,"HTMLMediaElement::Stop(): CLEARING THE REG SESSION ");
+                        m_sipRegState = NO_REGISTRAR;
+                        m_sipSessionState = NO_SESSION;
+                        m_player->clearSession();
+                        m_clearSessionHandled = true;
+        }
+    }
+
+#endif
+
     userCancelledLoad();
     
     // Stop the playback without generating events
@@ -3514,25 +4031,34 @@ bool HTMLMediaElement::hasMediaControls()
 
 bool HTMLMediaElement::createMediaControls()
 {
+	LOG(Media, "HTMLMediaElement::createMediaControls : Entetred");
     if (hasMediaControls())
         return true;
+	LOG(Media, "HTMLMediaElement::createMediaControls : Entetred 2");
 
     ExceptionCode ec;
     RefPtr<MediaControls> controls = MediaControls::create(document());
+	LOG(Media, "HTMLMediaElement::createMediaControls : Entetred 3");
     if (!controls)
         return false;
 
+	LOG(Media, "HTMLMediaElement::createMediaControls : Entetred 4");
     controls->setMediaController(m_mediaController ? m_mediaController.get() : static_cast<MediaControllerInterface*>(this));
+	LOG(Media, "HTMLMediaElement::createMediaControls : Entetred 5");
     controls->reset();
+	LOG(Media, "HTMLMediaElement::createMediaControls : Entetred 6");
     if (isFullscreen())
         controls->enteredFullscreen();
 
+	LOG(Media, "HTMLMediaElement::createMediaControls : Entetred 7");
     ensureShadowRoot()->appendChild(controls, ec);
+	LOG(Media, "HTMLMediaElement::createMediaControls : Exited");
     return true;
 }
 
 void HTMLMediaElement::configureMediaControls()
 {
+	LOG(Media, "HTMLMediaElement::configureMediaControls : entered ");
 #if !ENABLE(PLUGIN_PROXY_FOR_VIDEO)
     if (!controls()) {
         if (hasMediaControls())
@@ -3545,6 +4071,7 @@ void HTMLMediaElement::configureMediaControls()
 
     mediaControls()->show();
 #else
+	LOG(Media, "HTMLMediaElement::configureMediaControls: invoking mplayer setControls");
     if (m_player)
         m_player->setControls(controls());
 #endif

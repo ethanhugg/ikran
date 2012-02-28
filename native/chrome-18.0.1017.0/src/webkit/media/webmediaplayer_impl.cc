@@ -50,6 +50,7 @@ namespace {
 // thousands of them...)
 const int kPlayerExtraMemory = 1024 * 1024;
 const int kSuhas = 1;
+int MAX_SESSION_RETRIES = 3;
 
 // Limits the range of playback rate.
 //
@@ -121,7 +122,10 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       media_log_(media_log),
       is_accelerated_compositing_active_(false),
       incremented_externally_allocated_memory_(false),
-      audio_source_provider_(audio_source_provider) {
+      audio_source_provider_(audio_source_provider),
+      sipcc_renderer_(0),
+      isSipSession(false),
+      isInSession(false) {
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_CREATED));
 
@@ -166,11 +170,10 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   filter_collection_->AddAudioRenderer(new media::NullAudioRenderer());
 
   //Initiliaze sip renderer
-   sipcc_renderer_ = new SipccRendererImpl();
-
+   sipcc_renderer_ = SipccRendererImpl::GetInstance();
 
    sipcc_renderer_->Initialize(main_loop_);
-
+   session_retry_counter = 0;
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {
@@ -238,17 +241,21 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url) {
 
 
   // Media streams pipelines can start immediately.
-  if (BuildMediaStreamCollection(url, media_stream_client_,
-                                 message_loop_factory_.get(),
-                                 filter_collection_.get(),
-                                 sipcc_renderer_)) {
-    //let's kick off the registration
-    LOG(INFO) << "Suhas:WebMediaPlayer:Load: Let's SIP Register ";
-    sipcc_renderer_->Register();
-    LOG(INFO) << "Suhas:WebMediaPlayer:Load: Done";
-    StartPipeline(gurl);
+  //if (BuildMediaStreamCollection(url, media_stream_client_,
+   //                              message_loop_factory_.get(),
+    //                             filter_collection_.get(),
+     //                            sipcc_renderer_)) {
+	 //let's kick off the registration
+    //LOG(INFO) << "Suhas:WebMediaPlayer:Load: Let's SIP Register ";
+    //SipRegistrationCallbackObj = base::Bind(&WebMediaPlayerImpl::SipRegistrationCallback,base::Unretained(this));
+    //SipSessionCallbackObj = base::Bind(&WebMediaPlayerImpl::SipSessionCallback,base::Unretained(this));
+    //sipcc_renderer_->AddRegistrationCallback(&SipRegistrationCallbackObj);
+    //sipcc_renderer_->AddSessionCallback(&SipSessionCallbackObj);
+    //sipcc_renderer_->Register("snandaku","snandaku","172.27.190.5");
+
+    //StartPipeline(gurl);
     return;
-  }
+  //}
 
   // Media source pipelines can start immediately.
   if (BuildMediaSourceCollection(url, GetClient()->sourceURL(), proxy_,
@@ -271,6 +278,68 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url) {
       base::Unretained(this), gurl));
 }
 
+//Suhas: RTCWeb Session Support
+void WebMediaPlayerImpl::load(const WebKit::WebURL& url,
+							  const WebKit::WebCString src,
+                              const WebKit::WebCString aor,
+                              const WebKit::WebCString creds,
+                              const WebKit::WebCString proxy,
+			     			  const WebKit::WebCString dn ) {
+
+  DCHECK(MessageLoop::current() == main_loop_);
+  GURL gurl(url);
+
+  // Handle any volume/preload changes that occured before load().
+  setVolume(GetClient()->volume());
+  setPreload(GetClient()->preload());
+  sip_reg_state_ = WebKit::WebMediaPlayer::NoRegistrar;
+  sip_session_state_ = WebKit::WebMediaPlayer::NoSession;
+
+  SetNetworkState(WebKit::WebMediaPlayer::Loading);
+  SetReadyState(WebKit::WebMediaPlayer::HaveNothing);
+  media_log_->AddEvent(media_log_->CreateLoadEvent(url.spec()));
+  LOG(INFO) << "Webmediaplayer Session Src " << src.data();
+  LOG(INFO) << "Webmediaplayer Session Aor " << aor.data();
+  LOG(INFO) << "Webmediaplayer Session Cred " << creds.data();
+  LOG(INFO) << "Webmediaplayer Session Proxy" << proxy.data();
+  LOG(INFO) << "Webmediaplayer Session DN " << dn.data();
+
+  isSipSession = true;
+  dial_number_ = dn.data();
+  std::string session_src = src.data();
+  bool isLocal = true;
+  size_t foundLocal = session_src.find("local");
+  size_t foundRemote = session_src.find("remote");
+
+  if(foundLocal != std::string::npos){
+	LOG(INFO)<<"WebMediaPlaer: Found Local label on the stream ";
+	isLocal = true;
+  }
+  else if (foundRemote != std::string::npos) {
+	LOG(INFO)<<"WebMediaPlaer: Found Remote label on the stream ";
+	isLocal = false;
+  }
+
+  // Media streams pipelines can start immediately.
+  if (BuildMediaStreamCollection(url, media_stream_client_,
+                                 message_loop_factory_.get(),
+                                 filter_collection_.get(),
+                                 sipcc_renderer_,isLocal)) {
+     //let's kick off the registration
+    LOG(INFO) << "Suhas:WebMediaPlayer:Load: Let's SIP Register ";
+    SipRegistrationCallbackObj = base::Bind(&WebMediaPlayerImpl::SipRegistrationCallback,base::Unretained(this));
+    SipSessionCallbackObj = base::Bind(&WebMediaPlayerImpl::SipSessionCallback,base::Unretained(this));
+    sipcc_renderer_->AddRegistrationCallback(&SipRegistrationCallbackObj);
+    sipcc_renderer_->AddSessionCallback(&SipSessionCallbackObj);
+    sipcc_renderer_->Register(aor.data(),creds.data(),proxy.data(),isLocal);
+    StartPipeline(gurl);
+    return;
+  }
+
+  LOG(INFO) << "Suhas:WebMediaPlayer:Load: Done";
+
+}
+
 void WebMediaPlayerImpl::cancelLoad() {
   DCHECK_EQ(main_loop_, MessageLoop::current());
 }
@@ -278,30 +347,145 @@ void WebMediaPlayerImpl::cancelLoad() {
 void WebMediaPlayerImpl::play() {
   DCHECK_EQ(main_loop_, MessageLoop::current());
    LOG(INFO) << " Suhas: WebMediaPlayer:: Play ";
-  if(kSuhas == 1)
-  {
-
-        LOG(INFO) << " Suhas: WebMediaPlayer:: Play: Attempting to place call ";
-        //sipcc_renderer_->PlaceCall("7222",NewCallback(this,&WebMediaPlayerImpl::SipSessionCallback));
-        sipcc_renderer_->PlaceCall("7222");
-  }
-
+   LOG(INFO) << " Suhas: WebMediaPlayer:: Play: Attempting to place call ";
+   sipcc_renderer_->PlaceCall("7222");
   paused_ = false;
   pipeline_->SetPlaybackRate(playback_rate_);
+  media_log_->AddEvent(media_log_->CreateEvent(media::MediaLogEvent::PLAY));
+
+  if (delegate_)
+    delegate_->DidPlay(this);
+
+  /***
+	if(isSipSession == false)
+	{
+  		paused_ = false;
+  		pipeline_->SetPlaybackRate(playback_rate_);
+	} else
+	{
+        LOG(INFO) << " Suhas: WebMediaPlayer:: Play: Attempting to place call ";
+        sipcc_renderer_->PlaceCall("7222");
+
+	}
 
   media_log_->AddEvent(media_log_->CreateEvent(media::MediaLogEvent::PLAY));
 
   if (delegate_)
     delegate_->DidPlay(this);
+  **/
 }
 
-void WebMediaPlayerImpl::SipRegistrationCallback() {
-        LOG(ERROR) << " WebmediaPlayer:: SipRegistrationCallback ";
+void WebMediaPlayerImpl::openSession(const WebKit::WebCString dial_number) 
+{
+  DCHECK(MessageLoop::current() == main_loop_);
+ LOG(ERROR) << " WebMediaPlayer : OpenSession: Current Sip Session State : " << sip_session_state_;
+
+ if(sip_session_state_ ==  WebKit::WebMediaPlayer::AcceptingSession)
+ {
+ 	LOG(ERROR) << " WebMediaPlayer : OpenSession: Accepting Incoming Call  " ;
+	sipcc_renderer_->AnswerCall(); 
+  	paused_ = false;
+ 	pipeline_->SetPlaybackRate(playback_rate_);
+  	media_log_->AddEvent(media_log_->CreateEvent(media::MediaLogEvent::PLAY));
+
+	if(delegate_)
+		delegate_->DidPlay(this);
+
+ } else {
+ 	LOG(ERROR)<<"WebmediaPlayer:: openession : Calling place call ";
+   	sipcc_renderer_->PlaceCall(dial_number.data());
+  	paused_ = false;
+ 	pipeline_->SetPlaybackRate(playback_rate_);
+  	media_log_->AddEvent(media_log_->CreateEvent(media::MediaLogEvent::PLAY));
+
+	if(delegate_)
+		delegate_->DidPlay(this);
+
+ } 
+
+}
+
+
+void WebMediaPlayerImpl::SipRegistrationCallback() 
+{
+	LOG(ERROR) << " WebmediaPlayer:: SipRegistrationCallback ";
+    switch( sipcc_renderer_->sipRegState() )
+    {
+	case 0 :
+		LOG(ERROR) << " WebmediaPlayer:: SipRegistrationCallback:  WebKit::WebMediaPlayer::NoRegistrar";
+		sip_reg_state_ =  WebKit::WebMediaPlayer::NoRegistrar;
+	break;
+	case 1:
+		LOG(ERROR) << " WebmediaPlayer:: SipRegistrationCallback:  WebKit::WebMediaPlayer::Registering";
+		sip_reg_state_ =  WebKit::WebMediaPlayer::Registering;
+	break;
+	case 2:
+	LOG(ERROR) << " WebmediaPlayer:: SipRegistrationCallback:  WebKit::WebMediaPlayer::Registered ";
+		sip_reg_state_ =  WebKit::WebMediaPlayer::Registered;
+	break;
+	case 3:
+		LOG(ERROR) << " WebmediaPlayer:: SipRegistrationCallback:  WebKit::WebMediaPlayer::RegistrationFailed";
+		sip_reg_state_ =  WebKit::WebMediaPlayer::RegistrationFailed;
+	break;	
+	case 4:
+		LOG(ERROR) << " WebmediaPlayer:: SipRegistrationCallback:  WebKit::WebMediaPlayer::RegistrationInvalid";
+		sip_reg_state_ =  WebKit::WebMediaPlayer::RegistrationInvalid;
+	break;
+
+    }
+
+    GetClient()->sipRegStateChanged();
 }
 
 
 void WebMediaPlayerImpl::SipSessionCallback() {
     LOG(ERROR) << " WebmediaPlayer:: SipSessionCallback";
+	switch( sipcc_renderer_->sipSessionState()) {
+    case 0:
+   		LOG(ERROR) << "WebMediaPlayerImpl::SipSessionCallback:NoSession ";
+		sip_session_state_ =  WebKit::WebMediaPlayer::NoSession;
+ 	break;
+    case 1:
+   		LOG(ERROR) << "WebMediaPlayerImpl::SipSessionCallback:OpeningSession";
+		sip_session_state_ =  WebKit::WebMediaPlayer::OpeningSession;
+ 	break;
+    case 2:
+   		LOG(ERROR) << "WebMediaPlayerImpl::SipSessionCallback: Incoming Session";
+		sip_session_state_ =  WebKit::WebMediaPlayer::AcceptingSession;
+        caller_ = sipcc_renderer_->callerName();
+        if(caller_.length() == 0)
+		caller_="No Name";
+        caller_number_ = sipcc_renderer_->callerNumber(); 
+
+ 	break;
+    case 3:
+        LOG(ERROR) << "WebMediaPlayerImpl::SipSessionCallback: In Session";
+		sip_session_state_ =  WebKit::WebMediaPlayer::InSession;
+ 	break;
+    case 4:
+   		 LOG(ERROR) << "WebMediaPlayerImpl::SipSessionCallback: ClosingSession";
+		sip_session_state_ =  WebKit::WebMediaPlayer::ClosingSession;
+ 	break;
+    case 5:
+   		 LOG(ERROR) << "WebMediaPlayerImpl::SipSessionCallback: SessionInvalid";
+		sip_session_state_ =  WebKit::WebMediaPlayer::SessionInvalid;
+    }
+
+    GetClient()->sipSessionStateChanged();
+}
+
+
+void WebMediaPlayerImpl::closeSession() {
+  DCHECK(MessageLoop::current() == main_loop_);
+  LOG(ERROR) << "WebMediaPlayerImpl::closeSession ";
+  sipcc_renderer_->HangUp();
+
+}
+
+void WebMediaPlayerImpl::clearSession() {
+  DCHECK(MessageLoop::current() == main_loop_);
+  LOG(ERROR) << "WebMediaPlayerImpl::clearSession ";
+  sipcc_renderer_->UnRegister();
 }
 
 
@@ -499,6 +683,33 @@ WebKit::WebMediaPlayer::NetworkState WebMediaPlayerImpl::networkState() const {
 WebKit::WebMediaPlayer::ReadyState WebMediaPlayerImpl::readyState() const {
   return ready_state_;
 }
+
+WebKit::WebMediaPlayer::SipRegistrationState WebMediaPlayerImpl::sipRegistrationState() const {
+  LOG(ERROR) << "WebMediaPlayer::SipRegistrationState -- " << sip_reg_state_;
+  return sip_reg_state_;
+}
+
+WebKit::WebMediaPlayer::SipSessionState WebMediaPlayerImpl::sipSessionState() const {
+  LOG(ERROR) << "WebMediaPlayer::sipSessionState-- " << sip_session_state_;
+  return sip_session_state_;
+}
+
+WebKit::WebCString WebMediaPlayerImpl::callingPartyName() const {
+
+  LOG(ERROR) << "WebMediaPlayer::callingPartyName-- " << caller_;
+  WebKit::WebCString caller_name(caller_.c_str(), caller_.length());
+  	return caller_name;
+}
+
+
+WebKit::WebCString WebMediaPlayerImpl::callingPartyNumber() const {
+
+  LOG(ERROR) << "WebMediaPlayer::callingPartyNumber-- " << caller_number_;
+  WebKit::WebCString caller_number(caller_number_.c_str(), caller_number_.length());
+  	return caller_number;
+
+}
+
 
 const WebKit::WebTimeRanges& WebMediaPlayerImpl::buffered() {
   DCHECK_EQ(main_loop_, MessageLoop::current());

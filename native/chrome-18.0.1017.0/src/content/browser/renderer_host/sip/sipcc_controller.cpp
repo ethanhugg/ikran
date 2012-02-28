@@ -63,6 +63,8 @@ static int transformArray['D'+1] = { 0,         0,         0,         0,        
                           	  	  	 0,         0,         0,         0,         0,         KEY_A,     KEY_B,     KEY_C,     KEY_D  };         //68
 
 
+// Helper class to our implementation of WebRTC's External Renderer
+// We do this to avoid circular inclusions
 
 struct SipccController::VideoRenderer{
   VideoRenderer(SipccVideoRenderer* renderer_): video_renderer(renderer_)
@@ -93,40 +95,74 @@ SipccController::SipccController() : device_ptr_(NULL),
 									videoDirection(CC_SDP_DIRECTION_SENDRECV),
 									video_window(0),
 									ext_renderer(0),
+									capture_renderer(0),
 									ccm_ptr_(NULL),
 									observer_(NULL),
-								    sipcc_thread_("SipccThread") {
+								    sipcc_thread_("SipccThread"),
+								    hasCaptureRenderer(false),
+									hasRemoteRenderer(false),
+									isRegistered(false),
+									inSession(false)
+{
 	Logger::Instance()->logIt(" In Sipcc Controller");
-    sipcc_thread_.Start(); 
+	// we need a thread to seperate the handling of signaling and
+	// media buffers
+    //sipcc_thread_.Start(); 
 }
 
 SipccController::~SipccController() {
 }
 
 
-// Video renderer invocations
+// Sipcc Video renderer invocations
+// Function to trigger letting the renderer process know a new buffer
+// is created through Shared Memory
 
-void SipccController::OnBufferCreated(base::SharedMemoryHandle handle,
-                                        int length,
-                                        int buffer_id)
-
+void SipccController::OnCaptureBufferCreated(base::SharedMemoryHandle handle,
+                                        	int length,
+                                        	int buffer_id)
 {
-        LOG(INFO) << " SipccController:: OnBufferCreated";
-        observer_->DoSendBufferCreated(handle, length, buffer_id);
+        LOG(INFO) << " SipccController:: OnCaptureBufferCreated";
+        observer_->DoSendCaptureBufferCreated(handle, length, buffer_id);
 }
 
-void SipccController::OnBufferReady(int buffer_id,
-                                     unsigned int timestamp)
+
+void SipccController::OnReceiveBufferCreated(base::SharedMemoryHandle handle,
+                                        	int length,
+                                        	int buffer_id)
 {
-   LOG(INFO) << "SipccController:: OnBufferReady";
-	observer_->DoSendBufferFilled(buffer_id, timestamp);
+        LOG(INFO) << " SipccController:: OnReceiveBufferCreated";
+        observer_->DoSendReceiveBufferCreated(handle, length, buffer_id);
 }
 
-void SipccController::ReturnBuffer(int buffer_id)
+// Function to tell the renderer process on new video frame 
+// filled up in the buffer pointed by buffer_id
+void SipccController::OnCaptureBufferReady(int buffer_id,
+                                     		unsigned int timestamp)
 {
-	LOG(INFO) << "SipccController:: Return Buffer : " << buffer_id;
-    	vRenderer->video_renderer->ReturnBuffer(buffer_id);
+   LOG(INFO) << "SipccController:: OnCaptureBufferReady";
+	observer_->DoSendCaptureBufferFilled(buffer_id, timestamp);
+}
 
+void SipccController::OnReceiveBufferReady(int buffer_id,
+                                     		unsigned int timestamp)
+{
+   LOG(INFO) << "SipccController:: OnReceiveBufferReady";
+	observer_->DoSendReceiveBufferFilled(buffer_id, timestamp);
+}
+
+// Function invoked in response to Renderer process returing
+// the processed buffer with video frame
+void SipccController::ReturnCaptureBuffer(int buffer_id)
+{
+	LOG(INFO) << "SipccController:: Return Capture Buffer : " << buffer_id;
+    capRenderer->video_renderer->ReturnBuffer(buffer_id);
+}
+
+void SipccController::ReturnReceiveBuffer(int buffer_id)
+{
+	LOG(INFO) << "SipccController:: Return Receive Buffer : " << buffer_id;
+    vRenderer->video_renderer->ReturnBuffer(buffer_id);
 }
 
 //Internal function -- Executed on Sipcc Thread
@@ -209,8 +245,26 @@ void SipccController::PlaceP2PCall(std::string dial_number,  std::string sipDoma
 }
 
 
+void SipccController::InitCaptureRenderer()
+{
+   LOG(INFO) << "SipccController::InitCaptureRenderer";
+   SipccVideoRenderer* sipcc_video_capture_renderer_ = new SipccVideoRenderer(640,480,"local");
+   capRenderer = new VideoRenderer(sipcc_video_capture_renderer_);
+   capture_renderer = (void*) sipcc_video_capture_renderer_;
+   hasCaptureRenderer = true;
+}
+
+void SipccController::InitExternalRenderer()
+{
+   LOG(INFO) << "SipccController::InitExternalRenderer";
+   SipccVideoRenderer* sipcc_video_renderer_ = new SipccVideoRenderer(640,480,"remote");
+   vRenderer = new VideoRenderer(sipcc_video_renderer_);
+   ext_renderer = (void*) sipcc_video_renderer_;
+   hasRemoteRenderer = true;
+}
+
 // API Functions
-void SipccController::Register(std::string device, std::string sipUser, std::string sipCredentials, std::string sipDomain) {
+void SipccController::Register(std::string device, std::string sipUser, std::string sipCredentials, std::string sipDomain, bool isLocal) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     LOG(INFO) << " SipccContoller:Register Invoked on the Browser IO Thread ";
 	int result = 0;	
@@ -223,28 +277,33 @@ void SipccController::Register(std::string device, std::string sipUser, std::str
    LOG(INFO) << " Sip Device" << device_;
    LOG(INFO) << " Sip Domain" << sip_domain_;
 
-   GetLocalActiveInterfaceAddress();
+	if(isRegistered == false)
+	{
+   		GetLocalActiveInterfaceAddress();
+    	InitInternal();
+    	if(RegisterInternal() == false) {
+       	 	LOG(INFO)<< "Sipcc Registration Failed";
+			isRegistered = false;
+        	return;
+    	} else {
+			isRegistered = true;
+		}
 
-    InitInternal();
-    if(RegisterInternal() == false) {
-        LOG(INFO)<< "Sipcc Registration Failed";
-        return;
-    }
+	} else {
+			LOG(INFO) <<"SipccController::Register: ALREADY REGISTERED ";
+	}
 
-   LOG(INFO) << "Let's Get External Renderer and Memory Setup ";
-   SipccVideoRenderer* sipcc_video_renderer_ = new SipccVideoRenderer(640,480);
-   vRenderer = new VideoRenderer(sipcc_video_renderer_);
-   ext_renderer = (void*) sipcc_video_renderer_; 
 
-    /*let's do it on the sipcc thread from now on
-    
-    sipcc_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&SipccController::RegisterOnSipccThread,
-                 base::Unretained(this)));
-    */
+	//registration is done
+	if(isLocal == true)
+	{
+		InitCaptureRenderer();
+	} else {
+		InitExternalRenderer();
+	}
 }
 
+/***** THIS IS DEPRECATED **********/
 void SipccController::RegisterOnSipccThread()
 {
    LOG(INFO) << "SipccController::RegisterOnSipccThread()" ;
@@ -293,34 +352,43 @@ void SipccController::PlaceCall(std::string dial_number, std::string ipAddress, 
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 	Logger::Instance()->logIt(" SipccController::PlaceCall invoked on Browser Thread");
 	dial_number_ = dial_number;	
+	if(inSession == true)
+	{
+		Logger::Instance()->logIt(" SipccController::PlaceCall ALREADY IN SESSION ");
+		return;
+	}
      if (ccm_ptr_ != NULL)
      {
     	Logger::Instance()->logIt(" Dial Number is ");
     	Logger::Instance()->logIt(dial_number_);
     	device_ptr_ = ccm_ptr_->getActiveDevice();
     	outgoing_call_ = device_ptr_->createCall();
+		if(hasCaptureRenderer == true )
+		{
+			Logger::Instance()->logIt(" SipccController::PlaceCall Setting Capture Renderer");
+   	 		outgoing_call_->setCaptureRenderer(0,capture_renderer);
+		}
+
+		if(hasRemoteRenderer == true)
+		{
+			Logger::Instance()->logIt(" SipccController::PlaceCall Setting Remote Renderer");
+   	 		outgoing_call_->setExternalRenderer(0,ext_renderer);
+		}
+
     	//defaulting to I420 video format retrieval
-    	//ext_renderer = (void*) new SipccVideoRenderer(640,480);
-    	LOG(INFO) << " SipccController: External Renderer is " << ext_renderer;
-   	 	outgoing_call_->setExternalRenderer(0,ext_renderer);
     	videoDirection = CC_SDP_DIRECTION_SENDRECV;
     	if(outgoing_call_->originateCall(videoDirection, dial_number_, (char *)"", 0, 0)) {
-       	 LOG(INFO) << " SipccController::PlaceCallOnSipccThread: Call Setup Succeeded ";
-       	 return ;
+       		 LOG(INFO) << " SipccController::PlaceCall: Call Setup Succeeded ";
+       	 	 return;
         } else {
         }
      } else {
-
+		
     }
 
-    /*Let's try to setup call on the perform the call operation on the sipcc thread
-    sipcc_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&SipccController::PlaceCallOnSipccThread,
-                 base::Unretained(this)));
-    */
 }
 
+/*** THIS IS DEPRECATED ****/
 void SipccController::PlaceCallOnSipccThread()
 {
     LOG(INFO) << " SipccController::PlaceCallOnSipccThread() "; 
@@ -365,15 +433,22 @@ Logger::Instance()->logIt(" In Asnwer call ");
 	if (ccm_ptr_ != NULL) {
 		
 		CC_CallPtr answerableCall = GetFirstCallWithCapability(ccm_ptr_, CC_CallCapabilityEnum::canAnswerCall);
-	
+		 videoDirection = CC_SDP_DIRECTION_SENDRECV;	
 		if (answerableCall != NULL) {		
 			if (!answerableCall->answerCall(videoDirection)) {
 			} else {
-				//defaulting to I420 video format retrieval
-				if(ext_renderer == 0)
-					Logger::Instance()->logIt("ext_renderer is NULL in PlaceCall");
+				 if(hasCaptureRenderer == true )
+				{
+						Logger::Instance()->logIt(" SipccController::AnswerCall: Setting Capture Renderer");
+						answerableCall->setCaptureRenderer(0,capture_renderer);
+				}
 
-				answerableCall->setExternalRenderer(0, ext_renderer);
+				if(hasRemoteRenderer == true)
+				{
+						Logger::Instance()->logIt(" SipccController::AnswerCall Setting Remote Renderer");
+						answerableCall->setExternalRenderer(0,ext_renderer);
+				}
+
 			}
 		} else {
 			Logger::Instance()->logIt("AnswerCall no active call");
@@ -548,11 +623,13 @@ void SipccController::onCallEvent (ccapi_call_event_e callEvent, CC_CallPtr call
         } 
 		  else if (info->getCallState() == ONHOOK ) {
 			Logger::Instance()->logIt("SipccController::onCallEvent ONHOOK");
+			inSession = false;
 			if(observer_ != NULL) {
                	observer_->OnCallTerminated();
 			}
 		} else if (info->getCallState() == CONNECTED ) {
 			Logger::Instance()->logIt("SipccController::onCallEvent CONNECTED");
+			inSession = true;
 			if(observer_ != NULL)
             	observer_->OnCallConnected(sdp);
 		} else if (info->getCallState() == RINGOUT ) {
@@ -580,6 +657,7 @@ void SipccController::onConnectionStatusChange	(ConnectionStatusEnum::Connection
 	if (status == ConnectionStatusEnum::eIdle) {
 		registrationState = "no-registrar";
 		Logger::Instance()->logIt( " NO_REGISTRAR  ");
+		isRegistered = false;
 	}
 	else if (status == ConnectionStatusEnum::eRegistering) {
 		registrationState = "registering";
@@ -588,10 +666,12 @@ void SipccController::onConnectionStatusChange	(ConnectionStatusEnum::Connection
 	else if (status == ConnectionStatusEnum::eReady) {
 		registrationState = "registered";
 		Logger::Instance()->logIt( " REGISTERED  ");
+		isRegistered = true;
 	}
 	else if (status == ConnectionStatusEnum::eFailed) {
 			registrationState = "registration-failed";	
 		Logger::Instance()->logIt(" REGISTRATION FAILED ");
+		isRegistered = false;
 	}
 	
 	if(observer_ != NULL)
