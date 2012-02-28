@@ -38,7 +38,6 @@
         './src/sipcc/cpr/include',
         '../../../nsprpub/pr/include',
         '../../../ipc/chromium/src',
-        '../../../ipc/chromium/src/base',
         '../../../ipc/chromium/src/base/third_party/nspr',
         '../../../xpcom/base',
         '../../../obj-i686-pc-linux-gnu/dist/include',
