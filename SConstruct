@@ -301,8 +301,8 @@ if sys.platform != 'win32':
 
 if noaddon != 'yes':
   SCRIPT_FILES += [ 
-    'ikran/SConstruct',
-    'ikran/SConstructBrowser'
+    'ikran/SConstruct'
+#    'ikran/SConstructBrowser'
 #    'ikran/SConstructBrowserStatic'
   ]
 
