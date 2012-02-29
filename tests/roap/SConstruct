@@ -180,7 +180,12 @@ if sys.platform =='win32':
       '/DEBUG '
      ]
 elif sys.platform == 'darwin':
-  mozobjpath = mozsrcpath + '/obj-ff-dbg'
+
+  if x64 == 'yes':
+    mozobjpath = mozsrcpath + '/obj-x86_64-apple-darwin11.2.0'
+  else:
+    mozobjpath = mozsrcpath + '/obj-ff-dbg'
+
   env["CPPFLAGS"] += [
     '-W',
     '-Wno-error',

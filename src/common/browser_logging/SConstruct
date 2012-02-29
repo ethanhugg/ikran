@@ -23,9 +23,14 @@ if sys.platform == 'win32':
     mozsrcpath + '\\obj-i686-pc-mingw32\\dist\\include'
   ]
 elif sys.platform == 'darwin':
-  include_dirs += [
-    mozsrcpath + '/obj-ff-dbg/dist/include'
-  ]
+  if x64 == 'yes':
+    include_dirs += [
+        mozsrcpath + '/obj-x86_64-apple-darwin11.2.0/dist/include'
+    ]
+  else:
+    include_dirs += [
+        mozsrcpath + '/obj-ff-dbg/dist/include'
+    ]
 elif sys.platform == 'linux2':
   if x64 == 'yes':
     include_dirs += [
