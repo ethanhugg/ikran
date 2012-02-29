@@ -40,7 +40,10 @@
         '../../../ipc/chromium/src',
         '../../../ipc/chromium/src/base/third_party/nspr',
         '../../../xpcom/base',
-        '../../../obj-i686-pc-linux-gnu/dist/include',
+        '$(DEPTH)/dist/include',
+        '/home/ehugg/download/webrtc/latest/trunk/src',
+        '/home/ehugg/download/webrtc/latest/trunk/src/video_engine/include',
+        '/home/ehugg/download/webrtc/latest/trunk/src/voice_engine/main/interface',
       ],	
 	  
       #
