@@ -687,6 +687,7 @@
         ['OS=="mac"', {
 
           'include_dirs': [
+            '/usr/include/libxml2',
           ],
           
           'sources': [
