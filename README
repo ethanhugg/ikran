@@ -37,11 +37,11 @@ Windows:
   Python path is in runSconsBuild.py and set to c:\python27
   Requires setting following environment variables
   SCONS_LOCATION pointing to scons installation
-  ZIP_LOCATION pointing to 7z zip installation (windows only)
+	e.g SCONS_LOCATION=c:\Python26\Scripts
+  ZIP_LOCATION pointing to 7z zip installation
   MS_WINDOWS_SDK_PATH pointing to Windows SDK path ( v7.1)
   MS_VC_PATH pointing to Visual Studio installation ( VS9.0)
   DXSDK_DIR pointing to Micrsoft DirectX SDK installation
-	e.g SCONS_LOCATION=c:\Python26\Scripts
   
 -----------
 2. Building 
