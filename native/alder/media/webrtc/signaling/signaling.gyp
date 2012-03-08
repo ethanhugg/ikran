@@ -41,9 +41,9 @@
         '../../../ipc/chromium/src/base/third_party/nspr',
         '../../../xpcom/base',
         '$(DEPTH)/dist/include',
-        '/home/ehugg/download/webrtc/latest/trunk/src',
-        '/home/ehugg/download/webrtc/latest/trunk/src/video_engine/include',
-        '/home/ehugg/download/webrtc/latest/trunk/src/voice_engine/main/interface',
+        '../trunk/src',
+        '../trunk/src/video_engine/include',
+        '../trunk/src/voice_engine/main/interface',
       ],	
 	  
       #
@@ -175,7 +175,6 @@
           ],
           
           'cflags': [
-            '/EHsc,'
           ],
         }],
         ['OS=="mac"', {
@@ -622,6 +621,7 @@
         }],
         ['OS=="win"', {
           'include_dirs': [
+            './third_party/libxml2/include',
           ],
           
           'sources': [
@@ -680,7 +680,6 @@
           ],
           
           'cflags': [
-            '/EHsc'
           ],
           
         }],
