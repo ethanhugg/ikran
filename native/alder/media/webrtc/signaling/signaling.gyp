@@ -20,7 +20,7 @@
     #
     {
       'target_name': 'ecc',
-      'type': '<(library)',
+      'type': 'static_library',
 
       #
       # INCLUDES
@@ -188,8 +188,7 @@
           
           'cflags': [
             '-fexceptions',
-            '-fno-common',
-            '-arch i386',
+            '-fno-common'
           ],
         }],
       ],
@@ -200,7 +199,7 @@
     #
     {
       'target_name': 'sipcc',
-      'type': '<(library)',
+      'type': 'static_library',
     
       #
       # INCLUDES
@@ -526,17 +525,17 @@
         './src/sipcc/include/xml_parser_defines.h',
 
         # PLAT
-        './src/sipcc/plat/common/plat_sec_api.c',
+        # './src/sipcc/plat/common/plat_sec_api.c',
         './src/sipcc/plat/common/libxml_parser.c',
         './src/sipcc/plat/csf2g/model.c',
         './src/sipcc/plat/csf2g/reset_api.c',
-
-        './src/sipcc/plat/common/plat_debug.h',
-        './src/sipcc/plat/common/tnp_blf.h',
+        # 
+        # './src/sipcc/plat/common/plat_debug.h',
+        # './src/sipcc/plat/common/tnp_blf.h',
 
         # STUB
-        './src/sipcc/stub/cc_blf_stub.c',
-        './src/sipcc/stub/vcm_stub.c',
+        #'./src/sipcc/stub/cc_blf_stub.c',
+        #'./src/sipcc/stub/vcm_stub.c',
 
       ],
 
@@ -695,9 +694,9 @@
             
             # PLAT
             './src/sipcc/plat/common/dns_utils.c',
-            './src/sipcc/plat/darwin/netif.c',
+            #'./src/sipcc/plat/darwin/netif.c',
             './src/sipcc/plat/darwin/plat_api_stub.c',
-            './src/sipcc/plat/unix-common/random.c',
+            #'./src/sipcc/plat/unix-common/random.c',
             
             # CPR
             './src/sipcc/cpr/darwin/cpr_darwin_assert.h',
@@ -750,9 +749,8 @@
             '-g',
             '-fexceptions',
             '-fno-common',
-            '-arch', 'i386',
-            '-isysroot', '/Developer/SDKs/MacOSX10.6.sdk',
-            '-mmacosx-version-min=10.6',
+            '-isysroot', '/Developer/SDKs/MacOSX10.7.sdk',
+            '-mmacosx-version-min=10.5',
             '-fast'
           ],
         }],
