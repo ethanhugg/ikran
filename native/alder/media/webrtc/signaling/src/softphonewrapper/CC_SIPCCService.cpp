@@ -56,7 +56,7 @@
 #include "CSFAudioTermination.h"
 #include "CSFVideoTermination.h"
 
-#include "base/threading/platform_thread.h"
+#include "base/platform_thread.h"
 #include "base/time.h"
 
 extern "C" {
@@ -705,7 +705,7 @@ void CC_SIPCCService::endAllActiveCalls()
 		if(!calls.empty())
 		{
 			// If we had any calls, allow a short time for the SIP messaging to go out
-			base::PlatformThread::Sleep(500);
+			PlatformThread::Sleep(500);
 		}
     }
 }

@@ -57,7 +57,7 @@
 #include "voe_encryption.h"
 #include <string>
 #include <map>
-#include "base/synchronization/lock.h"
+#include "base/lock.h"
 
 
 namespace CSF
@@ -179,11 +179,11 @@ namespace CSF
         // Synchronisation (to avoid data corruption and worse given that so many threads call the media provider)
         // Never use this mutex in a callback from Webrtc - high probability of deadlock.
 
-        base::Lock m_lock;
+        Lock m_lock;
         // This mutex is to be held only for the narrowest possible scope while accessing the stream map
         // (but not while inspecting or changing a stream object).
         // Might be used in northbound and southbound calls.
-        base::Lock streamMapMutex;
+        Lock streamMapMutex;
         bool stopping;
     };
     const unsigned short targetLeveldBOvdefault =3 ;
