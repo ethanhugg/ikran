@@ -749,7 +749,7 @@
             '-g',
             '-fexceptions',
             '-fno-common',
-            '-isysroot', '/Developer/SDKs/MacOSX10.7.sdk',
+            '-isysroot', '/Developer/SDKs/MacOSX10.6.sdk',
             '-mmacosx-version-min=10.5',
             '-fast'
           ],
