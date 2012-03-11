@@ -561,7 +561,7 @@
 
             # PLAT
             './src/sipcc/plat/common/dns_utils.c',
-            './src/sipcc/plat/unix-common/random.c',
+            #'./src/sipcc/plat/unix-common/random.c',
             './src/sipcc/plat/linux/plat_api_stub.c',
 
             # CPR
