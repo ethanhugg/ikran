@@ -1054,3 +1054,5 @@ cubeb/cubeb.h
 #endif
 sys/msg.h
 sys/ipc.h
+libxml/parser.h
+libxml/tree.h
