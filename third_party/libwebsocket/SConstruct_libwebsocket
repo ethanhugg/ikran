@@ -1,0 +1,82 @@
+import os
+import sys
+
+Import('build_env')
+Import('debug')
+Import('x64')
+
+
+include_dirs = [
+  '.',
+  '../../include',
+  '../../src/sipcc/include',
+  '../../src/common',
+  '../../out/include/system',
+  '../../src/common/browser_logging',
+  '../../ikran',
+  './libwebsocketswin32',
+  '../../tests/roapproxy/roap',
+  './win32port/win32helpers',
+  './zlib',
+ ]
+ 
+#src_files = Glob('libwebsocketswin32/*.c') + \
+#  Glob('win32port/win32helpers/*.c') + \
+#  Glob('zlib/*.c')
+
+src_files = [
+    './libwebsocketswin32/base64-decode.c',
+	'./libwebsocketswin32/client-handshake.c',
+	'./libwebsocketswin32/extension-deflate-stream.c',
+	'./libwebsocketswin32/extension-x-google-mux.c',
+	'./libwebsocketswin32/extension.c',
+	'./libwebsocketswin32/handshake.c',
+	'./libwebsocketswin32/libwebsockets.c',
+	'./libwebsocketswin32/md5.c',
+	'./libwebsocketswin32/parsers.c',
+	'./libwebsocketswin32/sha-1.c',
+
+	'./zlib/adler32.c',
+	'./zlib/compress.c',
+	'./zlib/crc32.c',
+	'./zlib/deflate.c',
+	'./zlib/gzclose.c',
+	'./zlib/gzlib.c',
+	'./zlib/gzread.c',
+	'./zlib/gzwrite.c',
+	'./zlib/infback.c',
+	'./zlib/inffast.c',
+	'./zlib/inflate.c',
+	'./zlib/inftrees.c',
+	'./zlib/trees.c',
+	'./zlib/uncompr.c',
+	'./zlib/zutil.c',
+  ]
+  
+src_files += [
+    './win32port/win32helpers/getopt.c',
+	'./win32port/win32helpers/getopt_long.c',
+	'./win32port/win32helpers/gettimeofday.c',
+	'./win32port/win32helpers/websock-w32.c',
+  ]
+  
+env = build_env.Clone(CPPPATH=include_dirs)
+		
+if sys.platform =='win32':
+	env["CPPDEFINES"] += [
+		'WIN32',
+		'_DEBUG',
+		'_LIB',
+		'_MBCS'
+	]
+#elif sys.platform =='darwin':
+	
+#elif sys.platform =='linux2':
+	
+
+
+if sys.platform =='linux2':
+        env.ParseConfig('pkg-config --cflags --libs glib-2.0')
+
+env.Library('libwebsocket', src_files, LIBS=[], LIBPATH=[])
+            
