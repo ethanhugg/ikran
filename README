@@ -203,7 +203,6 @@ Here is a good reference: http://www.oldskoolphreak.com/tfiles/voip/beginners_op
   kamctl add userbob bobpassword bob@localhost
   kamctl add useralice alicepassword alice@localhost
 
-
 2. Start kamailio
 
   /usr/local/sbin$ ./kamailio

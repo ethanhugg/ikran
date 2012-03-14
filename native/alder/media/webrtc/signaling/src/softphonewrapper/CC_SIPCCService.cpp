@@ -135,11 +135,8 @@ void configCtlFetchReq(int device_handle)
     }
     else
     {
-    	if (pPhone->bUseConfig == true)
-    		CCAPI_Config_response(device_handle, pPhone->deviceName.c_str(), pPhone->xmlConfig.c_str(), true);
-    	else
-    		CCAPI_Start_response(device_handle, pPhone->deviceName.c_str(), pPhone->sipUser.c_str(),
-    							 	 pPhone->sipPassword.c_str(), pPhone->sipDomain.c_str());
+    	CCAPI_Start_response(device_handle, pPhone->deviceName.c_str(), pPhone->sipUser.c_str(),
+    						 	 pPhone->sipPassword.c_str(), pPhone->sipDomain.c_str());
     }
 }
 
@@ -449,7 +446,6 @@ void CC_SIPCCService::destroy()
         bCreated = false;
     }
 
-    xmlConfig = "";
 	deviceName = "";
 	loggingMask = 0;
 
@@ -470,11 +466,6 @@ void CC_SIPCCService::destroy()
 	{
 		videoControlWrapper->setVideoControl(NULL);
 	}
-}
-
-void CC_SIPCCService::setConfig(const std::string& xmlConfig)
-{
-	this->xmlConfig = xmlConfig;
 }
 
 void CC_SIPCCService::setDeviceName(const std::string& deviceName)
