@@ -51,5 +51,5 @@ SHARED_LIBRARY_LIBS += \
 ifeq ($(OS_TARGET),WINNT)
 SHARED_LIBRARY_LIBS += $(call EXPAND_LIBNAME_PATH,expat,$(DEPTH)/media/webrtc/trunk/third_party/expat/expat_expat)
 else
-SHARED_LIBRARY_LIBS += -lexpat -lxml2
+SHARED_LIBRARY_LIBS += -lexpat
 endif
