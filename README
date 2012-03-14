@@ -297,3 +297,15 @@ python setup.py install
 Windows
 From http://www.scons.org/ download and install the scons windows installer 
  
+ ---------------------------------------------------
+14. Using Ikran with websocket-based ROAP Proxy
+---------------------------------------------------
+
+1. Start the roap proxy firstly.
+
+2. Start firefox with ikran add-on. Enter IP:7681 in address bar to load page. the IP is roap proxy ip.
+
+3. On page load you should see the RoapProxy register and then it will do the SIP conversation
+on behalf of your browser.  It currently only works for 1 call and needs to be reset between
+each call.
+
