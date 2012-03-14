@@ -21,7 +21,6 @@ Required for all platforms:
 Linux:
   Should build on Ubuntu 11.04, 11.10 or Fedora15
   Third-Party Libraries
-  +libxml2 - sudo apt-get install libxml2-dev
   +Glib    - sudo apt-get install libdbus-glib-1-dev
   +asound  - sudo apt-get install libasound2-dev
   +libgtk  - sudo apt-get install libgtk2.0-dev     
@@ -52,9 +51,7 @@ Windows:
   - Build WEBRTC for video and audio engine libraries 
       +  Follow the instructions @ http://www.webrtc.org/reference/getting-started
       +  Set WEBRTCPATH to point to it : export WEBRTCPATH=/Users/XTM/HTML5/webrtc/trunk
-  - On Windows copy libxml2_MTd.lib from https://public.me.com/ethanhugg to /third_party/lib
-      OR if you would rather build your own, read section 12
-
+  
   Set up these two Environment variables
     MOZSRCPATH environment variable pointing to the a built source tree of Firefox (mozilla-central)
     WEBRTCPATH environment variable pointing to a built webrtc source trunk
@@ -270,19 +267,8 @@ application. Run the test application from the command line as below to start is
 Notes:
 (1) Server and client on the same machine may have some problems.
 
---------------------------------------------
-12. Building your own libxml2 (Windows only)
---------------------------------------------
-Copying the one prebuilt libxml2_Mtd binary is much easier than following these steps but if you want to build yourself:
-
-To build libxml2 use this repo: git clone git://git.gnome.org/libxml2
-You will also have to build zlib (http://zlib.net/) and libiconv (http://www.gnu.org/software/libiconv/)
-Make sure you build each to use the CRT as MTd
-Then update build files that referenced libxml2_MTd.lib to also reference zlib and libiconv static libraries
-When built copy the three libs to /third_party/lib
-
 --------------------
-13. Installing Scons
+12. Installing Scons
 --------------------
 
 Make sure pyhton is installed
@@ -298,7 +284,7 @@ Windows
 From http://www.scons.org/ download and install the scons windows installer 
  
  ---------------------------------------------------
-14. Using Ikran with websocket-based ROAP Proxy
+13. Using Ikran with websocket-based ROAP Proxy
 ---------------------------------------------------
 
 1. Start the roap proxy firstly.

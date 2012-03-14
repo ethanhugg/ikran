@@ -164,12 +164,10 @@ if sys.platform =='win32':
   if int(debug):
     libs += [
       'libcmtd.lib',
-      'libxml2_mtd.lib'
     ]
   else:
     libs += [
       'libcmt.lib',
-      'libxml2_mt.lib'
     ]
   env["LINKFLAGS"] = [
     '/nologo',
@@ -277,8 +275,7 @@ elif sys.platform=='darwin':
     'crypto',
     'apr-1',
     'aprutil-1',
-    'z', 
-    'libxml2', 
+    'z',  
     'iconv',
     'X11',
     'chromium',
@@ -411,8 +408,7 @@ elif sys.platform=='linux2':
     'z', 
     'idn', 
     'dl', 
-    'rt',
-    'xml2', 
+    'rt', 
     'asound',
     'Xext',
     'chromium',

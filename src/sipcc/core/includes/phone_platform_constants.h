@@ -236,7 +236,7 @@
  */
 #define MAX_INSTANCES        (MAX_CALLS - 1) /* max number of instance ID */
 
-/* MAX_CONFIG_LINES - java side defined fixed number to 36 for non-Guinness TNP 
+/* MAX_CONFIG_LINES - java side defined fixed number to 36 for non-Buckfast TNP
  * models so use 36 in call cases. Changing this needs java side change
  */
 #define MAX_CONFIG_LINES 36

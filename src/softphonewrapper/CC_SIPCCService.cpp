@@ -135,11 +135,8 @@ void configCtlFetchReq(int device_handle)
     }
     else
     {
-    	if (pPhone->bUseConfig == true)
-    		CCAPI_Config_response(device_handle, pPhone->deviceName.c_str(), pPhone->xmlConfig.c_str(), true);
-    	else
-    		CCAPI_Start_response(device_handle, pPhone->deviceName.c_str(), pPhone->sipUser.c_str(),
-    							 	 pPhone->sipPassword.c_str(), pPhone->sipDomain.c_str());
+    	CCAPI_Start_response(device_handle, pPhone->deviceName.c_str(), pPhone->sipUser.c_str(),
+    						 	 pPhone->sipPassword.c_str(), pPhone->sipDomain.c_str());
     }
 }
 
@@ -171,11 +168,6 @@ void configFetchReq(int device_handle)
  *
  * Notify the config manager that the config file has an error
  * and a new config file needs to be downloaded.
- *
- * The error could be XML format error or minimum config not being
- * present in the config file.  It is expected that 
- * this will result in processing of
- * the config file after the config managers response is received.
  *
  */
 void configParserError(void)
@@ -449,7 +441,6 @@ void CC_SIPCCService::destroy()
         bCreated = false;
     }
 
-    xmlConfig = "";
 	deviceName = "";
 	loggingMask = 0;
 
@@ -470,11 +461,6 @@ void CC_SIPCCService::destroy()
 	{
 		videoControlWrapper->setVideoControl(NULL);
 	}
-}
-
-void CC_SIPCCService::setConfig(const std::string& xmlConfig)
-{
-	this->xmlConfig = xmlConfig;
 }
 
 void CC_SIPCCService::setDeviceName(const std::string& deviceName)

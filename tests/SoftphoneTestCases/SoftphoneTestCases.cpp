@@ -757,7 +757,6 @@ static bool handleOriginatePhoneCall (CallControlManagerPtr ccmPtr, const string
 
 
 #ifndef NOVIDEO		
-		CSFLogDebug(logTag, "  SUHAS SUHAS SUHAS SUHAS SUHAS SUHAS SUHAS ");
 		// associate the video window - even if this is not a video call, it might be escalated later, so 
 		// it is easier to always associate them
 		outgoingCall->setRemoteWindow((VideoWindowHandle)hVideoWindow);
@@ -796,7 +795,6 @@ static void handleOriginateP2PPhoneCall (CallControlManagerPtr ccmPtr, const str
 
 
 #ifndef NOVIDEO
-		CSFLogDebug(logTag, "  SUHAS SUHAS SUHAS SUHAS SUHAS SUHAS SUHAS ");
 		// associate the video window - even if this is not a video call, it might be escalated later, so
 		// it is easier to always associate them
 		outgoingCall->setRemoteWindow((VideoWindowHandle)hVideoWindow);
