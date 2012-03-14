@@ -57,13 +57,15 @@ extern char g_cfg_p[];
 extern int g_compl_cfg;
 extern boolean apply_config;
 extern cc_apply_config_result_t apply_config_result;
-cc_boolean parse_config_properties (int device_handle, const char *device_name, const char *cfg, int from_memory);
+//cc_boolean parse_config_properties (int device_handle, const char *device_name, const char *cfg, int from_memory);
 cc_boolean parse_setup_properties (int device_handle, const char *device_name, const char *sipUser, const char *sipPassword, const char *sipDomain);
 
 /**
  * 
  * @return
  */
+
+/*
 void CCAPI_Config_response(int device_handle, const char *device_name, const char *cfg, int from_memory) {
     static const char fname[] = "CCAPI_Config_response";
     cc_apply_config_result_t config_compare_result;
@@ -94,7 +96,7 @@ void CCAPI_Config_response(int device_handle, const char *device_name, const cha
         CCAPI_Service_reregister(device_handle, device_name, cfg, from_memory);
     }
 }
-
+*/
 
 void CCAPI_Start_response(int device_handle, const char *device_name, const char *sipUser, const char *sipPassword, const char *sipDomain) {
     static const char fname[] = "CCAPI_Start_response";
@@ -118,7 +120,7 @@ void CCAPI_Start_response(int device_handle, const char *device_name, const char
  }
 
 
-
+/*
 cc_boolean parse_config_properties (int device_handle, const char *device_name, const char *cfg, int from_memory) {
     CC_Config_setStringValue(CFGID_DEVICE_NAME, device_name);
     if (config_parser_main((char *) cfg, from_memory) != 0) {
@@ -130,6 +132,7 @@ cc_boolean parse_config_properties (int device_handle, const char *device_name, 
     ccsnap_gen_deviceEvent(CCAPI_DEVICE_EV_CONFIG_CHANGED, CC_DEVICE_ID);
     return TRUE;
 }
+*/
 
 /*  New Function
     Register without using config file downloaded from cucm
@@ -177,10 +180,12 @@ const char* CCAPI_Config_get_version() {
 	return config_get_version();
 }
 
+/*
 cc_boolean CCAPI_Config_checkValidity (int device_handle, const char *cfg_file_name, int from_memory) {
     CCAPP_ERROR("CCAPI_Config_checkValidity - check config file validity \n");
     return is_config_valid((char *)cfg_file_name, from_memory);
 }
+*/
 
 cc_boolean CCAPI_Config_set_p2p_mode(const cc_boolean is_p2p) {
 	config_setup_p2p_mode(is_p2p);
@@ -201,6 +206,8 @@ cc_boolean CCAPI_Config_set_roap_client_mode(const cc_boolean is_roap_client) {
  * 
  * @return
  */
+
+/*
 int CCAPI_Config_compareProperties (int device_handle, const char *cfg_file_name, int from_memory) {
     cc_apply_config_result_t result; 
     int val;
@@ -223,3 +230,4 @@ int CCAPI_Config_compareProperties (int device_handle, const char *cfg_file_name
     apply_config = FALSE;
     return result;
 }
+*/

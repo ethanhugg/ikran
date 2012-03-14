@@ -64,7 +64,6 @@
 #include "text_strings.h"
 #include "configapp.h"
 #include "kpmlmap.h"
-#include "xml_util.h"
 
 /*
  *  Global Variables
@@ -721,11 +720,6 @@ sip_subsManager_shut ()
         free_scb(i, fname);
     }
 
-    #ifndef __ANDROID__
-    // Shut Allegro XML stuff
-    xmlDeInit();
-    #endif
-
     // Shut down the periodic timer
     (void) sip_platform_subnot_periodic_timer_stop();
 
@@ -940,13 +934,6 @@ sip_subsManager_init ()
         gSubHistory[i].last_from_tag[0] = '\0';
         gSubHistory[i].eventPackage = CC_SUBSCRIPTIONS_NONE;
     }
-
-    #ifndef __ANDROID__
-    // Initialize Allegro XML stuff
-    if (xmlInit() == SIP_ERROR) {
-         return SIP_ERROR;
-    }
-    #endif
 
     // reset status and stats
     internalRegistrations = 0;
@@ -1484,7 +1471,7 @@ submanager_update_ccb_addr (ccsipCCB_t *ccb)
 
 
 /*
- * Takes care of all the XML parsing requirements
+ * Takes care of all the parsing requirements
  */
 static int
 parse_body (cc_subscriptions_t event_type, char *msgBody, int msgLength,
@@ -1492,9 +1479,7 @@ parse_body (cc_subscriptions_t event_type, char *msgBody, int msgLength,
             const char *fname)
 {
     const char     *fname1 = "parse_body";
-    ccsip_event_data_t *eventDatap = NULL;
     ccsip_event_data_type_e type = EVENT_DATA_INVALID;
-    *eventDatapp = NULL;
 
     if (!msgBody) {
         return SIP_ERROR;
@@ -1504,31 +1489,14 @@ parse_body (cc_subscriptions_t event_type, char *msgBody, int msgLength,
         case CC_SUBSCRIPTIONS_KPML:
             type = EVENT_DATA_KPML_REQUEST;
         break;
-        case CC_SUBSCRIPTIONS_DIALOG:
-            type = EVENT_DATA_DIALOG;
-        break;
         case CC_SUBSCRIPTIONS_CONFIGAPP:
             type = EVENT_DATA_CONFIGAPP_REQUEST;
         break;
-        case CC_SUBSCRIPTIONS_PRESENCE:
-            if (!CPR_REACH_MEMORY_HIGH_WATER_MARK) {
-                type = EVENT_DATA_PRESENCE;
-                break;
-            } else {
-                CCSIP_DEBUG_ERROR(SIP_F_PREFIX"%s: Reached high water mark\n", fname1, fname);
-                /* follow through to default case */
-            }
         default:
             CCSIP_DEBUG_ERROR(SIP_F_PREFIX"%s: unknown event type %d\n", fname1, fname, type);
         return SIP_ERROR;
     }
 
-    if (xmlDecodeEventData(event_type, msgBody, msgLength, &eventDatap ) == SIP_ERROR) {
-        CCSIP_DEBUG_ERROR(SIP_F_PREFIX"%s: Unable to get context\n", fname1, fname);
-        free_event_data(eventDatap);
-        return SIP_ERROR;
-    }
-    *eventDatapp = eventDatap;
     return SIP_OK;
 }
 
@@ -1540,11 +1508,6 @@ add_content (ccsip_event_data_t *eventData, sipMessage_t *request, const char *f
     char           *eventBody = NULL;
 
     while (eventData) {
-        eventBody = xmlEncodeEventData(eventData);
-        if (!eventBody) {
-            CCSIP_DEBUG_ERROR(SIP_F_PREFIX"%s: Framing XML Body failed\n", fname1, fname);
-            return (FALSE);
-        }
         len = strlen(eventBody);
 
         switch (eventData->type) {
@@ -1564,18 +1527,6 @@ add_content (ccsip_event_data_t *eventData, sipMessage_t *request, const char *f
                                            SIP_CONTENT_TYPE_KPML_RESPONSE,
                                            SIP_CONTENT_DISPOSITION_SESSION_VALUE, TRUE, NULL);
             break;
-        case EVENT_DATA_DIALOG:
-            (void) sippmh_add_message_body(request, eventBody, len,
-                                           SIP_CONTENT_TYPE_DIALOG,
-                                           SIP_CONTENT_DISPOSITION_SESSION_VALUE, TRUE, NULL);
-            break;
-
-        case EVENT_DATA_PRESENCE:
-            (void) sippmh_add_message_body(request, eventBody, len,
-                                           SIP_CONTENT_TYPE_PRESENCE,
-                                           SIP_CONTENT_DISPOSITION_SESSION_VALUE, TRUE, NULL);
-            break;
-
         default:
             CCSIP_DEBUG_ERROR(SIP_F_PREFIX"%s: Data type not supported\n", fname1, fname);
             cpr_free(eventBody);
