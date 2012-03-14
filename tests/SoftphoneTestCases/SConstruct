@@ -184,12 +184,10 @@ if sys.platform =='win32':
   if int(debug):
     libs += [
       'libcmtd.lib',
-      'libxml2_mtd.lib'
     ]
   else:
     libs += [
       'libcmt.lib',
-      'libxml2_mt.lib'
     ]
   env["LINKFLAGS"] = [
     '/DELAYLOAD:"avrt.dll"',
@@ -240,8 +238,7 @@ elif sys.platform == 'darwin':
     'crypto',
     'apr-1',
     'aprutil-1',
-    'z',
-    'libxml2', 
+    'z', 
     'iconv',
     'X11',
     'chromium',
@@ -352,8 +349,7 @@ elif sys.platform=='linux2':
     'nspr4',
     'pthread',
     'z', 
-    'idn', 
-    'xml2', 
+    'idn',  
     'asound',
     'chromium',
     'libvideo_engine_core.a',
