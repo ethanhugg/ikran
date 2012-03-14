@@ -31,11 +31,6 @@ include_dirs = [
   chromiumbaseincludepath + '/base/synchronization'
 ]
 
-if sys.platform =='win32':
-  include_dirs += ['../third_party/libxml2/include']
-else:
-  include_dirs += ['/usr/include/libxml2']
-
 
 src_files = Glob('config/*.cpp') + \
   Glob('callcontrol/*.cpp') + \

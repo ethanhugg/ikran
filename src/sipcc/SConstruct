@@ -26,7 +26,6 @@ include_dirs = [
   'core/sipstack/h',
   'core/ccapp', 
   'core/gsm/h',
-  '../../third_party/libxml2/include',
   'plat/common',
   'include'
 ]
@@ -161,7 +160,6 @@ elif targetPlatform == 'win32':
           
 src_files += [
   'plat/common/plat_sec_api.c',
-  'plat/common/libxml_parser.c',
   'plat/csf2g/model.c',
   'plat/csf2g/reset_api.c'
 ]
@@ -210,7 +208,6 @@ if targetPlatform == 'win32':
     'UNICODE',
     'SIP_OS_WINDOWS',
     'WIN32',
-    'LIBXML_STATIC',
     'CISCO_SIP_CC_ADAPTER_WIN32',
     '_WIN32_WCE',
     'EXTERNAL_TICK_REQUIRED',

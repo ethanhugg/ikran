@@ -75,7 +75,6 @@
 #include "ccsip_spi_utils.h"
 #include "ccsip_subsmanager.h"
 #include "subapi.h"
-#include "xml_util.h"
 #include "platform_api.h"
 
 #define SIPS_URL_LEN 8

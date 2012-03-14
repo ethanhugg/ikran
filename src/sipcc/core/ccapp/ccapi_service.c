@@ -72,7 +72,7 @@ extern cc_srv_ctrl_cmd_t reset_type;
 boolean isServiceStartRequestPending = FALSE;
 cc_boolean is_action_to_be_deferred(cc_action_t action);
 extern cc_action_t pending_action_type; 
-cc_boolean parse_config_properties (int device_handle, const char *device_name, const char *cfg, int from_memory); 
+//cc_boolean parse_config_properties (int device_handle, const char *device_name, const char *cfg, int from_memory);
 
 
 
@@ -174,9 +174,7 @@ cc_return_t CCAPI_Service_reregister(int device_handle, const char *device_name,
     CCAPP_DEBUG("CCAPI_Service_reregister - devce name [%s], cfg [%s] \n", g_dev_name, g_cfg_p);
     g_compl_cfg  = complete_config;
 
-    if (parse_config_properties(g_dev_hdl, g_dev_name, g_cfg_p, g_compl_cfg) == TRUE) {
         registration_processEvent(EV_CC_RE_REGISTER);
-    }
     
     return (CC_SUCCESS);
 }

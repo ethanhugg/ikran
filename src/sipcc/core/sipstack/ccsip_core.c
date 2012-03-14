@@ -3597,23 +3597,6 @@ ccsip_handle_idle_ev_cc_setup (ccsipCCB_t *ccb, sipSMEvent_t *event)
 
     /* Send INVITE */
 
-    /*
-     * Vivek: As a test - add some body part to force it to do
-     * multipart/mixed
-
-     event->u.cc_msg.msg.setup.msg_body[0].body = (char *) cpr_malloc(10);
-     event->u.cc_msg.msg.setup.msg_body[0].content_id = (char *) cpr_malloc(10);
-     event->u.cc_msg.msg.setup.msg_body[1].body = NULL;
-     event->u.cc_msg.msg.setup.msg_body[2].body = NULL;
-     event->u.cc_msg.msg.setup.msg_body[3].body = NULL;
-     strcpy(event->u.cc_msg.msg.setup.msg_body[0].body, "ABCDEFGH");
-     strcpy(event->u.cc_msg.msg.setup.msg_body[0].content_id, "WXYZ");
-     event->u.cc_msg.msg.setup.msg_body[0].content_type = cc_content_type_CMXML;
-     event->u.cc_msg.msg.setup.msg_body[0].body_length = strlen("ABCDEFGH");
-     event->u.cc_msg.msg.setup.msg_body[0].content_disposition.disposition = cc_disposition_render;
-     event->u.cc_msg.msg.setup.msg_body[0].content_disposition.required_handling = FALSE;
-     */
-
     /* Save the GSM's msg. bodies for future used */
     ccsip_save_local_msg_body(ccb, &event->u.cc_msg->msg.setup.msg_body);
 

@@ -170,11 +170,8 @@ extern boolean apply_config;
 
 extern  char g_new_signaling_ip[];
 
-extern char g_applyConfigFcpVersion[];
-extern char g_applyConfigDialPlanVersion[];
-
 extern int configFileDownloadNeeded;
-cc_boolean parse_config_properties (int device_handle, const char *device_name, const char *cfg, int from_memory); 
+//cc_boolean parse_config_properties (int device_handle, const char *device_name, const char *cfg, int from_memory);
 extern int g_dev_hdl;
 extern char g_dev_name[];
 extern char g_cfg_p[];
@@ -966,7 +963,6 @@ session_data_t * getDeepCopyOfSessionData(session_data_t *data)
            newData->plcd_number =  strlib_copy(data->plcd_number);
            newData->status =  strlib_copy(data->status);
            calllogger_copy_call_log(&newData->call_log, &data->call_log);
-           conf_roster_copy_call_conferance(&newData->call_conference, &data->call_conference);
        } else {
            memset(newData, 0, sizeof(session_data_t));
 	   newData->ref_count = 1;
@@ -986,7 +982,6 @@ session_data_t * getDeepCopyOfSessionData(session_data_t *data)
            newData->plcd_number =  strlib_empty();
            newData->status = strlib_empty();
            calllogger_init_call_log(&newData->call_log);
-           conf_roster_init_call_conference(&newData->call_conference);
        }
 
    }
@@ -1031,7 +1026,7 @@ void cleanSessionData(session_data_t *data)
 	strlib_free(data->status);
         data->status = strlib_empty();
         calllogger_free_call_log(&data->call_log);
-        conf_roster_free_call_conference(&data->call_conference);
+        // <libxm2> conf_roster_free_call_conference(&data->call_conference);
     }
 }
 
@@ -1347,7 +1342,6 @@ static void ccappUpdateSessionData (session_update_t *sessUpd)
 	data->vid_dir = SDP_DIRECTION_INACTIVE;
         data->callref = 0;
         calllogger_init_call_log(&data->call_log);
-        conf_roster_init_call_conference(&data->call_conference);
         /*
          * If phone was idle, we not going to active state
          * send notification to resetmanager that we
@@ -1914,13 +1908,6 @@ void ccp_handler(void* msg, int type) {
             data->info_type = rcvdInfo->info.generic_raw.content_type;
             data->info_body = rcvdInfo->info.generic_raw.message_body;
 
-            // We are freeing the existing conference information, and
-            // re-parsing the new XML received in the INFO. A future possible
-            // optimization is to find the difference and only update the
-            // changed/removed/added participants
-            conf_roster_free_call_conference(&data->call_conference);
-            decodeInfoXML(rcvdInfo->info.generic_raw.message_body, length, &data->call_conference);
-
             ccsnap_gen_callEvent(CCAPI_CALL_EV_RECEIVED_INFO, CREATE_CALL_HANDLE_FROM_SESSION_ID(rcvdInfo->sessionID));
                    
             // most of the time isConference will be true at this point, we can notify the app of
@@ -2141,9 +2128,6 @@ void ccappSyncSessionMgmt(session_mgmt_t *sessMgmt)
     case SESSION_MGMT_APPLY_CONFIG:
         // save the proposed versions of fcp and dialplan to apply.  Will check against
         // current versions and redownload if necessary
-        
-        strcpy (g_applyConfigFcpVersion, sessMgmt->data.config.fcp_version_stamp); 
-        strcpy (g_applyConfigDialPlanVersion, sessMgmt->data.config.dialplan_version_stamp); 
                   
     if (pending_action_type == NO_ACTION) { 
             configApplyConfigNotify(sessMgmt->data.config.config_version_stamp,
