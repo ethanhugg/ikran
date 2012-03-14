@@ -84,7 +84,6 @@
 #define SAPP_APP SAPP_APP_GSM
 #include "sapp.h"
 #endif
-#include "xml_util.h"
 
 #if defined SIP_OS_WINDOWS
 #include "../win32/cpr_win_defines.h"

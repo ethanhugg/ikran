@@ -57,7 +57,7 @@
  * Initialize the platform threa.
  * @todo add more explanation here.
  */
-int sipcc_platThreadInit(char * tname)
+int platThreadInit(char * tname)
 {
     return 0;
 }
@@ -70,7 +70,7 @@ int sipcc_platThreadInit(char * tname)
  * @return 0 - SUCCESS
  *        -1 - FAILURE
  */
-int sipcc_platInit()
+int platInit()
 {
     return 0;
 }
@@ -83,7 +83,7 @@ int sipcc_platInit()
  * @return 0 - SUCCESS
  *        -1 - FAILURE
  */
-void sipcc_debugInit()
+void debugInit()
 {
     return ;
 }
@@ -91,7 +91,7 @@ void sipcc_debugInit()
 /**
  * Add cc control classifier
  */
-void sipcc_platAddCallControlClassifiers(unsigned long myIPAddr, unsigned short myPort,
+void platAddCallControlClassifiers(unsigned long myIPAddr, unsigned short myPort,
 	unsigned long cucm1IPAddr, unsigned short cucm1Port,
 	unsigned long cucm2IPAddr, unsigned short cucm2Port,
 	unsigned long cucm3IPAddr, unsigned short cucm3Port,
@@ -103,7 +103,7 @@ void sipcc_platAddCallControlClassifiers(unsigned long myIPAddr, unsigned short 
 /**
  * Remove cc control classifier.
  */
-void sipcc_platRemoveCallControlClassifiers()
+void platRemoveCallControlClassifiers()
 {
     return;
 }
@@ -111,7 +111,7 @@ void sipcc_platRemoveCallControlClassifiers()
 /**
  * Tell whether wifi is supported and active
  */
-cc_boolean	sipcc_platWlanISActive()
+cc_boolean	platWlanISActive()
 {
     return FALSE;
 }
@@ -121,7 +121,7 @@ cc_boolean	sipcc_platWlanISActive()
  * @return FAILURE or true length. "-1" means no active load found.
  *
  */
-int sipcc_platGetActiveInactivePhoneLoadName(char * image_a, char * image_b, int len)
+int platGetActiveInactivePhoneLoadName(char * image_a, char * image_b, int len)
 {
     // initialize strings
     memset(image_a, 0, len);
@@ -137,7 +137,7 @@ int sipcc_platGetActiveInactivePhoneLoadName(char * image_a, char * image_b, int
  * @param len the input length to cap the maximum value
  * @return SUCCESS or FAILURE
  */
-int sipcc_platGetPhraseText(int index, char* phrase, unsigned int len)
+int platGetPhraseText(int index, char* phrase, unsigned int len)
 {
     return 0;
 }
@@ -147,7 +147,7 @@ int sipcc_platGetPhraseText(int index, char* phrase, unsigned int len)
  * @param reason see the unregister reason definitions.
  * @return void
  */
-void sipcc_platSetUnregReason(int reason)
+void platSetUnregReason(int reason)
 {
     return;
 }
@@ -157,7 +157,7 @@ void sipcc_platSetUnregReason(int reason)
  * Get the unregistration reason code.
  * @return reason code for unregistration, see the definition.
  */
-int sipcc_platGetUnregReason()
+int platGetUnregReason()
 {
     return 0;
 }
@@ -167,7 +167,7 @@ int sipcc_platGetUnregReason()
  * @param kpml_config the kpml value
  * @return void
  */
-void sipcc_platSetKPMLConfig(cc_kpml_config_t kpml_config)
+void platSetKPMLConfig(cc_kpml_config_t kpml_config)
 {
     return ;
 }
@@ -194,7 +194,7 @@ void sipcc_platSetKPMLConfig(cc_kpml_config_t kpml_config)
  * @note This API maps to the following HandyIron API:
  *  int secIsServerSecure(SecServerType type) where type should be SRVR_TYPE_CCM
  */
-plat_soc_status_e sipcc_platSecIsServerSecure(void)
+plat_soc_status_e platSecIsServerSecure(void)
 {
     return PLAT_SOCK_NONSECURE;
 }
@@ -241,7 +241,7 @@ plat_soc_status_e sipcc_platSecIsServerSecure(void)
  *               
  */
 cpr_socket_t
-sipcc_platSecSocConnect (char *host,
+platSecSocConnect (char *host,
                   int     port,
                   int     ipMode,
                   boolean mode,
@@ -268,7 +268,7 @@ sipcc_platSecSocConnect (char *host,
  * int secIsConnectionReady (int connDesc)
  * The "sock" is the connection descriptor.
  */
-plat_soc_connect_status_e sipcc_platSecSockIsConnected (cpr_socket_t sock)
+plat_soc_connect_status_e platSecSockIsConnected (cpr_socket_t sock)
 {
     return PLAT_SOCK_CONN_OK;
 }
@@ -306,7 +306,6 @@ plat_soc_connect_status_e sipcc_platSecSockIsConnected (cpr_socket_t sock)
  *        @li [CPR_EMSGSIZE]  The message is too large to be sent all at once
  *        @li [CPR_EDESTADDRREQ]  The socket has no peer address set
  *
-*/
 ssize_t
 platSecSocSend (cpr_socket_t soc,
          CONST void *buf,
@@ -314,6 +313,7 @@ platSecSocSend (cpr_socket_t soc,
 {
     return 0;
 }
+ */
 
 /**
  * platSecSocRecv
@@ -342,7 +342,6 @@ platSecSocSend (cpr_socket_t soc,
  *        @li [CPR_ENOTCONN]  A receive attempt is made on a connection-mode socket that is not connected
  *        @li [CPR_ENOTSUPP]  The specified flags are not supported for this type of socket or protocol
  *
-*/
 ssize_t
 platSecSocRecv (cpr_socket_t soc,
          void * RESTRICT buf,
@@ -350,6 +349,7 @@ platSecSocRecv (cpr_socket_t soc,
 {
     return 0;
 }
+ */
 
 /**
  * platSecSocClose
@@ -365,12 +365,12 @@ platSecSocRecv (cpr_socket_t soc,
  *
  * @note The possible error values this function should return are
  *         @li [CPR_EBADF]      socket is not a valid socket descriptor.
-*/
 cpr_status_e
 platSecSocClose (cpr_socket_t soc)
 {
     return CPR_SUCCESS;
 }
+ */
 
 #define MAX_LEN_SIS_VER 64
 static cc_uint32_t major=1, minor=0, addtnl =0;
@@ -387,7 +387,7 @@ static char sis_ver_name[MAX_LEN_SIS_VER] = {0};
  * @note the platform should store this information and provide it when asked via the platGetSISProtocolVer()
  */
 
-void sipcc_platSetSISProtocolVer(cc_uint32_t a, cc_uint32_t b, cc_uint32_t c, char* name)
+void platSetSISProtocolVer(cc_uint32_t a, cc_uint32_t b, cc_uint32_t c, char* name)
 {
     major = a;
     minor = b;
@@ -409,7 +409,7 @@ void sipcc_platSetSISProtocolVer(cc_uint32_t a, cc_uint32_t b, cc_uint32_t c, ch
  * @return void
  */
 void
-sipcc_platGetSISProtocolVer (cc_uint32_t *a, cc_uint32_t *b, cc_uint32_t *c, char* name)
+platGetSISProtocolVer (cc_uint32_t *a, cc_uint32_t *b, cc_uint32_t *c, char* name)
 {
     if ( a ) {
         *a = major;
@@ -428,17 +428,17 @@ sipcc_platGetSISProtocolVer (cc_uint32_t *a, cc_uint32_t *b, cc_uint32_t *c, cha
     }
 }
 
-void sipcc_debug_bind_keyword(const char *cmd, int32_t *flag_ptr)
+void debug_bind_keyword(const char *cmd, int32_t *flag_ptr)
 {
     return;
 }
 
-void sipcc_platSetSpeakerMode(cc_boolean state)
+void platSetSpeakerMode(cc_boolean state)
 {
     return;
 }
 
-boolean sipcc_platGetSpeakerHeadsetMode()
+boolean platGetSpeakerHeadsetMode()
 {
     return TRUE;
 }
@@ -453,18 +453,18 @@ boolean sipcc_platGetSpeakerHeadsetMode()
  *  @return  1 - allowed, 0 - not allowed
  *
  */
-int sipcc_platGetFeatureAllowed(cc_sis_feature_id_e featureId)
+int platGetFeatureAllowed(cc_sis_feature_id_e featureId)
 {
     return TRUE;
 }
 
 
-int sipcc_platGetAudioDeviceStatus(plat_audio_device_t device_type)
+int platGetAudioDeviceStatus(plat_audio_device_t device_type)
 {
     return 0;
 }
 
-void sipcc_platGetMacAddr (char *maddr)
+void platGetMacAddr (char *maddr)
 {
 	maddr[0] = 0x44;
 	maddr[1] = 0x22;
@@ -478,7 +478,7 @@ void sipcc_platGetMacAddr (char *maddr)
  * Get the local IP address
  *
  */
-char * sipcc_platGetIPAddr () 
+char * platGetIPAddr () 
 {
     int fd;
     struct ifreq ifr;
@@ -503,7 +503,7 @@ char * sipcc_platGetIPAddr ()
  * @param void
  * @return void
  */
-void sipcc_platSetCucmRegTime (void) {
+void platSetCucmRegTime (void) {
     //Noop
 }
 
@@ -513,7 +513,7 @@ void sipcc_platSetCucmRegTime (void) {
  * @param void
  * @return u_long
  */
-cc_ulong_t sipcc_platGetDefaultgw(){
+cc_ulong_t platGetDefaultgw(){
 	return 0;
 }
 

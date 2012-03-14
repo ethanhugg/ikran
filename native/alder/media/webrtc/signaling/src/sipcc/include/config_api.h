@@ -90,8 +90,8 @@ void configParserError(void);
  *          points to the file name or is a pointer to the complete config in memory.
  * @return 
  */ 
-void CCAPI_Config_response (int device_handle, const char *device_name, 
-                             const char *cfg, int from_memory);
+//void CCAPI_Config_response (int device_handle, const char *device_name,
+//                             const char *cfg, int from_memory);
 
 
 /**
@@ -113,7 +113,7 @@ void CCAPI_Start_response(int device_handle, const char *device_name, const char
  * @return 
  */ 
 
-cc_boolean CCAPI_Config_checkValidity (int device_handle, const char *cfg_file_name, int from_memory);
+//cc_boolean CCAPI_Config_checkValidity (int device_handle, const char *cfg_file_name, int from_memory);
 
 /**
  *
@@ -127,7 +127,7 @@ cc_boolean CCAPI_Config_checkValidity (int device_handle, const char *cfg_file_n
  * @param action specify whether to apply the config changes or compare the config files
  * @return 
  */ 
-int CCAPI_Config_compareProperties (int device_handle, const char *cfg_file_name, int from_memory);
+//int CCAPI_Config_compareProperties (int device_handle, const char *cfg_file_name, int from_memory);
 
 
 /**

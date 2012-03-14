@@ -65,7 +65,7 @@
 
 
 mgmt_state_t mgmtState = MGMT_STATE_IDLE;
-int parse_config_properties (int device_handle, const char *device_name, const char *cfg, int from_memory);
+//int parse_config_properties (int device_handle, const char *device_name, const char *cfg, int from_memory);
 static boolean isStartRequestPending = FALSE;
 static boolean isServiceStopped = TRUE;
 extern int g_dev_hdl;
@@ -590,13 +590,11 @@ void registration_processEvent(int event) {
                  switch ( mgmtState) {
                     case MGMT_STATE_OOS_AWAIT_UN_REG_ACK:
                         setState(MGMT_STATE_REGISTERING);
-                        parse_config_properties(g_dev_hdl, g_dev_name, g_cfg_p, g_compl_cfg);
                         action(CMD_RESTART);
                         break;
                     case MGMT_STATE_OOS_AWAIT_SHUTDOWN_ACK:
                         setState(MGMT_STATE_WAITING_FOR_CONFIG_FILE);
                         configFetchReq(0);
-			// Suhas: Adding state change 
 			setState(MGMT_STATE_IDLE);
                         break;
                     case MGMT_STATE_STOP_AWAIT_SHUTDOWN_ACK:
@@ -605,7 +603,6 @@ void registration_processEvent(int event) {
                             isStartRequestPending = FALSE;
                             configFetchReq(0);
                         }
-			// Suhas: Adding state change 
 			setState(MGMT_STATE_IDLE);
                     break;
                     case MGMT_STATE_DESTROY_AWAIT_SHUTDOWN_ACK:

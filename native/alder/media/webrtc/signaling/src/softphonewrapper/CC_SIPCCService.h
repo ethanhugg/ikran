@@ -61,8 +61,8 @@ extern "C" {
 #include "CSFVideoControlWrapper.h"
 #include "CSFMediaProvider.h"
 
-#include "base/lock.h"
-#include "base/waitable_event.h"
+#include "lock.h"
+#include "waitable_event.h"
 
 #include <vector>
 #include <set>
@@ -93,7 +93,6 @@ namespace CSF
 	    virtual bool init(const std::string& user, const std::string& password, const std::string& domain, const std::string& deviceName);
 	    virtual void destroy();
 
-	    virtual void setConfig(const std::string& xmlConfig);
 	    virtual void setDeviceName(const std::string& deviceName);
 	    virtual void setLoggingMask(int mask);
 	    virtual void setLocalAddressAndGateway(const std::string& localAddress, const std::string& defaultGW);
@@ -163,8 +162,6 @@ namespace CSF
         // Singleton
         static CC_SIPCCService* _self;
 
-	    // Config
-	    std::string xmlConfig;
 	    std::string deviceName;
         cc_int32_t loggingMask;
 
@@ -176,7 +173,7 @@ namespace CSF
         bool bCreated;
         bool bStarted;
         Lock m_lock;
-        base::WaitableEvent sippStartedEvent;
+        WaitableEvent sippStartedEvent;
 
         // Media Lifecycle
         VcmSIPCCBinding vcmMediaBridge;

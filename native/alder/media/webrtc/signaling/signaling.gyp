@@ -136,7 +136,6 @@
         'LOG4CXX_STATIC', 
         '_NO_LOG4CXX', 
         'USE_SSLEAY', 
-        'LIBXML_STATIC', 
         '_CPR_USE_EXTERNAL_LOGGER',
    	'WEBRTC_RELATIVE_PATH',
       	'HAVE_WEBRTC_VIDEO',
@@ -290,7 +289,6 @@
         './src/sipcc/core/common/text_strings.h',
         './src/sipcc/core/common/ui.c',
         './src/sipcc/core/common/vcm_util.c',
-        './src/sipcc/core/common/xml_util.c',
         # GSM
         './src/sipcc/core/gsm/ccapi.c',
         './src/sipcc/core/gsm/ccapi_strings.c',
@@ -372,7 +370,6 @@
         './src/sipcc/core/includes/vcm_util.h',
         './src/sipcc/core/includes/www.h',
         './src/sipcc/core/includes/xml_defs.h',
-        './src/sipcc/core/includes/xml_util.h',
         # SDP
         './src/sipcc/core/sdp/ccsdp.c',
         './src/sipcc/core/sdp/sdp_access.c',
@@ -521,12 +518,10 @@
         './src/sipcc/include/reset_api.h',
         './src/sipcc/include/sll_lite.h',
         './src/sipcc/include/vcm.h',
-        './src/sipcc/include/xml_parser.h',
         './src/sipcc/include/xml_parser_defines.h',
 
         # PLAT
         # './src/sipcc/plat/common/plat_sec_api.c',
-        './src/sipcc/plat/common/libxml_parser.c',
         './src/sipcc/plat/csf2g/model.c',
         './src/sipcc/plat/csf2g/reset_api.c',
         # 
@@ -552,7 +547,6 @@
       'conditions': [
         ['OS=="linux"', {
           'include_dirs': [
-            '/usr/include/libxml2',
           ],
 
           'sources': [
@@ -620,7 +614,6 @@
         }],
         ['OS=="win"', {
           'include_dirs': [
-            './third_party/libxml2/include',
           ],
           
           'sources': [
@@ -685,7 +678,6 @@
         ['OS=="mac"', {
 
           'include_dirs': [
-            '/usr/include/libxml2',
           ],
           
           'sources': [

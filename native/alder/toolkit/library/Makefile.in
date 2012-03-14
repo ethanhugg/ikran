@@ -342,7 +342,6 @@ EXTRA_DSO_LDOPTS += \
   $(MOZ_HARFBUZZ_LIBS) \
   $(MOZ_APP_EXTRA_LIBS) \
   $(SQLITE_LIBS) \
-  -lxml2 \
   $(NULL)
 
 ifdef MOZ_GRAPHITE
