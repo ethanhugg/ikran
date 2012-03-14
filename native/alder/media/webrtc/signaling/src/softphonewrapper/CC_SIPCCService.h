@@ -61,8 +61,8 @@ extern "C" {
 #include "CSFVideoControlWrapper.h"
 #include "CSFMediaProvider.h"
 
-#include "lock.h"
-#include "waitable_event.h"
+#include "base/lock.h"
+#include "base/waitable_event.h"
 
 #include <vector>
 #include <set>
@@ -173,7 +173,7 @@ namespace CSF
         bool bCreated;
         bool bStarted;
         Lock m_lock;
-        WaitableEvent sippStartedEvent;
+        base::WaitableEvent sippStartedEvent;
 
         // Media Lifecycle
         VcmSIPCCBinding vcmMediaBridge;
